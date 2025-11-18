@@ -416,3 +416,14 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+
+# --- BỔ SUNG CHO ANGULAR (FRONTEND) ---
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+frontend/bazel-out/
+frontend/test-output/
+frontend/rpm/
+frontend/.angular/
+frontend/.editorconfig
