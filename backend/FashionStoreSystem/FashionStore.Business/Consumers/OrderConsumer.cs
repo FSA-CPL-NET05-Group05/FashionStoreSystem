@@ -61,8 +61,9 @@ namespace FashionStore.Business.Consumers
             using (var scope = _serviceProvider.CreateScope())
             {
                 var productRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
-                var orderRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Order>>(); 
+                var orderRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Order>>();
                 var orderDetailRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<OrderDetail>>();
+                var cartRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<CartItem>>();
 
                 try
                 {
@@ -78,16 +79,19 @@ namespace FashionStore.Business.Consumers
 
                     if (isSuccess)
                     {
+                        // Tạo Order
                         var newOrder = new Order
                         {
                             UserId = message.UserId.ToString(),
                             OrderDate = DateTime.Now,
                             Status = "Success",
                             TotalAmount = message.Quantity * productSize.Product.Price,
+
                         };
 
-                        await orderRepo.AddAsync(newOrder); 
+                        await orderRepo.AddAsync(newOrder);
 
+                        // Tạo OrderDetail
                         var detail = new OrderDetail
                         {
                             OrderId = newOrder.Id,
@@ -99,6 +103,30 @@ namespace FashionStore.Business.Consumers
                         };
 
                         await orderDetailRepo.AddAsync(detail);
+
+                        try
+                        {
+                            var allCartItems = await cartRepo.GetAllAsync();
+
+                            var itemToDelete = allCartItems.FirstOrDefault(c =>
+                                c.UserId == message.UserId.ToString() &&
+                                c.ProductId == message.ProductId &&
+                                c.SizeId == message.SizeId &&
+                                c.ColorId == message.ColorId
+                            );
+
+                            if (itemToDelete != null)
+                            {
+                                // Xóa sản phẩm khỏi giỏ hàng
+                                await cartRepo.DeleteAsync(itemToDelete.Id);
+                                _logger.LogInformation($"Đã xóa sản phẩm khỏi giỏ hàng: CartItemID {itemToDelete.Id}");
+                            }
+                        }
+                        catch (Exception exCart)
+                        {
+                            // Nếu xóa giỏ hàng lỗi thì log cảnh báo nhưng không rollback đơn hàng
+                            _logger.LogWarning($"Order thành công nhưng lỗi xóa giỏ hàng: {exCart.Message}");
+                        }
 
                         _logger.LogInformation($"The order has been successfully created for User {message.UserId}");
                     }
