@@ -15,7 +15,6 @@ namespace FashionStore.Business.Messaging
         private readonly IConnection _connection;
         private readonly string _queueName;
 
-        // Chỉ nhận Connection đã được tạo sẵn từ bên ngoài vào
         public RabbitMqProducer(IConnection connection, IConfiguration configuration)
         {
             _connection = connection;
@@ -24,7 +23,6 @@ namespace FashionStore.Business.Messaging
 
         public async Task PublishOrderAsync(OrderMessage message)
         {
-            // Code đoạn này của bạn giữ nguyên là tốt rồi
             using var channel = await _connection.CreateChannelAsync();
 
             await channel.QueueDeclareAsync(_queueName, true, false, false, null);
@@ -37,6 +35,5 @@ namespace FashionStore.Business.Messaging
             await channel.BasicPublishAsync("", _queueName, false, properties, body);
         }
 
-        // Không cần Dispose connection ở đây nữa vì nó được quản lý bởi DI Container
     }
 }
