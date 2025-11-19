@@ -23,6 +23,7 @@ namespace FashionStore.Data.DBContext
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<Size> Sizes { get; set; }
         public DbSet<ProductSize> ProductSizes { get; set; }
+        public DbSet<Color> Colors { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -96,7 +97,7 @@ namespace FashionStore.Data.DBContext
                       .IsRequired();
 
                 entity.HasOne(ps => ps.Product)
-                      .WithMany(p => p.ProductSizes)   
+                      .WithMany(p => p.ProductSizes)
                       .HasForeignKey(ps => ps.ProductId)
                       .OnDelete(DeleteBehavior.Cascade);
 
@@ -105,10 +106,15 @@ namespace FashionStore.Data.DBContext
                       .HasForeignKey(ps => ps.SizeId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // nếu muốn 1 product chỉ có 1 record cho mỗi size:
-                entity.HasIndex(ps => new { ps.ProductId, ps.SizeId })
-                      .IsUnique();
+                entity.HasOne(ps => ps.Color)                 
+                      .WithMany(c => c.ProductSizes)
+                      .HasForeignKey(ps => ps.ColorId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(ps => new { ps.ProductId, ps.SizeId, ps.ColorId })
+                      .IsUnique();   
             });
+
 
             // --- OrderDetail ---
             builder.Entity<OrderDetail>(entity =>
@@ -126,11 +132,15 @@ namespace FashionStore.Data.DBContext
                       .WithMany(p => p.OrderDetails)
                       .HasForeignKey(od => od.ProductId);
 
-                // mỗi OrderDetail gắn với 1 Size
                 entity.HasOne(od => od.Size)
                       .WithMany()                    
                       .HasForeignKey(od => od.SizeId);
+
+                entity.HasOne(od => od.Color)        
+                      .WithMany()
+                      .HasForeignKey(od => od.ColorId);
             });
+
 
             // --- Feedback ---
             builder.Entity<Feedback>(entity =>
@@ -145,6 +155,16 @@ namespace FashionStore.Data.DBContext
                       .WithMany(p => p.Feedbacks)
                       .HasForeignKey(f => f.ProductId);
             });
+
+            // --- Color ---
+            builder.Entity<Color>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name)
+                      .IsRequired()
+                      .HasMaxLength(50);
+            });
+
         }
 
     }
