@@ -14,9 +14,6 @@ namespace FashionStore.Data.Models
         public decimal TotalAmount { get; set; }
         public string Status { get; set; }              // Pending, Cancelled
 
-        public string ReceiverName { get; set; }        // Tên người nhận
-        public string ReceiverAddress { get; set; }     // Địa chỉ nhận
-        public string ReceiverPhone { get; set; }       // SĐT liên hệ
 
         // Foreign Key
         public AppUser? User { get; set; }
