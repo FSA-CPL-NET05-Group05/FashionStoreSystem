@@ -7,9 +7,11 @@ namespace FashionStore.WebAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private readonly ILogger _logger;
+
         public AuthController(ILogger logger)
         {
-            
+            _logger = logger;
         }
     }
 }
