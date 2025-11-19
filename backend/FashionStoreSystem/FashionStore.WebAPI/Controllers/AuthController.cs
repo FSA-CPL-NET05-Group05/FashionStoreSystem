@@ -7,5 +7,9 @@ namespace FashionStore.WebAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        public AuthController()
+        {
+            
+        }
     }
 }
