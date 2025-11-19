@@ -22,4 +22,8 @@
     <ProjectReference Include="..\FashionStore.Business\FashionStore.Business.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
 </Project>
