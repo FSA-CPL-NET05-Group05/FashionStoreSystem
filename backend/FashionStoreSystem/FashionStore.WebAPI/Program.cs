@@ -1,4 +1,8 @@
-﻿using FashionStore.Data.Models;
+﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
+using FashionStore.Business.Service.Service.Admin;
+using FashionStore.Data.Interfaces.Interfaces.Admin;
+using FashionStore.Data.Models;
+using FashionStore.Data.Repositories.Repositories.Admin;
 using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,6 +71,16 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader());
 });
 
+
+// AddScopeTuanAnh
+builder.Services.AddScoped<IManagerAccountService, ManagerAccountService>();
+builder.Services.AddScoped<IManagerAccountRepository, ManagerAccountRepository>();
+
+
+
+
+
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -89,6 +103,10 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "Find the error when run the seed data.");
     }
 }
+
+
+
+
 
 // Configure the HTTP request pipeline.
 

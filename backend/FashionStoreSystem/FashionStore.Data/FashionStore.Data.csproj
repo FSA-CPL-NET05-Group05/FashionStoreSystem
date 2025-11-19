@@ -12,9 +12,4 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.22" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interfaces\Interfaces.Admin\" />
-    <Folder Include="Repositories\Repositories.Admin\" />
-  </ItemGroup>
-
 </Project>
