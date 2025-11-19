@@ -84,7 +84,13 @@ builder.Services.AddSingleton<IConnection>(sp =>
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
 
-builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
+
+builder.Services.AddHostedService<OrderConsumer>();
 
 var app = builder.Build();
 

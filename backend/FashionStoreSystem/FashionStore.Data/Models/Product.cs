@@ -13,7 +13,6 @@ namespace FashionStore.Data.Models
         public string Description { get; set; }
         public decimal Price { get; set; }
         public string ImageUrl { get; set; }                // Lưu đường dẫn ảnh
-        public int Stock { get; set; }                      // Số lượng tồn kho
         public int CategoryId { get; set; }
 
         // Foreign Key
