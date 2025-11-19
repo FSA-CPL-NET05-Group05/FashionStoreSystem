@@ -1,5 +1,8 @@
-﻿using FashionStore.Data.Models;
+﻿using FashionStore.Business.Interfaces;
+using FashionStore.Business.Messaging;
+using FashionStore.Data.Models;
 using Microsoft.AspNetCore.Identity;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,6 +69,22 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyHeader());
 });
+
+// Dùng Singleton vì chỉ cần tạo 1 kết nối cho toàn bộ ứng dụng
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var factory = new ConnectionFactory
+    {
+        HostName = config["RabbitMq:HostName"],
+        UserName = config["RabbitMq:UserName"],
+        Password = config["RabbitMq:Password"]
+    };
+
+    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+});
+
+builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
 
 var app = builder.Build();
 
