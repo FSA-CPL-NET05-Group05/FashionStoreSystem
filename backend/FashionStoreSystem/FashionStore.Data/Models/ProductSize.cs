@@ -16,6 +16,9 @@ namespace FashionStore.Data.Models
         public int SizeId { get; set; }
         public Size Size { get; set; }
 
+        public int ColorId { get; set; }     
+        public Color Color { get; set; }
+
         public int Stock { get; set; }
     }
 }

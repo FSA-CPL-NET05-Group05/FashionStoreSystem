@@ -14,11 +14,12 @@ namespace FashionStore.Data.Models
         public int Quantity { get; set; }
         public decimal Price { get; set; }
         public int SizeId { get; set; }
-        // Lưu giá tại thời điểm mua (đề phòng giá SP đổi sau này)
+        public int ColorId { get; set; }
 
         // Foreign Key
         public Order Order { get; set; }
         public Product Product { get; set; }
         public Size Size { get; set; }
+        public Color Color { get; set; }
     }
 }
