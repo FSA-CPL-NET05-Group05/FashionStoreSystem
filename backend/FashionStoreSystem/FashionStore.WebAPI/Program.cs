@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 ﻿using FashionStore.Business.Interfaces.Interfaces.Login;
 using FashionStore.Business.Service.LoginService;
 using FashionStore.Data.DBContext;
@@ -9,9 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-=======
-﻿
->>>>>>> f0a166922a1e0b713efecad825773f64971cf446
+
 
 var builder = WebApplication.CreateBuilder(args);
 
