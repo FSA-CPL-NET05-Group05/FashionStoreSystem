@@ -1,4 +1,5 @@
 ﻿using FashionStore.Data.Models;
+using FashionStore.Shared.Shared.Admin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,10 @@ namespace FashionStore.Data.Interfaces.Interfaces.Admin
     public interface IManagerAccountRepository
     {
 
-        
+
+        // Thêm method paging mới
+        Task<(List<AppUser> Items, int TotalCount)> GetPagedAsync(AccountQueryParameters parameters,CancellationToken ct = default);
+
         Task<List<AppUser>> GetAllAsync(CancellationToken ct = default);  // CancellationToken tín hiệu hủy tác vụ
         Task<AppUser?> GetByIdAsync(Guid id, CancellationToken ct = default);
         Task<bool> LockUserAsync(Guid id, CancellationToken ct = default);

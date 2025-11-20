@@ -1,6 +1,7 @@
 ﻿using FashionStore.Data.DBContext;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Models;
+using FashionStore.Shared.Shared.Admin;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -24,7 +25,68 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
         }
 
 
-         // Lấy tất User
+        public async Task<(List<AppUser> Items, int TotalCount)> GetPagedAsync(AccountQueryParameters parameters,CancellationToken ct = default)
+        {
+            var query = _context.Users.AsNoTracking().AsQueryable();
+
+            // 1. SEARCH - Tìm theo username hoặc email
+            if (!string.IsNullOrWhiteSpace(parameters.Search))
+            {
+                var searchLower = parameters.Search.ToLower();
+                query = query.Where(u =>
+                    u.UserName.ToLower().Contains(searchLower) ||
+                    u.Email.ToLower().Contains(searchLower));
+            }
+
+            // 2. FILTER - Lọc theo trạng thái khóa
+            if (parameters.IsLocked.HasValue)
+            {
+                var now = DateTimeOffset.UtcNow;
+                if (parameters.IsLocked.Value)
+                {
+                    // Chỉ lấy user đang bị khóa
+                    query = query.Where(u => u.LockoutEnd.HasValue && u.LockoutEnd.Value > now);
+                }
+                else
+                {
+                    // Chỉ lấy user đang hoạt động
+                    query = query.Where(u => !u.LockoutEnd.HasValue || u.LockoutEnd.Value <= now);
+                }
+            }
+
+            // 3. SORT - Sắp xếp
+            query = parameters.SortBy.ToLower() switch
+            {
+                "email" => parameters.SortOrder.ToLower() == "desc"
+                    ? query.OrderByDescending(u => u.Email)
+                    : query.OrderBy(u => u.Email),
+
+                "createddate" => parameters.SortOrder.ToLower() == "desc"
+                    ? query.OrderByDescending(u => EF.Property<DateTime>(u, "CreatedDate")) 
+                    : query.OrderBy(u => EF.Property<DateTime>(u, "CreatedDate")),
+
+                _ => parameters.SortOrder.ToLower() == "desc"
+                    ? query.OrderByDescending(u => u.UserName)
+                    : query.OrderBy(u => u.UserName)
+            };
+
+            // Đếm tổng số bản ghi
+            var totalCount = await query.CountAsync(ct);
+
+            // 5. PAGING
+            var items = await query
+                .Skip((parameters.Page - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .ToListAsync(ct);
+
+            return (items, totalCount);
+        }
+
+
+
+
+
+        // Lấy tất cả User
         public async Task<List<AppUser>> GetAllAsync(CancellationToken ct = default)
         {
             return await _context.Users.AsNoTracking().ToListAsync(ct);

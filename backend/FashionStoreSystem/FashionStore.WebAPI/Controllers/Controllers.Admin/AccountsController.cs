@@ -1,5 +1,6 @@
 ﻿using FashionStore.Business.Dtos.Dtos.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Admin;
+using FashionStore.Shared.Shared.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -35,7 +36,15 @@ namespace FashionStore.WebAPI.Controllers.Controllers.Admin
         // #endif
         }
 
-        [HttpGet]
+
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] AccountQueryParameters parameters, CancellationToken ct)
+        {
+            var result = await _service.GetPagedAsync(parameters, ct);
+            return Ok(result);
+        }
+
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {
             var list = await _service.GetAllAsync(ct);

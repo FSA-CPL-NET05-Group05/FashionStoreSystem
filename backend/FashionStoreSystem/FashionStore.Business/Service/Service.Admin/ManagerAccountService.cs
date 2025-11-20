@@ -1,8 +1,9 @@
-﻿using FashionStore.Business.Common.Common.Admin;
+﻿
 using FashionStore.Business.Dtos.Dtos.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Models;
+using FashionStore.Shared.Shared.Admin;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
@@ -40,6 +41,27 @@ namespace FashionStore.Business.Service.Service.Admin
                 IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow
             };
         }
+
+
+        // Paging
+        public async Task<PagedResult<AccountDTO>> GetPagedAsync(
+            AccountQueryParameters parameters,
+            CancellationToken ct = default)
+        {
+            var (items, totalCount) = await _repo.GetPagedAsync(parameters, ct);
+
+            var dtos = items.Select(MapToDto).ToList();
+
+            return new PagedResult<AccountDTO>
+            {
+                Items = dtos,
+                TotalCount = totalCount,
+                Page = parameters.Page,
+                PageSize = parameters.PageSize
+            };
+        }
+
+
 
         public async Task<List<AccountDTO>> GetAllAsync(CancellationToken ct = default)
         {
