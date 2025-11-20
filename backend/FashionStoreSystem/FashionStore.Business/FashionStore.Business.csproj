@@ -6,6 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Dtos\NewFolder\**" />
+    <EmbeddedResource Remove="Dtos\NewFolder\**" />
+    <None Remove="Dtos\NewFolder\**" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.21" />
 		<PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
@@ -14,10 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\FashionStore.Data\FashionStore.Data.csproj" />
     <ProjectReference Include="..\Shared\FashionStore.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Dtos\NewFolder\" />
   </ItemGroup>
 
 </Project>
