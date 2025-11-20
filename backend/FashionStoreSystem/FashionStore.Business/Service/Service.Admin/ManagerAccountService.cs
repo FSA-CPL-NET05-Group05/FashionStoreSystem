@@ -44,9 +44,7 @@ namespace FashionStore.Business.Service.Service.Admin
 
 
         // Paging
-        public async Task<PagedResult<AccountDTO>> GetPagedAsync(
-            AccountQueryParameters parameters,
-            CancellationToken ct = default)
+        public async Task<PagedResult<AccountDTO>> GetPagedAsync(AccountQueryParameters parameters,CancellationToken ct = default)
         {
             var (items, totalCount) = await _repo.GetPagedAsync(parameters, ct);
 

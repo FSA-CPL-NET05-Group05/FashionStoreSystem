@@ -86,16 +86,17 @@ builder.Services.AddScoped<IManagerAccountRepository, ManagerAccountRepository>(
 
 
 
-// Dùng Singleton vì chỉ cần tạo 1 kết nối cho toàn bộ ứng dụng
+
+//Dùng Singleton vì chỉ cần tạo 1 kết nối cho toàn bộ ứng dụng
 builder.Services.AddSingleton<IConnection>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    var factory = new ConnectionFactory
-    {
-        HostName = config["RabbitMq:HostName"],
-        UserName = config["RabbitMq:UserName"],
-        Password = config["RabbitMq:Password"]
-    };
+var factory = new ConnectionFactory
+{
+    HostName = config["RabbitMq:HostName"],
+    UserName = config["RabbitMq:UserName"],
+    Password = config["RabbitMq:Password"]
+};
 
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
