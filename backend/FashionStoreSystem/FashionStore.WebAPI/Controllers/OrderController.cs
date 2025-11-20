@@ -20,7 +20,7 @@ namespace FashionStore.WebAPI.Controllers
         public async Task<IActionResult> PlaceOrder([FromBody] CheckoutDto dto)
         {
             await _orderService.PlaceOrderAsync(dto);
-            return Accepted(new { message = "Your order is being processed. Please check your cart." });
+            return Accepted(new { message = "Your order is being processed." });
         }
     }
 }

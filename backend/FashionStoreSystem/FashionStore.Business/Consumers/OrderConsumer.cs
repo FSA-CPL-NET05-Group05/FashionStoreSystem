@@ -115,18 +115,18 @@ namespace FashionStore.Business.Consumers
                         }
                         else
                         {
-                            _logger.LogWarning($"Sản phẩm {item.ProductId} hết hàng.");
+                            _logger.LogWarning($"Product {item.ProductId} out of stock.");
                         }
                     }
                     newOrder.TotalAmount = totalAmount;
                     newOrder.Status = "Success";
                     await orderRepo.UpdateAsync(newOrder);
 
-                    _logger.LogInformation($"Đơn hàng {newOrder.Id} hoàn tất. Tổng tiền: {totalAmount}");
+                    _logger.LogInformation($"Order {newOrder.Id} successfully. Total Price: {totalAmount}");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Lỗi nghiêm trọng khi xử lý đơn hàng");
+                    _logger.LogError(ex, "Serious error while processing order");
                 }
             }
         }
