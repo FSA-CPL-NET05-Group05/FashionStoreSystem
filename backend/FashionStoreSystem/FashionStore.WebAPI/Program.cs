@@ -1,9 +1,13 @@
+
 ﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Business.Service.Service.Admin;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Models;
 using FashionStore.Data.Repositories.Repositories.Admin;
 using Microsoft.AspNetCore.Identity;
+
+﻿
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +76,7 @@ builder.Services.AddCors(options =>
 });
 
 
+
 // AddScopeTuanAnh
 builder.Services.AddScoped<IManagerAccountService, ManagerAccountService>();
 builder.Services.AddScoped<IManagerAccountRepository, ManagerAccountRepository>();
@@ -79,6 +84,30 @@ builder.Services.AddScoped<IManagerAccountRepository, ManagerAccountRepository>(
 
 
 
+
+
+// Dùng Singleton vì chỉ cần tạo 1 kết nối cho toàn bộ ứng dụng
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var factory = new ConnectionFactory
+    {
+        HostName = config["RabbitMq:HostName"],
+        UserName = config["RabbitMq:UserName"],
+        Password = config["RabbitMq:Password"]
+    };
+
+    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+});
+
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
+
+builder.Services.AddHostedService<OrderConsumer>();
 
 
 var app = builder.Build();

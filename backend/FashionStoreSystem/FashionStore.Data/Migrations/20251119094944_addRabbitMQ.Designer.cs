@@ -4,6 +4,7 @@ using FashionStore.Data.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FashionStore.Data.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20251119094944_addRabbitMQ")]
+    partial class addRabbitMQ
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,41 +24,6 @@ namespace FashionStore.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("FashionStore.Data.Models.AccountLockHistory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("PerformedByUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Reason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("TargetUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTimeOffset>("Timestamp")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PerformedByUserId");
-
-                    b.HasIndex("TargetUserId");
-
-                    b.ToTable("AccountLockHistories");
-                });
 
             modelBuilder.Entity("FashionStore.Data.Models.AppUser", b =>
                 {
@@ -175,27 +143,6 @@ namespace FashionStore.Data.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("FashionStore.Data.Models.Color", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Colors");
-                });
-
             modelBuilder.Entity("FashionStore.Data.Models.Feedback", b =>
                 {
                     b.Property<int>("Id")
@@ -241,6 +188,18 @@ namespace FashionStore.Data.Migrations
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ReceiverAddress")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -266,9 +225,6 @@ namespace FashionStore.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ColorId")
-                        .HasColumnType("int");
-
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
@@ -285,8 +241,6 @@ namespace FashionStore.Data.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ColorId");
 
                     b.HasIndex("OrderId");
 
@@ -324,6 +278,9 @@ namespace FashionStore.Data.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("Stock")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -339,9 +296,6 @@ namespace FashionStore.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ColorId")
-                        .HasColumnType("int");
-
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -353,11 +307,9 @@ namespace FashionStore.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ColorId");
-
                     b.HasIndex("SizeId");
 
-                    b.HasIndex("ProductId", "SizeId", "ColorId")
+                    b.HasIndex("ProductId", "SizeId")
                         .IsUnique();
 
                     b.ToTable("ProductSizes");
@@ -514,25 +466,6 @@ namespace FashionStore.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("FashionStore.Data.Models.AccountLockHistory", b =>
-                {
-                    b.HasOne("FashionStore.Data.Models.AppUser", "PerformedByUser")
-                        .WithMany()
-                        .HasForeignKey("PerformedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("FashionStore.Data.Models.AppUser", "TargetUser")
-                        .WithMany()
-                        .HasForeignKey("TargetUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("PerformedByUser");
-
-                    b.Navigation("TargetUser");
-                });
-
             modelBuilder.Entity("FashionStore.Data.Models.CartItem", b =>
                 {
                     b.HasOne("FashionStore.Data.Models.Product", "Product")
@@ -583,12 +516,6 @@ namespace FashionStore.Data.Migrations
 
             modelBuilder.Entity("FashionStore.Data.Models.OrderDetail", b =>
                 {
-                    b.HasOne("FashionStore.Data.Models.Color", "Color")
-                        .WithMany()
-                        .HasForeignKey("ColorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("FashionStore.Data.Models.Order", "Order")
                         .WithMany("OrderDetails")
                         .HasForeignKey("OrderId")
@@ -606,8 +533,6 @@ namespace FashionStore.Data.Migrations
                         .HasForeignKey("SizeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Color");
 
                     b.Navigation("Order");
 
@@ -629,12 +554,6 @@ namespace FashionStore.Data.Migrations
 
             modelBuilder.Entity("FashionStore.Data.Models.ProductSize", b =>
                 {
-                    b.HasOne("FashionStore.Data.Models.Color", "Color")
-                        .WithMany("ProductSizes")
-                        .HasForeignKey("ColorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("FashionStore.Data.Models.Product", "Product")
                         .WithMany("ProductSizes")
                         .HasForeignKey("ProductId")
@@ -646,8 +565,6 @@ namespace FashionStore.Data.Migrations
                         .HasForeignKey("SizeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Color");
 
                     b.Navigation("Product");
 
@@ -717,11 +634,6 @@ namespace FashionStore.Data.Migrations
             modelBuilder.Entity("FashionStore.Data.Models.Category", b =>
                 {
                     b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("FashionStore.Data.Models.Color", b =>
-                {
-                    b.Navigation("ProductSizes");
                 });
 
             modelBuilder.Entity("FashionStore.Data.Models.Order", b =>

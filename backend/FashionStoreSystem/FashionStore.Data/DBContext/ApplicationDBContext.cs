@@ -21,94 +21,146 @@ namespace FashionStore.Data.DBContext
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
+
         public DbSet<AccountLockHistory> AccountLockHistories { get; set; }
+
+
+        public DbSet<Size> Sizes { get; set; }
+        public DbSet<ProductSize> ProductSizes { get; set; }
+        public DbSet<Color> Colors { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-            // --- Cấu hình cho bảng Category ---
+            // --- Category ---
             builder.Entity<Category>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
             });
 
-            // --- Cấu hình cho bảng Product ---
+            // --- Product ---
             builder.Entity<Product>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-                entity.Property(e => e.Price).HasColumnType("decimal(18,2)"); // Định dạng tiền tệ tránh lỗi 
+                entity.Property(e => e.Name)
+                      .IsRequired()
+                      .HasMaxLength(200);
+                entity.Property(e => e.Price)
+                      .HasColumnType("decimal(18,2)");
 
-                // Mối quan hệ 1-N: Một Category có nhiều Product
                 entity.HasOne(p => p.Category)
                       .WithMany(c => c.Products)
                       .HasForeignKey(p => p.CategoryId)
-                      .OnDelete(DeleteBehavior.Restrict); // Xóa Category không xóa Product (để an toàn dữ liệu)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // --- Cấu hình cho bảng CartItem ---
+            // --- CartItem ---
             builder.Entity<CartItem>(entity =>
             {
                 entity.HasKey(e => e.Id);
 
-                // 1 User có nhiều CartItem
                 entity.HasOne(c => c.User)
                       .WithMany(u => u.CartItems)
                       .HasForeignKey(c => c.UserId)
-                      .OnDelete(DeleteBehavior.Cascade); // Xóa User thì xóa luôn Giỏ hàng của họ
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // --- Cấu hình cho bảng Order ---
+            // --- Order ---
             builder.Entity<Order>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.TotalAmount).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.TotalAmount)
+                      .HasColumnType("decimal(18,2)");
 
-                // 1 User có nhiều Order
-                // Vì UserId trong Order cho phép null (Guest), nên mối quan hệ này là Optional
                 entity.HasOne(o => o.User)
                       .WithMany(u => u.Orders)
                       .HasForeignKey(o => o.UserId)
-                      .IsRequired(false) // Cho phép null
-                      .OnDelete(DeleteBehavior.SetNull); // Xóa User thì giữ lại đơn hàng, set UserId = null
+                      .IsRequired(false)
+                      .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // --- Cấu hình cho bảng OrderDetail ---
+            // --- Size ---
+            builder.Entity<Size>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name)
+                      .IsRequired()
+                      .HasMaxLength(20);
+            });
+
+            // --- ProductSize ---
+            builder.Entity<ProductSize>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Stock)
+                      .IsRequired();
+
+                entity.HasOne(ps => ps.Product)
+                      .WithMany(p => p.ProductSizes)
+                      .HasForeignKey(ps => ps.ProductId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(ps => ps.Size)
+                      .WithMany(s => s.ProductSizes)
+                      .HasForeignKey(ps => ps.SizeId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(ps => ps.Color)                 
+                      .WithMany(c => c.ProductSizes)
+                      .HasForeignKey(ps => ps.ColorId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(ps => new { ps.ProductId, ps.SizeId, ps.ColorId })
+                      .IsUnique();   
+            });
+
+
+            // --- OrderDetail ---
             builder.Entity<OrderDetail>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Price)
+                      .HasColumnType("decimal(18,2)");
 
-                // 1 Order có nhiều OrderDetail
                 entity.HasOne(od => od.Order)
                       .WithMany(o => o.OrderDetails)
                       .HasForeignKey(od => od.OrderId)
-                      .OnDelete(DeleteBehavior.Cascade); // Xóa Order thì xóa chi tiết đơn
+                      .OnDelete(DeleteBehavior.Cascade);
 
-                // 1 Product có thể nằm trong nhiều OrderDetail
                 entity.HasOne(od => od.Product)
                       .WithMany(p => p.OrderDetails)
                       .HasForeignKey(od => od.ProductId);
+
+                entity.HasOne(od => od.Size)
+                      .WithMany()                    
+                      .HasForeignKey(od => od.SizeId);
+
+                entity.HasOne(od => od.Color)        
+                      .WithMany()
+                      .HasForeignKey(od => od.ColorId);
             });
 
-            // --- Cấu hình cho bảng Feedback ---
+
+            // --- Feedback ---
             builder.Entity<Feedback>(entity =>
             {
                 entity.HasKey(e => e.Id);
 
-                // 1 User có nhiều Feedback
                 entity.HasOne(f => f.User)
                       .WithMany(u => u.Feedbacks)
                       .HasForeignKey(f => f.UserId);
 
-                // 1 Product có nhiều Feedback
                 entity.HasOne(f => f.Product)
                       .WithMany(p => p.Feedbacks)
                       .HasForeignKey(f => f.ProductId);
             });
+
 
 
             // Cấu hình AccountLockHistory
@@ -133,6 +185,18 @@ namespace FashionStore.Data.DBContext
             });
 
 
+
+            // --- Color ---
+            builder.Entity<Color>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name)
+                      .IsRequired()
+                      .HasMaxLength(50);
+            });
+
+
         }
+
     }
 }

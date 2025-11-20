@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace FashionStore.Data.Models
 {
-    public class Category
+    public class Color
     {
         public int Id { get; set; }
-        public string Name { get; set; }                  
+        public string Name { get; set; }     
+        public string? Code { get; set; }    
 
-        // Foreign Key
-        public ICollection<Product> Products { get; set; }
+        public ICollection<ProductSize> ProductSizes { get; set; }
     }
 }
