@@ -12,7 +12,7 @@ namespace FashionStore.Data.Models
         public string UserId { get; set; }
         public int ProductId { get; set; }
         public string Comment { get; set; }
-        public int Rating { get; set; }                 // 1-5 sao
+        public int Rating { get; set; }                 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         // Foreign Key
