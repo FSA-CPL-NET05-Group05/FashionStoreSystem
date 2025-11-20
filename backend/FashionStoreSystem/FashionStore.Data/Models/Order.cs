@@ -10,9 +10,9 @@ namespace FashionStore.Data.Models
     {
         public int Id { get; set; }
         public DateTime OrderDate { get; set; } = DateTime.Now;
-        public string? UserId { get; set; }             // Null nếu là Guest mua
+        public string? UserId { get; set; }             
         public decimal TotalAmount { get; set; }
-        public string Status { get; set; }              // Pending, Cancelled
+        public string Status { get; set; }              
 
 
         // Foreign Key

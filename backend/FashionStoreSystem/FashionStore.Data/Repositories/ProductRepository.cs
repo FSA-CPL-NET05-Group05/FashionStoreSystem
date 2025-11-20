@@ -20,7 +20,10 @@ namespace FashionStore.Data.Repositories
 
         public async Task<ProductSize?> GetProductSizeAsync(int productId, int colorId, int sizeId)
         {
-            return await _context.ProductSizes.Include(x => x.Product)
+            return await _context.ProductSizes
+                .Include(x => x.Product)
+                .Include(p => p.Size)   
+                .Include(p => p.Color)
                 .FirstOrDefaultAsync(x => x.ProductId == productId && x.ColorId == colorId && x.SizeId == sizeId);
         }
 

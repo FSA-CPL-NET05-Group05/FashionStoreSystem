@@ -14,25 +14,20 @@ namespace FashionStore.Business.Consumers
     public class OrderConsumer : BackgroundService
     {
         private readonly IConnection _connection;
-        private readonly IChannel _channel; 
         private readonly ILogger<OrderConsumer> _logger;
-        private readonly IServiceProvider _serviceProvider; 
+        private readonly IServiceProvider _serviceProvider;
 
         public OrderConsumer(IConnection connection, ILogger<OrderConsumer> logger, IServiceProvider serviceProvider)
         {
             _connection = connection;
             _logger = logger;
             _serviceProvider = serviceProvider;
-
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-
             using var channel = await _connection.CreateChannelAsync();
-
             await channel.QueueDeclareAsync("order_queue", true, false, false, null);
-
             var consumer = new AsyncEventingBasicConsumer(channel);
 
             consumer.ReceivedAsync += async (model, ea) =>
@@ -48,16 +43,11 @@ namespace FashionStore.Business.Consumers
             };
 
             await channel.BasicConsumeAsync("order_queue", true, consumer);
-
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(1000, stoppingToken);
-            }
+            while (!stoppingToken.IsCancellationRequested) await Task.Delay(1000, stoppingToken);
         }
 
         private async Task ProcessOrder(OrderMessage message)
         {
-
             using (var scope = _serviceProvider.CreateScope())
             {
                 var productRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
@@ -67,77 +57,76 @@ namespace FashionStore.Business.Consumers
 
                 try
                 {
-                    var productSize = await productRepo.GetProductSizeAsync(message.ProductId, message.ColorId, message.SizeId);
-
-                    if (productSize == null)
+                    var newOrder = new Order
                     {
-                        _logger.LogError("No suitable product found!");
-                        return;
-                    }
+                        UserId = message.UserId.ToString(),
+                        OrderDate = DateTime.Now,
+                        Status = "Processing",
+                        TotalAmount = 0
 
-                    bool isSuccess = await productRepo.DeductStockAsync(productSize.Id, message.Quantity);
+                    };
 
-                    if (isSuccess)
+                    await orderRepo.AddAsync(newOrder);
+
+                    decimal totalAmount = 0;
+
+
+                    foreach (var item in message.Items)
                     {
-                        // Tạo Order
-                        var newOrder = new Order
+
+                        var productSize = await productRepo.GetProductSizeAsync(item.ProductId, item.ColorId, item.SizeId);
+                        if (productSize == null) continue;
+
+
+                        bool isSuccess = await productRepo.DeductStockAsync(productSize.Id, item.Quantity);
+
+                        if (isSuccess)
                         {
-                            UserId = message.UserId.ToString(),
-                            OrderDate = DateTime.Now,
-                            Status = "Success",
-                            TotalAmount = message.Quantity * productSize.Product.Price,
-
-                        };
-
-                        await orderRepo.AddAsync(newOrder);
-
-                        // Tạo OrderDetail
-                        var detail = new OrderDetail
-                        {
-                            OrderId = newOrder.Id,
-                            ProductId = message.ProductId,
-                            ColorId = message.ColorId,
-                            SizeId = message.SizeId,
-                            Quantity = message.Quantity,
-                            Price = productSize.Product.Price
-                        };
-
-                        await orderDetailRepo.AddAsync(detail);
-
-                        try
-                        {
-                            var allCartItems = await cartRepo.GetAllAsync();
-
-                            var itemToDelete = allCartItems.FirstOrDefault(c =>
-                                c.UserId == message.UserId.ToString() &&
-                                c.ProductId == message.ProductId &&
-                                c.SizeId == message.SizeId &&
-                                c.ColorId == message.ColorId
-                            );
-
-                            if (itemToDelete != null)
+                            var detail = new OrderDetail
                             {
-                                // Xóa sản phẩm khỏi giỏ hàng
-                                await cartRepo.DeleteAsync(itemToDelete.Id);
-                                _logger.LogInformation($"Đã xóa sản phẩm khỏi giỏ hàng: CartItemID {itemToDelete.Id}");
-                            }
-                        }
-                        catch (Exception exCart)
-                        {
-                            // Nếu xóa giỏ hàng lỗi thì log cảnh báo nhưng không rollback đơn hàng
-                            _logger.LogWarning($"Order thành công nhưng lỗi xóa giỏ hàng: {exCart.Message}");
-                        }
+                                OrderId = newOrder.Id,
+                                ProductId = item.ProductId,
+                                ColorId = item.ColorId,
+                                SizeId = item.SizeId,
+                                Quantity = item.Quantity,
+                                Price = productSize.Product.Price
+                            };
+                            await orderDetailRepo.AddAsync(detail);
 
-                        _logger.LogInformation($"The order has been successfully created for User {message.UserId}");
+
+                            totalAmount += (detail.Price * detail.Quantity);
+
+                            try
+                            {
+                                var allCartItems = await cartRepo.GetAllAsync();
+                                var itemToDelete = allCartItems.FirstOrDefault(c =>
+                                    c.UserId == message.UserId.ToString() &&
+                                    c.ProductId == item.ProductId &&
+                                    c.SizeId == item.SizeId &&
+                                    c.ColorId == item.ColorId
+                                );
+                                if (itemToDelete != null)
+                                {
+                                    await cartRepo.DeleteAsync(itemToDelete.Id);
+                                    _logger.LogInformation($"Removed Item {itemToDelete.Id} from cart.");
+                                }
+                            }
+                            catch { }
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Product {item.ProductId} out of stock.");
+                        }
                     }
-                    else
-                    {
-                        _logger.LogWarning($"Out of stock! User {message.UserId} miss purchase.");
-                    }
+                    newOrder.TotalAmount = totalAmount;
+                    newOrder.Status = "Success";
+                    await orderRepo.UpdateAsync(newOrder);
+
+                    _logger.LogInformation($"Order {newOrder.Id} successfully. Total Price: {totalAmount}");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error when processing order");
+                    _logger.LogError(ex, "Serious error while processing order");
                 }
             }
         }

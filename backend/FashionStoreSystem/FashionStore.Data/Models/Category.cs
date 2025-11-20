@@ -9,7 +9,7 @@ namespace FashionStore.Data.Models
     public class Category
     {
         public int Id { get; set; }
-        public string Name { get; set; }                  // Ví dụ: Áo thun, Quần Jean
+        public string Name { get; set; }                  
 
         // Foreign Key
         public ICollection<Product> Products { get; set; }
