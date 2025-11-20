@@ -18,6 +18,11 @@ namespace FashionStore.Data.Interfaces.Interfaces.Admin
         Task<bool> LockUserAsync(Guid id, CancellationToken ct = default);
         Task<bool> UnlockUserAsync(Guid id, CancellationToken ct = default);
 
+        // Thêm method lưu lịch sử
+        Task AddLockHistoryAsync(string targetUserId, string performedByUserId, string action, string? reason, CancellationToken ct = default);
+
+
+
 
     }
 }

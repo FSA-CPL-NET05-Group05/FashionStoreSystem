@@ -1,5 +1,5 @@
 ﻿using FashionStore.Business.Common.Common.Admin;
-using FashionStore.Business.Dtos;
+using FashionStore.Business.Dtos.Dtos.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Models;
@@ -54,7 +54,7 @@ namespace FashionStore.Business.Service.Service.Admin
             return MapToDto(user);
         }
 
-        public async Task<OperationResult> LockUserAsync(Guid targetId, Guid performedById, CancellationToken ct = default)
+        public async Task<OperationResult> LockUserAsync(Guid targetId, Guid performedById, string reason, CancellationToken ct = default)
         {
             if (targetId == performedById)
                 return OperationResult.Fail("Admin cannot lock itself.");
@@ -67,11 +67,14 @@ namespace FashionStore.Business.Service.Service.Admin
             if (!ok)
                 return OperationResult.Fail("Lock failed.");
 
+            // Lưu lịch sử
+            await _repo.AddLockHistoryAsync(targetId.ToString(), performedById.ToString(), "Lock", reason, ct);
+
             return OperationResult.Ok("Account has been locked.");
         }
 
 
-        public async Task<OperationResult> UnlockUserAsync(Guid targetId, Guid performedById, CancellationToken ct = default)
+        public async Task<OperationResult> UnlockUserAsync(Guid targetId, Guid performedById, string reason, CancellationToken ct = default)
         {
             var target = await _userManager.FindByIdAsync(targetId.ToString());
             if (target == null) return OperationResult.Fail("User does not exist.");
@@ -83,6 +86,7 @@ namespace FashionStore.Business.Service.Service.Admin
                 return OperationResult.Fail("Unlock failed.");
             }
 
+            await _repo.AddLockHistoryAsync(targetId.ToString(), performedById.ToString(), "Unlock", reason, ct);
 
             return OperationResult.Ok("Account has been unlocked.");
         }

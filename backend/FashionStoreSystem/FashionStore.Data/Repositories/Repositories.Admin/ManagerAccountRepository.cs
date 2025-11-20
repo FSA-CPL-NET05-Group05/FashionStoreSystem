@@ -58,7 +58,22 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
             return true;
         }
 
+        // Thêm method lưu lịch sử
+        public async Task AddLockHistoryAsync(string targetUserId, string performedByUserId, string action, string? reason, CancellationToken ct = default)
+        {
+            var history = new AccountLockHistory
+            {
+                Id = Guid.NewGuid(),
+                TargetUserId = targetUserId,
+                PerformedByUserId = performedByUserId,
+                Action = action,
+                Reason = reason,
+                Timestamp = DateTimeOffset.UtcNow
+            };
 
+            _context.AccountLockHistories.Add(history);
+            await _context.SaveChangesAsync(ct);
+        }
 
 
 

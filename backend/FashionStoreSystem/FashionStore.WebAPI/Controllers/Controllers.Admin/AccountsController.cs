@@ -1,4 +1,5 @@
-﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
+﻿using FashionStore.Business.Dtos.Dtos.Admin;
+using FashionStore.Business.Interfaces.Interfaces.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -21,10 +22,17 @@ namespace FashionStore.WebAPI.Controllers.Controllers.Admin
             _service = service;
         }
 
-        private Guid GetCurrentUserId()  // Sẽ nhận vào ID của admin đang đăng nhập, là claim 
+        private Guid GetCurrentUserId()
         {
             var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(idClaim, out var id) ? id : Guid.Empty;
+            if (Guid.TryParse(idClaim, out var id)) return id;
+
+         //#if DEBUG
+            // TODO: Remove before production
+            return new Guid("7a6bc4e5-f6af-4fac-9008-2f0060f68eb6");
+         // #else
+           // return Guid.Empty;
+        // #endif
         }
 
         [HttpGet]
@@ -34,44 +42,31 @@ namespace FashionStore.WebAPI.Controllers.Controllers.Admin
             return Ok(list);
         }
 
-
         [HttpPut("{id:guid}/lock")]
-        public async Task<IActionResult> Lock(Guid id, CancellationToken ct)
+        public async Task<IActionResult> Lock(Guid id, [FromBody] LockAccountRequest request, CancellationToken ct)
         {
             var performerId = GetCurrentUserId();
-            if (performerId == Guid.Empty)
-            {
-                
-                performerId = new Guid("4221fd09-2787-43a1-8abd-d72694dc3146");
-                
-            }
+            if (performerId == Guid.Empty) return Forbid();
 
-            var result = await _service.LockUserAsync(id, performerId, ct);
+            var result = await _service.LockUserAsync(id, performerId, request.Reason, ct);
             if (!result.Success) return BadRequest(new { result.Message });
 
-           
             var dto = await _service.GetByIdAsync(id, ct);
             return Ok(new { Message = result.Message, Account = dto });
         }
 
         [HttpPut("{id:guid}/unlock")]
-        public async Task<IActionResult> Unlock(Guid id, CancellationToken ct)
+        public async Task<IActionResult> Unlock(Guid id, [FromBody] UnlockAccountRequest? request, CancellationToken ct)
         {
             var performerId = GetCurrentUserId();
-            if (performerId == Guid.Empty)
-            {
-                
-                performerId = new Guid("4221fd09-2787-43a1-8abd-d72694dc3146");
-                
-            }
+            if (performerId == Guid.Empty) return Forbid();
 
-            var result = await _service.UnlockUserAsync(id, performerId, ct);
+            var result = await _service.UnlockUserAsync(id, performerId, request?.Reason, ct);
             if (!result.Success) return BadRequest(new { result.Message });
 
             var dto = await _service.GetByIdAsync(id, ct);
             return Ok(new { Message = result.Message, Account = dto });
         }
-
 
 
 

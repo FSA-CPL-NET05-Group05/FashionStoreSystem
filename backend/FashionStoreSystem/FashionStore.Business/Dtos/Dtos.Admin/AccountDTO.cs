@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FashionStore.Business.Dtos
+namespace FashionStore.Business.Dtos.Dtos.Admin
 {
     public class AccountDTO
     {
