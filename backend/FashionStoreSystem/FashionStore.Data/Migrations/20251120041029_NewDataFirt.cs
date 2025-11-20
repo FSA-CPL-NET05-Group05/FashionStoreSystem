@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FashionStore.Data.Migrations
 {
     /// <inheritdoc />
-<<<<<<<< HEAD:backend/FashionStoreSystem/FashionStore.Data/Migrations/20251120083910_AddProductList.cs
-    public partial class AddProductList : Migration
-========
+
+    
+
     public partial class NewDataFirt : Migration
->>>>>>>> develop:backend/FashionStoreSystem/FashionStore.Data/Migrations/20251120041029_NewDataFirt.cs
+
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

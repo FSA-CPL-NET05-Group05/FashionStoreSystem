@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 ﻿using FashionStore.Business.Interfaces.Interfaces.Login;
 using FashionStore.Business.Service.LoginService;
 using FashionStore.Data.DBContext;
@@ -9,6 +10,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+
+=======
+﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
+using FashionStore.Business.Service.Service.Admin;
+using FashionStore.Data.Interfaces.Interfaces.Admin;
+using FashionStore.Data.Models;
+using FashionStore.Data.Repositories.Repositories.Admin;
+using Microsoft.AspNetCore.Identity;
+
+﻿
+>>>>>>> develop
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -105,6 +117,17 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader());
 });
 
+
+
+// AddScopeTuanAnh
+builder.Services.AddScoped<IManagerAccountService, ManagerAccountService>();
+builder.Services.AddScoped<IManagerAccountRepository, ManagerAccountRepository>();
+
+
+
+
+
+
 // Dùng Singleton vì chỉ cần tạo 1 kết nối cho toàn bộ ứng dụng
 builder.Services.AddSingleton<IConnection>(sp =>
 {
@@ -128,6 +151,7 @@ builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
 
 builder.Services.AddHostedService<OrderConsumer>();
 
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -150,6 +174,10 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "Find the error when run the seed data.");
     }
 }
+
+
+
+
 
 // Configure the HTTP request pipeline.
 

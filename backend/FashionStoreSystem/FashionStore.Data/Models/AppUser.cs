@@ -12,6 +12,8 @@ namespace FashionStore.Data.Models
         public string? FullName { get; set; }
         public string? Address { get; set; }
 
+       
+
         // Navigation Properties 
         public ICollection<CartItem> CartItems { get; set; }
         public ICollection<Order> Orders { get; set; }
