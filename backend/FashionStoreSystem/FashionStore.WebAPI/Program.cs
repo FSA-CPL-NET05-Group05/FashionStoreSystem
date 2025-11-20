@@ -1,4 +1,17 @@
 
+<<<<<<< HEAD
+﻿using FashionStore.Business.Interfaces.Interfaces.Login;
+using FashionStore.Business.Service.LoginService;
+using FashionStore.Data.DBContext;
+using FashionStore.Data.Interfaces.Interfaces.Login;
+using FashionStore.Data.Models;
+using FashionStore.Data.Repositories.LoginRepository;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+=======
 ﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Business.Service.Service.Admin;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
@@ -7,6 +20,7 @@ using FashionStore.Data.Repositories.Repositories.Admin;
 using Microsoft.AspNetCore.Identity;
 
 ﻿
+>>>>>>> develop
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +29,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddScoped<ILoginServices, LoginService>();
+builder.Services.AddScoped<ILoginRepository, LoginRepository>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 
 builder.Services.AddSwaggerGen(option =>
 {
@@ -66,7 +85,30 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
 })
 .AddEntityFrameworkStores<ApplicationDBContext>()
 .AddDefaultTokenProviders();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
 
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SigningKey"]))
+    };
+});
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
