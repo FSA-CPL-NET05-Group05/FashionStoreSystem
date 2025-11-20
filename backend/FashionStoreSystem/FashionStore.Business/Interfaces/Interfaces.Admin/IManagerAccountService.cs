@@ -1,4 +1,5 @@
-﻿using FashionStore.Business.Dtos;
+﻿using FashionStore.Business.Common.Common.Admin;
+using FashionStore.Business.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,12 @@ namespace FashionStore.Business.Interfaces.Interfaces.Admin
     {
 
         Task<List<AccountDTO>> GetAllAsync(CancellationToken ct = default);
+        Task<AccountDTO?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
         
+        Task<OperationResult> LockUserAsync(Guid targetId, Guid performedById, CancellationToken ct = default);  // performedById: ID của admin thực hiện hành động , targetId: ID của user bị khóa
+        Task<OperationResult> UnlockUserAsync(Guid targetId, Guid performedById, CancellationToken ct = default);
+
 
 
 

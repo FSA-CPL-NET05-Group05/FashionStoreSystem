@@ -14,7 +14,9 @@ namespace FashionStore.Data.Interfaces.Interfaces.Admin
 
         
         Task<List<AppUser>> GetAllAsync(CancellationToken ct = default);  // CancellationToken tín hiệu hủy tác vụ
-        
+        Task<AppUser?> GetByIdAsync(Guid id, CancellationToken ct = default);
+        Task<bool> LockUserAsync(Guid id, CancellationToken ct = default);
+        Task<bool> UnlockUserAsync(Guid id, CancellationToken ct = default);
 
 
     }

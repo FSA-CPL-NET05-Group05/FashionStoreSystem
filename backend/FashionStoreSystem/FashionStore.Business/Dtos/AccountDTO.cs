@@ -20,6 +20,6 @@ namespace FashionStore.Business.Dtos
         // Thời điểm khoá 
         public DateTimeOffset? LockoutEnd { get; set; }
 
-
+        public string Status => IsLocked ? "Locked" : "IsActive";
     }
 }

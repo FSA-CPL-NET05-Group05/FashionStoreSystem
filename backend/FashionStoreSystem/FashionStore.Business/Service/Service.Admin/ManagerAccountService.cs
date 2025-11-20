@@ -1,7 +1,10 @@
-﻿using FashionStore.Business.Dtos;
+﻿using FashionStore.Business.Common.Common.Admin;
+using FashionStore.Business.Dtos;
 using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,14 +18,16 @@ namespace FashionStore.Business.Service.Service.Admin
 
 
         private readonly IManagerAccountRepository _repo;
+        private readonly UserManager<AppUser> _userManager;
+        private const string AdminRole = "Admin";
 
-        public ManagerAccountService(IManagerAccountRepository repo)
+        public ManagerAccountService(IManagerAccountRepository repo, UserManager<AppUser> userManager)
         {
             _repo = repo;
+            _userManager = userManager;
+
         }
 
-
-        // Map thủ công AppUser -> AccountDto để tránh leak fields nhạy cảm
         private AccountDTO MapToDto(AppUser u)
         {
             return new AccountDTO
@@ -30,7 +35,6 @@ namespace FashionStore.Business.Service.Service.Admin
                 Id = u.Id,
                 UserName = u.UserName,
                 Email = u.Email,
-                // Nếu AppUser có FullName property, map trực tiếp; nếu không, set null
                 FullName = (u.GetType().GetProperty("FullName") != null) ? (string?)u.GetType().GetProperty("FullName")!.GetValue(u) : null,
                 LockoutEnd = u.LockoutEnd,
                 IsLocked = u.LockoutEnd.HasValue && u.LockoutEnd.Value > DateTimeOffset.UtcNow
@@ -39,11 +43,49 @@ namespace FashionStore.Business.Service.Service.Admin
 
         public async Task<List<AccountDTO>> GetAllAsync(CancellationToken ct = default)
         {
-            List<AppUser> users = await _repo.GetAllAsync(ct);
-            // Nếu cần paging/filtration, thêm params vào interface và repo
+            var users = await _repo.GetAllAsync(ct);
             return users.Select(MapToDto).ToList();
         }
 
-        
+        public async Task<AccountDTO?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        {
+            var user = await _repo.GetByIdAsync(id, ct);
+            if (user == null) return null;
+            return MapToDto(user);
+        }
+
+        public async Task<OperationResult> LockUserAsync(Guid targetId, Guid performedById, CancellationToken ct = default)
+        {
+            if (targetId == performedById)
+                return OperationResult.Fail("Admin cannot lock itself.");
+
+            var target = await _userManager.FindByIdAsync(targetId.ToString());
+            if (target == null)
+                return OperationResult.Fail("User does not exist.");
+
+            var ok = await _repo.LockUserAsync(targetId, ct);
+            if (!ok)
+                return OperationResult.Fail("Lock failed.");
+
+            return OperationResult.Ok("Account has been locked.");
+        }
+
+
+        public async Task<OperationResult> UnlockUserAsync(Guid targetId, Guid performedById, CancellationToken ct = default)
+        {
+            var target = await _userManager.FindByIdAsync(targetId.ToString());
+            if (target == null) return OperationResult.Fail("User does not exist.");
+
+            var ok = await _repo.UnlockUserAsync(targetId, ct);
+            if (!ok)
+            {
+
+                return OperationResult.Fail("Unlock failed.");
+            }
+
+
+            return OperationResult.Ok("Account has been unlocked.");
+        }
+
     }
 }

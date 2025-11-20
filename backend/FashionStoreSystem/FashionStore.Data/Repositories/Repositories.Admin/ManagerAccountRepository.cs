@@ -30,7 +30,38 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
             return await _context.Users.AsNoTracking().ToListAsync(ct);
         }
 
-        
+
+        public async Task<AppUser?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        {
+            return await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id.ToString(), ct);
+            
+        }
+
+        public async Task<bool> LockUserAsync(Guid id, CancellationToken ct = default)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null) return false;
+
+            await _userManager.SetLockoutEnabledAsync(user, true);
+            // Khóa vĩnh viễn: DateTimeOffset.MaxValue 
+            // hoặc tạm thời: DateTimeOffset.UtcNow.AddDays(30)
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+            return true;
+        }
+
+        public async Task<bool> UnlockUserAsync(Guid id, CancellationToken ct = default)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null) return false;
+
+            await _userManager.SetLockoutEndDateAsync(user, null);
+            return true;
+        }
+
+
+
+
+
     }
 
 }
