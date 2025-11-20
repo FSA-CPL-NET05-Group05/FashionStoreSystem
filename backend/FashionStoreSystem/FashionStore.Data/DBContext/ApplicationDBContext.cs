@@ -21,9 +21,14 @@ namespace FashionStore.Data.DBContext
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
+
+        public DbSet<AccountLockHistory> AccountLockHistories { get; set; }
+
+
         public DbSet<Size> Sizes { get; set; }
         public DbSet<ProductSize> ProductSizes { get; set; }
         public DbSet<Color> Colors { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -156,6 +161,31 @@ namespace FashionStore.Data.DBContext
                       .HasForeignKey(f => f.ProductId);
             });
 
+
+
+            // Cấu hình AccountLockHistory
+            builder.Entity<AccountLockHistory>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Action).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Reason).HasMaxLength(500);
+                entity.Property(e => e.TargetUserId).IsRequired();
+                entity.Property(e => e.PerformedByUserId).IsRequired();
+
+                // Quan hệ với AppUser
+                entity.HasOne(e => e.TargetUser)
+                      .WithMany()
+                      .HasForeignKey(e => e.TargetUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.PerformedByUser)
+                      .WithMany()
+                      .HasForeignKey(e => e.PerformedByUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+
             // --- Color ---
             builder.Entity<Color>(entity =>
             {
@@ -164,6 +194,7 @@ namespace FashionStore.Data.DBContext
                       .IsRequired()
                       .HasMaxLength(50);
             });
+
 
         }
 

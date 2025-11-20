@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FashionStore.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InititalCreated : Migration
+    public partial class NewDataFirt : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -84,6 +84,34 @@ namespace FashionStore.Data.Migrations
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AccountLockHistories",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TargetUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PerformedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Action = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Timestamp = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountLockHistories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AccountLockHistories_AspNetUsers_PerformedByUserId",
+                        column: x => x.PerformedByUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AccountLockHistories_AspNetUsers_TargetUserId",
+                        column: x => x.TargetUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -305,6 +333,16 @@ namespace FashionStore.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_AccountLockHistories_PerformedByUserId",
+                table: "AccountLockHistories",
+                column: "PerformedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountLockHistories_TargetUserId",
+                table: "AccountLockHistories",
+                column: "TargetUserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
                 column: "RoleId");
@@ -387,6 +425,9 @@ namespace FashionStore.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AccountLockHistories");
+
             migrationBuilder.DropTable(
                 name: "AspNetRoleClaims");
 
