@@ -12,13 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FashionStore.Data.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-<<<<<<<< HEAD:backend/FashionStoreSystem/FashionStore.Data/Migrations/20251120083910_AddProductList.Designer.cs
-    [Migration("20251120083910_AddProductList")]
-    partial class AddProductList
-========
-    [Migration("20251120041029_NewDataFirt")]
-    partial class NewDataFirt
->>>>>>>> develop:backend/FashionStoreSystem/FashionStore.Data/Migrations/20251120041029_NewDataFirt.Designer.cs
+    [Migration("20251120161916_InitialCreated")]
+    partial class InitialCreated
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -74,7 +69,6 @@ namespace FashionStore.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -89,7 +83,6 @@ namespace FashionStore.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("FullName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
