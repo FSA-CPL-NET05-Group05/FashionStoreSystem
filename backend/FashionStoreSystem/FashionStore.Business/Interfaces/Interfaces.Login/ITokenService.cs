@@ -9,6 +9,6 @@ namespace FashionStore.Business.Interfaces.Interfaces.Login
 {
     public  interface  ITokenService
     {
-        string CreateToken( AppUser user);
+        Task<string> CreateToken(AppUser user);  // Đổi thành Task<string> để hỗ trợ async
     }
 }

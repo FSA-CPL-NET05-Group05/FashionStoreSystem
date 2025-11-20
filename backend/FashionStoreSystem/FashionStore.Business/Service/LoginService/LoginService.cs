@@ -40,7 +40,7 @@ namespace FashionStore.Business.Service.LoginService
             if (result.Succeeded)
             {
                 // Nếu đăng nhập thành công, tạo token và trả về thông tin người dùng và token
-                var token = _tokenService.CreateToken(user);
+                var token = await _tokenService.CreateToken(user);
                 return new LoginResponseDTO
                 {
                     Username = user.UserName,
