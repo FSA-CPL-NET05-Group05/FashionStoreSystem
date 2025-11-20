@@ -62,11 +62,11 @@ namespace FashionStore.Business.Consumers
                         UserId = message.UserId.ToString(),
                         OrderDate = DateTime.Now,
                         Status = "Processing",
-                        TotalAmount = 0 
+                        TotalAmount = 0
 
                     };
 
-                    await orderRepo.AddAsync(newOrder); 
+                    await orderRepo.AddAsync(newOrder);
 
                     decimal totalAmount = 0;
 
@@ -84,7 +84,7 @@ namespace FashionStore.Business.Consumers
                         {
                             var detail = new OrderDetail
                             {
-                                OrderId = newOrder.Id, 
+                                OrderId = newOrder.Id,
                                 ProductId = item.ProductId,
                                 ColorId = item.ColorId,
                                 SizeId = item.SizeId,
