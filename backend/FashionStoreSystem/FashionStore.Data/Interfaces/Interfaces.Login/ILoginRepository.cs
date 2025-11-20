@@ -11,7 +11,7 @@ namespace FashionStore.Data.Interfaces.Interfaces.Login
     {
         // 1. Tìm user theo Username
         Task<AppUser?> GetByUsernameAsync(string username);
-
+        
         // 2. Kiểm tra mật khẩu có đúng không
         Task<bool> CheckPasswordAsync(AppUser user, string password);
 

@@ -23,7 +23,10 @@ namespace FashionStore.WebApi.Controllers
         {
             // Gọi phương thức LoginAsync từ LoginService
             var response = await _loginService.LoginAsync(loginRequest);
-
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             // Kiểm tra nếu response là null (đăng nhập không thành công)
             if (response == null)
             {
