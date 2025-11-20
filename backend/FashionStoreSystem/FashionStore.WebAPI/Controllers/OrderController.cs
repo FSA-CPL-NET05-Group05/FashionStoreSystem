@@ -17,7 +17,7 @@ namespace FashionStore.WebAPI.Controllers
         }
 
         [HttpPost("place-order")]
-        public async Task<IActionResult> PlaceOrder([FromBody] CreateOrderDto dto)
+        public async Task<IActionResult> PlaceOrder([FromBody] CheckoutDto dto)
         {
             await _orderService.PlaceOrderAsync(dto);
             return Accepted(new { message = "Your order is being processed. Please check your cart." });

@@ -1,8 +1,4 @@
-﻿using FashionStore.Business.Interfaces;
-using FashionStore.Business.Messaging;
-using FashionStore.Data.Models;
-using Microsoft.AspNetCore.Identity;
-using RabbitMQ.Client;
+﻿
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -88,6 +84,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
 
 builder.Services.AddHostedService<OrderConsumer>();

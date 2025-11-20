@@ -9,6 +9,6 @@ namespace FashionStore.Business.Interfaces
 {
     public interface IOrderService
     {
-        Task PlaceOrderAsync(CreateOrderDto dto);
+        Task PlaceOrderAsync(CheckoutDto dto);
     }
 }

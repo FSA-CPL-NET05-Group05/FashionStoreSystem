@@ -9,8 +9,8 @@ namespace FashionStore.Data.Models
     public class Color
     {
         public int Id { get; set; }
-        public string Name { get; set; }     // Ví dụ: Red, Blue, Black
-        public string? Code { get; set; }    // Mã màu
+        public string Name { get; set; }     
+        public string? Code { get; set; }    
 
         public ICollection<ProductSize> ProductSizes { get; set; }
     }
