@@ -202,35 +202,35 @@ namespace FashionStore.Data.DBContext
 
                 if (tShirtCat != null)
                 {
-                    products.Add(new Product { Name = "Áo Thun Basic Cotton", Description = "Áo thun trơn 100% cotton, thấm hút mồ hôi tốt.", Price = 150000, ImageUrl = "https://placehold.co/600x400?text=Basic+Tee", CategoryId = tShirtCat.Id });
-                    products.Add(new Product { Name = "Áo Thun Graphic Streetwear", Description = "Áo thun in hình nghệ thuật, phong cách đường phố.", Price = 220000, ImageUrl = "https://placehold.co/600x400?text=Graphic+Tee", CategoryId = tShirtCat.Id });
-                    products.Add(new Product { Name = "Áo Polo Nam Cổ Bẻ", Description = "Áo Polo lịch sự, phù hợp đi làm và đi chơi.", Price = 250000, ImageUrl = "https://placehold.co/600x400?text=Polo", CategoryId = tShirtCat.Id });
+                    products.Add(new Product { Name = "Áo Thun Basic Cotton", Description = "Áo thun trơn 100% cotton, thấm hút mồ hôi tốt.", Price = 150000, ImageUrl = "https://chodole.com/cdn/shop/products/CDL10_2_1024x1024.jpg?v=1586758482", CategoryId = tShirtCat.Id });
+                    products.Add(new Product { Name = "Áo Thun Graphic Streetwear", Description = "Áo thun in hình nghệ thuật, phong cách đường phố.", Price = 220000, ImageUrl = "https://image.made-in-china.com/202f0j00pzucYePyYbog/Hip-Hop-Streetwear-T-Shirt-Men-Anime-Girl-Car-Graphic-Tees-Shirt-Harajuku-Casual-Cotton-Loose-Tshirt-Summer-Short-Sleeve-Tops.webp", CategoryId = tShirtCat.Id });
+                    products.Add(new Product { Name = "Áo Polo Nam Cổ Bẻ", Description = "Áo Polo lịch sự, phù hợp đi làm và đi chơi.", Price = 250000, ImageUrl = "https://product.hstatic.net/1000369857/product/ao_ab19_xanh_den_1_c691c6dc769d483e860b6a1805be1b6f.jpg", CategoryId = tShirtCat.Id });
                 }
 
                 if (shirtCat != null)
                 {
-                    products.Add(new Product { Name = "Áo Sơ Mi Trắng Công Sở", Description = "Sơ mi trắng form chuẩn, chống nhăn nhẹ.", Price = 350000, ImageUrl = "https://placehold.co/600x400?text=White+Shirt", CategoryId = shirtCat.Id });
-                    products.Add(new Product { Name = "Áo Sơ Mi Flannel Caro", Description = "Sơ mi kẻ caro phong cách vintage.", Price = 320000, ImageUrl = "https://placehold.co/600x400?text=Flannel", CategoryId = shirtCat.Id });
+                    products.Add(new Product { Name = "Áo Sơ Mi Trắng Công Sở", Description = "Sơ mi trắng form chuẩn, chống nhăn nhẹ.", Price = 350000, ImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcToXeJjGZ4RUsHoExIPkfM-r1KEHWjFK8EcMw&s", CategoryId = shirtCat.Id });
+                    products.Add(new Product { Name = "Áo Sơ Mi Flannel Caro", Description = "Sơ mi kẻ caro phong cách vintage.", Price = 320000, ImageUrl = "https://product.hstatic.net/1000253775/product/ao-somi-tay-dai-icondenim-caro-flanel-2-tui-than-truoc__1__07455c4a4aa2461bbe4cead47316dd7e_1024x1024.jpg", CategoryId = shirtCat.Id });
                 }
 
                 if (jeanCat != null)
                 {
-                    products.Add(new Product { Name = "Quần Jean Slim Fit", Description = "Quần jean dáng ôm, co giãn tốt.", Price = 450000, ImageUrl = "https://placehold.co/600x400?text=Slim+Jeans", CategoryId = jeanCat.Id });
-                    products.Add(new Product { Name = "Quần Jean Baggy Ống Rộng", Description = "Quần ống rộng thoải mái, che khuyết điểm.", Price = 480000, ImageUrl = "https://placehold.co/600x400?text=Baggy+Jeans", CategoryId = jeanCat.Id });
-                    products.Add(new Product { Name = "Quần Short Jean Mùa Hè", Description = "Quần short năng động cho ngày hè.", Price = 280000, ImageUrl = "https://placehold.co/600x400?text=Short+Jeans", CategoryId = jeanCat.Id });
+                    products.Add(new Product { Name = "Quần Jean Slim Fit", Description = "Quần jean dáng ôm, co giãn tốt.", Price = 450000, ImageUrl = "https://s3.ap-southeast-1.amazonaws.com/thegmen.vn/2024/4/1714204044656je5i7.jpg", CategoryId = jeanCat.Id });
+                    products.Add(new Product { Name = "Quần Jean Baggy Ống Rộng", Description = "Quần ống rộng thoải mái, che khuyết điểm.", Price = 480000, ImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBtTCTiID4lKsr_Cl74w3KPzPAdudPCtAAog&s", CategoryId = jeanCat.Id });
+                    products.Add(new Product { Name = "Quần Short Jean Mùa Hè", Description = "Quần short năng động cho ngày hè.", Price = 280000, ImageUrl = "https://vn-live-01.slatic.net/p/94ff3f512318a1a3ed63ba6b6363ddd0.jpg", CategoryId = jeanCat.Id });
                 }
 
                 if (dressCat != null)
                 {
-                    products.Add(new Product { Name = "Váy Hoa Nhí Vintage", Description = "Váy hoa nhẹ nhàng, nữ tính.", Price = 390000, ImageUrl = "https://placehold.co/600x400?text=Floral+Dress", CategoryId = dressCat.Id });
-                    products.Add(new Product { Name = "Đầm Dạ Hội Sang Trọng", Description = "Thiết kế xẻ tà, tôn dáng, phù hợp dự tiệc.", Price = 850000, ImageUrl = "https://placehold.co/600x400?text=Party+Dress", CategoryId = dressCat.Id });
+                    products.Add(new Product { Name = "Váy Hoa Nhí Vintage", Description = "Váy hoa nhẹ nhàng, nữ tính.", Price = 390000, ImageUrl = "https://file.hstatic.net/1000317075/file/vay-hoa-nhi__17_.jpeg_1548d391791c4f6cb7383ce0c680d4cd.jpg", CategoryId = dressCat.Id });
+                    products.Add(new Product { Name = "Đầm Dạ Hội Sang Trọng", Description = "Thiết kế xẻ tà, tôn dáng, phù hợp dự tiệc.", Price = 850000, ImageUrl = "https://bizweb.dktcdn.net/100/368/426/products/dam-da-hoi-co-yem-dep.jpg?v=1750250243937", CategoryId = dressCat.Id });
                 }
 
                 if (jacketCat != null)
                 {
-                    products.Add(new Product { Name = "Áo Khoác Denim", Description = "Áo khoác bò bụi bặm, cá tính.", Price = 550000, ImageUrl = "https://placehold.co/600x400?text=Denim+Jacket", CategoryId = jacketCat.Id });
-                    products.Add(new Product { Name = "Áo Hoodie Unisex", Description = "Áo nỉ có mũ form rộng, ấm áp.", Price = 300000, ImageUrl = "https://placehold.co/600x400?text=Hoodie", CategoryId = jacketCat.Id });
-                    products.Add(new Product { Name = "Áo Blazer Hàn Quốc", Description = "Áo khoác blazer thanh lịch, dễ phối đồ.", Price = 650000, ImageUrl = "https://placehold.co/600x400?text=Blazer", CategoryId = jacketCat.Id });
+                    products.Add(new Product { Name = "Áo Khoác Denim", Description = "Áo khoác bò bụi bặm, cá tính.", Price = 550000, ImageUrl = "https://product.hstatic.net/200000370509/product/7491_e8bb8aadee1624af4aa969e527d89b3c_6761a257c0b64a7babea97c14768ba80_76a1292d723a4e8c8002f49999419a21_master.jpg", CategoryId = jacketCat.Id });
+                    products.Add(new Product { Name = "Áo Hoodie Unisex", Description = "Áo nỉ có mũ form rộng, ấm áp.", Price = 300000, ImageUrl = "https://img.lazcdn.com/g/p/5e0e21fc98707c05f10974ef721cc7bd.jpg_720x720q80.jpg", CategoryId = jacketCat.Id });
+                    products.Add(new Product { Name = "Áo Blazer Hàn Quốc", Description = "Áo khoác blazer thanh lịch, dễ phối đồ.", Price = 650000, ImageUrl = "https://img.lazcdn.com/g/p/24c24ff47e1f5e61727e887d5030d32d.jpg_720x720q80.jpg", CategoryId = jacketCat.Id });
                 }
 
                 await context.Products.AddRangeAsync(products);
