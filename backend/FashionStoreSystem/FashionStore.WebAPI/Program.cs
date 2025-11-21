@@ -127,6 +127,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IManagerAccountService, ManagerAccountService>();
 builder.Services.AddScoped<IManagerAccountRepository, ManagerAccountRepository>();
 
+// Product services
+builder.Services.AddScoped<IAdminProductRepository, AdminProductRepository>();
+builder.Services.AddScoped<IAdminProductService, AdminProductService>();
+
+builder.Services.AddScoped<IAdminProductSizeRepository, AdminProductSizeRepository>();
+builder.Services.AddScoped<IAdminProductSizeService, AdminProductSizeService>();
 
 
 
@@ -169,7 +175,6 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        // Gọi hàm Seed từ class tĩnh SeedData
         await SeedData.Seed(services);
     }
     catch (Exception ex)

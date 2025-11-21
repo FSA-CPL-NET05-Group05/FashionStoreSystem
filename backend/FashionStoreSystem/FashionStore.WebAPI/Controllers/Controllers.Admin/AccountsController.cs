@@ -28,12 +28,10 @@ namespace FashionStore.WebAPI.Controllers.Controllers.Admin
             var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (Guid.TryParse(idClaim, out var id)) return id;
 
-         //#if DEBUG
-            // TODO: Remove before production
-            //return new Guid("7a6bc4e5-f6af-4fac-9008-2f0060f68eb6");
             else
-            return Guid.Empty;
-        // #endif
+            {
+                return Guid.Empty;
+            }
         }
 
 

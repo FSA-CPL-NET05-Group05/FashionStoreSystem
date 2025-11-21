@@ -19,4 +19,26 @@ namespace FashionStore.Business.Dtos.Dtos.Admin
             new OperationResult { Success = false, Message = message };
 
     }
+
+    public class OperationResult<T> : OperationResult
+    {
+        public T? Data { get; set; }
+
+        public static OperationResult<T> Ok(string message, T data) =>
+            new OperationResult<T>
+            {
+                Success = true,
+                Message = message,
+                Data = data
+            };
+
+        public new static OperationResult<T> Fail(string message) =>
+            new OperationResult<T>
+            {
+                Success = false,
+                Message = message,
+                Data = default
+            };
+    }
+
 }
