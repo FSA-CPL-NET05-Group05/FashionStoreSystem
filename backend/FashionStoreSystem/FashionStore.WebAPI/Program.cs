@@ -169,7 +169,6 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
-        // Gọi hàm Seed từ class tĩnh SeedData
         await SeedData.Seed(services);
     }
     catch (Exception ex)
