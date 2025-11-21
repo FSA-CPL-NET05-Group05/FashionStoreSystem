@@ -17,6 +17,9 @@
   background: #d4a5a5;
   border-radius: 4px;
 }
+.toast-top-center {
+  top: 5px !important;
+}
 
 .toast-success {
   background-color: #065f46 !important;
