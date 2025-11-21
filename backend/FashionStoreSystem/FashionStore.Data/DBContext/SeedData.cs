@@ -1,5 +1,6 @@
 ﻿using FashionStore.Data.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -13,22 +14,29 @@ namespace FashionStore.Data.DBContext
     {
         public static async Task Seed(IServiceProvider serviceProvider)
         {
-            // Lấy các service cần thiết từ Dependency Injection container
+
             var userManager = serviceProvider.GetRequiredService<UserManager<AppUser>>();
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var context = serviceProvider.GetRequiredService<ApplicationDBContext>();
 
-            // Đảm bảo database đã được tạo
+
             context.Database.EnsureCreated();
 
-            // 1. Seed Roles (Admin & Customer)
             await SeedRoles(roleManager);
 
-            // 2. Seed Admin User
             await SeedAdmin(userManager);
 
-            // 3. Seed Customer Users
             await SeedCustomers(userManager);
+
+            await SeedCategories(context);
+
+            await SeedColors(context);
+
+            await SeedSizes(context);
+
+            await SeedProducts(context);
+
+            await SeedProductSizes(context);
         }
 
         private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
@@ -37,7 +45,6 @@ namespace FashionStore.Data.DBContext
 
             foreach (var roleName in roleNames)
             {
-                // Kiểm tra xem Role đã tồn tại chưa, nếu chưa thì tạo mới
                 if (!await roleManager.RoleExistsAsync(roleName))
                 {
                     await roleManager.CreateAsync(new IdentityRole(roleName));
@@ -52,7 +59,6 @@ namespace FashionStore.Data.DBContext
             var adminFullName = "System Administrator";
             var adminAddress = "Vietnam, Hanoi";
 
-            // Kiểm tra xem admin đã tồn tại chưa
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
             if (adminUser == null)
             {
@@ -65,24 +71,20 @@ namespace FashionStore.Data.DBContext
                     Address = adminAddress
                 };
 
-                // Tạo user với mật khẩu mạnh (Identity yêu cầu mật khẩu mạnh: Chữ hoa, thường, số, ký tự đặc biệt)
                 var result = await userManager.CreateAsync(newAdmin, "Admin@123");
 
                 if (result.Succeeded)
                 {
-                    // Gán quyền Admin
                     await userManager.AddToRoleAsync(newAdmin, "Admin");
                 }
             }
             else
             {
-                // Cập nhật thông tin admin nếu thay đổi
                 adminUser.UserName = adminUserName;
                 adminUser.FullName = adminFullName;
                 adminUser.Address = adminAddress;
                 await userManager.UpdateAsync(adminUser);
 
-                // Đảm bảo vẫn giữ quyền Admin (tránh bị mất quyền)
                 if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
                 {
                     await userManager.AddToRoleAsync(adminUser, "Admin");
@@ -112,18 +114,16 @@ namespace FashionStore.Data.DBContext
                         Address = customerAddress
                     };
 
-                    // Tạo user customer với mật khẩu mạnh
                     var result = await userManager.CreateAsync(newCustomer, "Customer@123");
 
                     if (result.Succeeded)
                     {
-                        // Gán quyền Customer
                         await userManager.AddToRoleAsync(newCustomer, "Customer");
                     }
                 }
                 else
                 {
-                    // Cập nhật thông tin customer nếu thay đổi
+
                     existingCustomer.FullName = customerFullName;
                     existingCustomer.Address = customerAddress;
 
@@ -134,6 +134,137 @@ namespace FashionStore.Data.DBContext
                         await userManager.AddToRoleAsync(existingCustomer, "Customer");
                     }
                 }    
+            }
+        }
+
+        private static async Task SeedCategories(ApplicationDBContext context)
+        {
+            if (!context.Categories.Any())
+            {
+                var categories = new List<Category>
+                {
+                    new Category { Name = "Áo Thun (T-Shirt)" },
+                    new Category { Name = "Áo Sơ Mi (Shirt)" },
+                    new Category { Name = "Quần Jean (Jeans)" },
+                    new Category { Name = "Váy (Dress)" },
+                    new Category { Name = "Áo Khoác (Jacket)" }
+                };
+                await context.Categories.AddRangeAsync(categories);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        private static async Task SeedColors(ApplicationDBContext context)
+        {
+            if (!context.Colors.Any())
+            {
+                var colors = new List<Color>
+                {
+                    new Color { Name = "Đen", Code = "#000000" },
+                    new Color { Name = "Trắng", Code = "#FFFFFF" },
+                    new Color { Name = "Xám", Code = "#808080" }
+                };
+                await context.Colors.AddRangeAsync(colors);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        private static async Task SeedSizes(ApplicationDBContext context)
+        {
+            if (!context.Sizes.Any())
+            {
+                var sizes = new List<Size>
+                {
+                    new Size { Name = "S" },
+                    new Size { Name = "M" },
+                    new Size { Name = "L" },
+                    new Size { Name = "XL" }
+                };
+                await context.Sizes.AddRangeAsync(sizes);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        private static async Task SeedProducts(ApplicationDBContext context)
+        {
+            if (!context.Products.Any())
+            {
+
+                var aoThunCat = await context.Categories.FirstOrDefaultAsync(c => c.Name.Contains("Áo Thun"));
+                var quanJeanCat = await context.Categories.FirstOrDefaultAsync(c => c.Name.Contains("Quần Jean"));
+
+                var products = new List<Product>();
+
+                if (aoThunCat != null)
+                {
+                    products.Add(new Product
+                    {
+                        Name = "Áo Thun Basic Cotton",
+                        Description = "Áo thun chất liệu 100% cotton thoáng mát",
+                        Price = 150000,
+                        ImageUrl = "https://placehold.co/600x400?text=T-Shirt", 
+                        CategoryId = aoThunCat.Id
+                    });
+                    products.Add(new Product
+                    {
+                        Name = "Áo Thun Graphic In Hình",
+                        Description = "Áo thun in hình nghệ thuật phong cách đường phố",
+                        Price = 200000,
+                        ImageUrl = "https://placehold.co/600x400?text=Graphic+Tee",
+                        CategoryId = aoThunCat.Id
+                    });
+                }
+
+                if (quanJeanCat != null)
+                {
+                    products.Add(new Product
+                    {
+                        Name = "Quần Jean Slim Fit",
+                        Description = "Quần bò dáng ôm, co giãn nhẹ",
+                        Price = 450000,
+                        ImageUrl = "https://placehold.co/600x400?text=Jeans",
+                        CategoryId = quanJeanCat.Id
+                    });
+                }
+
+                await context.Products.AddRangeAsync(products);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        private static async Task SeedProductSizes(ApplicationDBContext context)
+        {
+            if (!context.ProductSizes.Any())
+            {
+                var products = await context.Products.ToListAsync();
+                var colors = await context.Colors.ToListAsync();
+                var sizes = await context.Sizes.ToListAsync();
+
+                if (!products.Any() || !colors.Any() || !sizes.Any()) return;
+
+                var productSizes = new List<ProductSize>();
+                var random = new Random();
+
+                foreach (var product in products)
+                {
+                    foreach (var color in colors)
+                    {
+                        foreach (var size in sizes)
+                        {
+  
+                            productSizes.Add(new ProductSize
+                            {
+                                ProductId = product.Id,
+                                ColorId = color.Id,
+                                SizeId = size.Id,
+                                Stock = random.Next(20, 100) 
+                            });
+                        }
+                    }
+                }
+
+                await context.ProductSizes.AddRangeAsync(productSizes);
+                await context.SaveChangesAsync();
             }
         }
     }
