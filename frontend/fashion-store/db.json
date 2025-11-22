@@ -192,6 +192,67 @@
         "https://imgs.search.brave.com/0Y6NH-kjwXL6nIEbvj9HEiCEvp4LXkgA359VxOs_Xhs/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9wb3Mu/bnZuY2RuLmNvbS9m/YTI0MzEtMjI4Ni9w/cy8yMDI0MTExOF93/MUM5R2ZaOVVGLmpw/ZWc_dj0xNzMxOTE1/OTAx"
       ],
       "id": 8
+    },
+    {
+      "id": 9,
+      "name": "Floral Midi Skirt",
+      "description": "Soft flowing midi skirt with floral print. Perfect for spring and summer days.",
+      "price": 89,
+      "imageUrl": "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=800",
+        "https://images.unsplash.com/photo-1520975913451-30f0e2f9ef7b?w=800",
+        "https://images.unsplash.com/photo-1514996937319-344454492b37?w=800"
+      ],
+      "categoryId": 5
+    },
+    {
+      "id": 10,
+      "name": "Long-Sleeve Plunge Wrap Mini Dress",
+      "description": "Flattering long-sleeve mini dress in our soft woven fabric, featuring a plunging V-neckline and a ruffled skirt with a functional wrap tie. Imported.",
+      "price": 129,
+      "imageUrl": "https://img.abercrombie.com/is/image/anf/KIC_159-6295-00811-450_model1?policy=product-medium",
+      "images": [
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6295-00811-450_model4?policy=product-medium",
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6295-00811-450_model3?policy=product-medium"
+      ],
+      "categoryId": 2
+    },
+    {
+      "id": 11,
+      "name": "Denim Jacket",
+      "description": "Classic blue denim jacket with button closure. Versatile and timeless.",
+      "price": 159,
+      "imageUrl": "https://imgs.search.brave.com/QfufBvFHKq-SQmnRoZZQRmP58z7xqX_gyhrJfNr2hzk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NzEzREcrSmlKVkwu/anBn",
+      "images": [
+        "https://imgs.search.brave.com/Hz21WANiVyoT3Gybd3-vVuCnGTovJ71Xuk0d3EIadHA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMudXJibmRhdGEu/Y29tL2lzL2ltYWdl/L0ZyZWVQZW9wbGUv/NjgzNDk3NDVfMDQ5/X2Q_JGNhdC10aWxl/LXByZXNldCQ",
+        "https://imgs.search.brave.com/-AGeh6qVcCveKXKkTKfrwXgNNhNtPJmSQMFeJ-S18jE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5jbm4uY29tL2Fw/aS92MS9pbWFnZXMv/c3RlbGxhci9wcm9k/L2Nwdy1kZW5pbS1q/YWNrZXQuanBnP2M9/MTZ4OSZxPWhfNzIw/LHdfMTI4MCxjX2Zp/bGw"
+      ],
+      "categoryId": 2
+    },
+    {
+      "id": 12,
+      "name": "Cotton T-Shirt",
+      "description": "Basic cotton t-shirt with soft touch. Comfortable for everyday wear.",
+      "price": 29,
+      "imageUrl": "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800",
+        "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=800"
+      ],
+      "categoryId": 1
+    },
+    {
+      "id": 13,
+      "name": "Long-Sleeve Cardigan Mini Sweater Dress",
+      "description": "Easy-fitting long-sleeve mini dress in our soft sweater-knit fabric, featuring classic stitching details throughout, button-up front and banded hem and cuffs. Imported",
+      "price": 100,
+      "imageUrl": "https://img.abercrombie.com/is/image/anf/KIC_159-6289-00745-907_model1?policy=product-medium",
+      "images": [
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6289-00745-907_model4?policy=product-medium",
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6289-00745-907_model6?policy=product-medium"
+      ],
+      "categoryId": 2
     }
   ],
   "productSizes": [
