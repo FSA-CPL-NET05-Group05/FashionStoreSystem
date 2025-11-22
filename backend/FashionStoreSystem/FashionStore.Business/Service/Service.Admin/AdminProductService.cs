@@ -34,13 +34,26 @@ namespace FashionStore.Business.Service.Service.Admin
                 ImageUrl = p.ImageUrl,
                 CategoryId = p.CategoryId,
                 CategoryName = p.Category?.Name,
-                TotalStock = p.ProductSizes?.Sum(ps => ps.Stock) ?? 0
+                TotalStock = p.ProductSizes?.Sum(ps => ps.Stock) ?? 0,
+
+                // Thêm để map dữ liệu có được để xem chi tiết
+
+                Variants = p.ProductSizes?.Select(ps => new ProductVariantDTO
+                {
+                    Id = ps.Id,
+                    SizeId = ps.SizeId,
+                    SizeName = ps.Size?.Name ?? "",
+                    ColorId = ps.ColorId,
+                    ColorName = ps.Color?.Name ?? "",
+                    Stock = ps.Stock
+                }).ToList() ?? new()
+
+
+
             };
         }
 
-        public async Task<PagedResult<AdminProductDTO>> GetPagedAsync(
-            ProductQueryParameters parameters,
-            CancellationToken ct = default)
+        public async Task<PagedResult<AdminProductDTO>> GetPagedAsync(ProductQueryParameters parameters,CancellationToken ct = default)
         {
             var (items, totalCount) = await _repo.GetPagedAsync(parameters, ct);
             var dtos = items.Select(MapToDto).ToList();

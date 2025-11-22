@@ -1,5 +1,6 @@
 ﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Shared.Shared.Admin.Product;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FashionStore.WebAPI.Controllers.Controllers.Admin
@@ -42,7 +43,7 @@ namespace FashionStore.WebAPI.Controllers.Controllers.Admin
         /// Tạo sản phẩm mới
        
         [HttpPost]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateProductRequest request, CancellationToken ct)
         {
             var result = await _service.CreateAsync(request, ct);
@@ -55,7 +56,7 @@ namespace FashionStore.WebAPI.Controllers.Controllers.Admin
         /// Cập nhật sản phẩm
         
         [HttpPut("{id:int}")]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateProductRequest request, CancellationToken ct)
         {
             var result = await _service.UpdateAsync(id, request, ct);

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FashionStore.Data.Repositories.Repositories.Admin
 {
-   public class AdminProductRepository : IAdminProductRepository
+    public class AdminProductRepository : IAdminProductRepository
     {
 
         private readonly ApplicationDBContext _context;
@@ -20,15 +20,24 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
             _context = context;
         }
 
-        public async Task<(List<Models.Product> Items, int TotalCount)> GetPagedAsync(
-            ProductQueryParameters parameters,
-            CancellationToken ct = default)
+        public async Task<(List<Models.Product> Items, int TotalCount)> GetPagedAsync(ProductQueryParameters parameters, CancellationToken ct = default)
         {
+            //var query = _context.Products
+            //    .Include(p => p.Category)
+            //    .Include(p => p.ProductSizes) 
+            //    .AsNoTracking()
+            //    .AsQueryable();
+
             var query = _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.ProductSizes) // Để tính TotalStock
-                .AsNoTracking()
-                .AsQueryable();
+                        .Include(p => p.Category)
+                        .Include(p => p.ProductSizes)        
+                        .ThenInclude(ps => ps.Size)       
+                        .Include(p => p.ProductSizes)       
+                        .ThenInclude(ps => ps.Color)     
+                        .AsNoTracking()
+                        .AsQueryable();
+
+
 
             // 1. SEARCH - Tìm theo tên sản phẩm
             if (!string.IsNullOrWhiteSpace(parameters.Search))
@@ -55,8 +64,8 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
                     : query.OrderBy(p => p.Category.Name),
 
                 _ => parameters.SortOrder.ToLower() == "desc"
-                    ? query.OrderByDescending(p => p.Name)
-                    : query.OrderBy(p => p.Name)
+                    ? query.OrderByDescending(p => p.Id)
+                    : query.OrderBy(p => p.Id)
             };
 
             // 4. COUNT

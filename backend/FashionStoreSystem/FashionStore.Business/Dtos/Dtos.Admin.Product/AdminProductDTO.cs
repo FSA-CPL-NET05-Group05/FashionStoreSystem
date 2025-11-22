@@ -20,6 +20,22 @@ namespace FashionStore.Business.Dtos.Dtos.Admin.Product
         // Tổng số stock trong kho (tính từ ProductSizes)
         public int TotalStock { get; set; }
 
-
+        // Để biết chi tiết trong kho gồn có size , số lượng từng product
+        public List<ProductVariantDTO> Variants { get; set; } = new();
     }
+
+    public class ProductVariantDTO
+    {
+        public int Id { get; set; } // ProductSizeId
+        public int SizeId { get; set; }
+        public string SizeName { get; set; } = string.Empty; // "S", "M", "L", "XL"
+        public int ColorId { get; set; }
+        public string ColorName { get; set; } = string.Empty; // "Red", "Blue", "Black"
+        public int Stock { get; set; }
+    }
+
+
+
+
+
 }
