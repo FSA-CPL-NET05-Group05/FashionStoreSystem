@@ -7,16 +7,11 @@ using System.Threading.Tasks;
 
 namespace FashionStore.Business.Dtos
 {
-    public class AddToCartDto
+    public class CheckoutItemDto
     {
-        public string? UserId { get; set; }
-        [Required]
         public int ProductId { get; set; }
-        [Required]
         public int SizeId { get; set; }
-        [Required]
         public int ColorId { get; set; }
-        [Required]
-        public int Quantity { get; set; }  
+        public int Quantity { get; set; }
     }
 }

@@ -29,18 +29,12 @@ namespace FashionStore.Data.Repositories
 
         public async Task<bool> DeductStockAsync(int productSizeId, int quantity)
         {
-            var productSize = await _context.ProductSizes.FindAsync(productSizeId);
 
-            if (productSize == null || productSize.Stock < quantity)
-            {
-                return false; 
-            }
+            int rowsAffected = await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"UPDATE ProductSizes SET Stock = Stock - {quantity} WHERE Id = {productSizeId} AND Stock >= {quantity}"
+            );
 
-            productSize.Stock -= quantity; 
-            _context.ProductSizes.Update(productSize);
-
-            await _context.SaveChangesAsync();
-            return true;
+            return rowsAffected > 0;
         }
     }
 }
