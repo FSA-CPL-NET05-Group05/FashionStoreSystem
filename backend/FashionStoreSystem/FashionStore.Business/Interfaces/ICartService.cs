@@ -13,5 +13,6 @@ namespace FashionStore.Business.Interfaces
         Task<bool> AddToCartAsync(AddToCartDto dto);
         Task<IEnumerable<CartDto>> GetMyCartAsync(string userId);
         Task<bool> RemoveFromCartAsync(int cartItemId);
+        Task<bool> UpdateCartItemQuantityAsync(UpdateCartItemDto dto);
     }
 }
