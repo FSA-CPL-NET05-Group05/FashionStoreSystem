@@ -111,6 +111,92 @@
       </div>
       }
     </div>
+
+    <!-- Pagination -->
+    @if (getTotalPages() > 1) {
+    <div class="flex items-center justify-center gap-2">
+      <button
+        (click)="previousPage()"
+        [disabled]="currentPage === 1"
+        [class.opacity-50]="currentPage === 1"
+        [class.cursor-not-allowed]="currentPage === 1"
+        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      </button>
+
+      @for (page of getPageNumbers(); track page) {
+      <button
+        (click)="goToPage(page)"
+        [class.bg-rose-600]="page === currentPage"
+        [class.text-white]="page === currentPage"
+        [class.bg-white]="page !== currentPage"
+        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-rose-100 transition-colors font-medium"
+      >
+        {{ page }}
+      </button>
+      }
+
+      <button
+        (click)="nextPage()"
+        [disabled]="currentPage === getTotalPages()"
+        [class.opacity-50]="currentPage === getTotalPages()"
+        [class.cursor-not-allowed]="currentPage === getTotalPages()"
+        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </button>
+    </div>
+    } } @else {
+    <div class="text-center py-12">
+      <svg
+        class="w-16 h-16 mx-auto text-gray-300 mb-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+        />
+      </svg>
+      <h2 class="text-xl font-bold text-gray-800 mb-2">No products found</h2>
+      <p class="text-sm text-gray-600 mb-4">
+        Try adjusting your filters or search terms
+      </p>
+      <button
+        (click)="clearFilters()"
+        class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-full text-sm font-semibold"
+      >
+        Clear All Filters
+      </button>
+    </div>
     }
   </div>
 </div>

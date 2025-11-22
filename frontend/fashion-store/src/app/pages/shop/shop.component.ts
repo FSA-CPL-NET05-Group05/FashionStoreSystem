@@ -20,7 +20,7 @@ export class ShopComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 12;
+  itemsPerPage = 8;
 
   productService = inject(ProductService);
 
@@ -89,5 +89,37 @@ export class ShopComponent implements OnInit {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
     return this.filteredProducts.slice(startIndex, endIndex);
+  }
+
+  getTotalPages() {
+    return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+  }
+
+  previousPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  getPageNumbers() {
+    const total = this.getTotalPages();
+    const pages = [];
+    for (let i = 1; i <= total; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  goToPage(page: number) {
+    this.currentPage = page;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  nextPage() {
+    if (this.currentPage < this.getTotalPages()) {
+      this.currentPage++;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 }
