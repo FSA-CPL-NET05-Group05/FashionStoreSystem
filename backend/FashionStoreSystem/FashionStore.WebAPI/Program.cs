@@ -1,27 +1,28 @@
 
 
 using FashionStore.Business.Interfaces.Interfaces.Admin;
+﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
+using FashionStore.Business.Interfaces.Interfaces.Customer;
 using FashionStore.Business.Interfaces.Interfaces.Login;
 using FashionStore.Business.Service.LoginService;
 using FashionStore.Business.Service.Service.Admin;
+using FashionStore.Business.Service.Service.Admin;
 using FashionStore.Data.DBContext;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
+using FashionStore.Data.Interfaces.Interfaces.Admin;
+using FashionStore.Data.Interfaces.Interfaces.Customer;
 using FashionStore.Data.Interfaces.Interfaces.Login;
+using FashionStore.Data.Models;
 using FashionStore.Data.Models;
 using FashionStore.Data.Repositories.LoginRepository;
 using FashionStore.Data.Repositories.Repositories.Admin;
+using FashionStore.Data.Repositories.Repositories.Admin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-
-﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
-using FashionStore.Business.Service.Service.Admin;
-using FashionStore.Data.Interfaces.Interfaces.Admin;
-using FashionStore.Data.Models;
-using FashionStore.Data.Repositories.Repositories.Admin;
-using Microsoft.AspNetCore.Identity;
 
 ﻿
 
@@ -151,7 +152,9 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICartService, CartService>();
-builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
+builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
+builder.Services.AddScoped<ICustomerProductService, CustomerProductService>();
+builder.Services.AddScoped<ICustomerProductRepository, CustomerProductRepository>();
 
 builder.Services.AddHostedService<OrderConsumer>();
 
