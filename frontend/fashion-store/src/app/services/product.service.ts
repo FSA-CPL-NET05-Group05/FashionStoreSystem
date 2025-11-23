@@ -22,4 +22,18 @@ export class ProductService {
   getCategories(): Observable<Category[]> {
     return this.http.get<Category[]>(`${this.apiUrl}/categories`);
   }
+
+  getProductSizes(productId: number): Observable<any[]> {
+    return this.http.get<any[]>(
+      `${this.apiUrl}/productSizes?productId=${productId}`
+    );
+  }
+
+  getSizes(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/sizes`);
+  }
+
+  getColors(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/colors`);
+  }
 }
