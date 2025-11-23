@@ -31,7 +31,13 @@ namespace FashionStore.API.Controllers
             // Gọi service để lấy danh sách sản phẩm đã phân trang
             var products = await _productService.GetProductsAsync(searchTerm, categoryId, sortOrder, pageNumber, pageSize, ct);
 
-            
+            // Kiểm tra nếu không có sản phẩm nào
+            if (products.Items.Count == 0)
+            {
+                // Trả về thông báo không tìm thấy sản phẩm
+                return NotFound(new { message = "Không tìm thấy sản phẩm nào." });
+            }
+
 
             // Trả về kết quả phân trang sản phẩm dưới dạng 200 OK
             return Ok(products);
