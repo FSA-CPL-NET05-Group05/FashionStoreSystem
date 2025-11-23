@@ -3,10 +3,14 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { StockService } from '../../services/stock.service';
 import { ProductService } from '../../services/product.service';
+import { ToastrService } from 'ngx-toastr';
+import { AuthService } from '../../services/auth.service';
+import { FeedbackService } from '../../services/feedback.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-product-detail',
-  imports: [RouterModule],
+  imports: [RouterModule, FormsModule],
   templateUrl: '../product-detail/product-detail.component.html',
 })
 export class ProductDetailComponent implements OnInit {
@@ -14,12 +18,16 @@ export class ProductDetailComponent implements OnInit {
   selectedImage = '';
   currentStock = 0;
   quantity = 1;
+  canReview = false;
+  hasReviewed = false;
+  showReviewForm = false;
 
   selectedSize: any = null;
   selectedColor: any = null;
 
   availableSizes: any[] = [];
   availableColors: any[] = [];
+  reviewForm = { rating: 5, comment: '' };
 
   feedbacks: any[] = [];
   averageRating = 0;
@@ -27,6 +35,9 @@ export class ProductDetailComponent implements OnInit {
   route = inject(ActivatedRoute);
   stockService = inject(StockService);
   productService = inject(ProductService);
+  toastr = inject(ToastrService);
+  authService = inject(AuthService);
+  feedbackService = inject(FeedbackService);
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
@@ -67,6 +78,19 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
+  loadFeedbacks(productId: number) {
+    this.feedbackService.getFeedbacks(productId).subscribe((feedbacks) => {
+      this.feedbacks = feedbacks;
+      if (feedbacks.length) {
+        const sum = feedbacks.reduce(
+          (acc: number, f: any) => acc + f.rating,
+          0
+        );
+        this.averageRating = Math.round(sum / feedbacks.length);
+      }
+    });
+  }
+
   selectSize(size: any) {
     this.selectedSize = size;
     this.updateStock();
@@ -88,5 +112,60 @@ export class ProductDetailComponent implements OnInit {
           this.quantity = Math.max(1, this.currentStock);
         }
       });
+  }
+
+  increaseQuantity() {
+    if (this.quantity < this.currentStock) {
+      this.quantity++;
+    } else {
+      this.toastr.warning(
+        `Only ${this.currentStock} items available`,
+        'Stock Limit'
+      );
+    }
+  }
+
+  decreaseQuantity() {
+    if (this.quantity > 1) this.quantity--;
+  }
+
+  submitReview(e: Event) {
+    e.preventDefault();
+
+    if (!this.canReview) {
+      this.toastr.warning('You need to purchase this product first');
+      return;
+    }
+
+    if (this.hasReviewed) {
+      this.toastr.warning('You have already reviewed this product');
+      return;
+    }
+
+    this.feedbackService
+      .createFeedback({
+        userId: this.authService.currentUserValue.id,
+        productId: this.product.id,
+        rating: this.reviewForm.rating,
+        comment: this.reviewForm.comment,
+      })
+      .subscribe({
+        next: () => {
+          this.toastr.success('Review submitted!');
+          this.showReviewForm = false;
+          this.reviewForm = { rating: 5, comment: '' };
+          this.loadFeedbacks(this.product.id);
+          this.hasReviewed = true;
+        },
+        error: () => this.toastr.error('Failed to submit review'),
+      });
+  }
+
+  formatDate(date: any): string {
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   }
 }
