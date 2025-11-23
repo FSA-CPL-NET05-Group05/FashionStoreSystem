@@ -1,0 +1,119 @@
+<div class="p-8">
+  <h1 class="text-3xl font-bold mb-8">Products Management</h1>
+
+  <button
+    (click)="openAddModal()"
+    class="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 mb-6"
+  >
+    + Add Product
+  </button>
+
+  <div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="py-4 px-6 text-left">Image</th>
+          <th class="py-4 px-6 text-left">Name</th>
+          <th class="py-4 px-6 text-left">Category</th>
+          <th class="py-4 px-6 text-left">Price</th>
+          <th class="py-4 px-6 text-left">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (p of products; track p.id) {
+        <tr class="border-b hover:bg-gray-50">
+          <td class="py-4 px-6">
+            <img [src]="p.imageUrl" class="w-20 h-20 object-cover rounded-lg" />
+          </td>
+
+          <td class="py-4 px-6 font-semibold">
+            {{ p.name }}
+          </td>
+
+          <td class="py-4 px-6">
+            {{ p.category?.name }}
+          </td>
+
+          <td class="py-4 px-6 font-bold text-rose-600">
+            ${{ p.price }}
+          </td>
+
+          <td class="py-4 px-6 flex gap-2">
+            <button
+              (click)="openEditModal(p)"
+              class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-sm"
+            >
+              Edit
+            </button>
+
+            <button
+             
+              class="px-3 py-1 bg-yellow-100 text-yellow-600 rounded-lg text-sm"
+            >
+              Stock
+            </button>
+
+            <button
+              (click)="openDeleteModal(p)"
+              class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Add -->
+@if (showAddProductModal) {
+<div class="fixed inset-0 bg-black/40 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-xl w-[500px]">
+    <h2 class="text-xl font-bold mb-4">Add Product</h2>
+
+    <input class="input" placeholder="Name" [(ngModel)]="newProduct.name" />
+    <input class="input" placeholder="Image URL" [(ngModel)]="newProduct.imageUrl" />
+    <input class="input" type="number" placeholder="Price" [(ngModel)]="newProduct.price" />
+
+    <textarea class="input" placeholder="Description" [(ngModel)]="newProduct.description"></textarea>
+
+    <button class="btn-primary w-full mt-4" (click)="saveProduct()">Save</button>
+    <button class="btn-secondary w-full mt-2" (click)="closeAddModal()">Cancel</button>
+  </div>
+</div>
+}
+
+<!-- Modal Edit -->
+@if (showEditProductModal && selectedProduct) {
+<div class="fixed inset-0 bg-black/40 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-xl w-[500px]">
+    <h2 class="text-xl font-bold mb-4">Edit Product</h2>
+
+    <input class="input" [(ngModel)]="selectedProduct.name" />
+    <input class="input" [(ngModel)]="selectedProduct.imageUrl" />
+    <input class="input" type="number" [(ngModel)]="selectedProduct.price" />
+    <textarea class="input" [(ngModel)]="selectedProduct.description"></textarea>
+
+    <button class="btn-primary w-full mt-4" (click)="updateProduct()">Update</button>
+    <button class="btn-secondary w-full mt-2" (click)="closeEditModal()">Cancel</button>
+  </div>
+</div>
+}
+
+<!-- Modal Delete -->
+@if (showDeleteModal) {
+<div class="fixed inset-0 bg-black/30 flex items-center justify-center">
+  <div class="bg-white p-6 rounded-xl w-[400px]">
+    <h2 class="text-xl font-bold text-center">Delete Product?</h2>
+    <p class="text-center text-gray-600 mt-2">This action cannot be undone.</p>
+
+    <div class="mt-6 flex justify-between">
+      <button class="btn-secondary" (click)="showDeleteModal = false">Cancel</button>
+      <button class="btn-danger" (click)="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+}
