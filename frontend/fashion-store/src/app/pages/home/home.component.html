@@ -1,0 +1,282 @@
+<!-- Hero Slider -->
+<section class="relative h-[600px]">
+  <swiper-container
+    slides-per-view="1"
+    navigation="true"
+    pagination="true"
+    autoplay-delay="4000"
+    loop="true"
+    effect="fade"
+    class="h-full"
+  >
+    <swiper-slide *ngFor="let slide of heroSlides; trackBy: trackById">
+      <div class="relative h-full w-full">
+        <img
+          [src]="slide.image"
+          [alt]="slide.title"
+          class="w-full h-full object-cover"
+        />
+        <div
+          class="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent"
+        >
+          <div class="container mx-auto px-4 h-full flex items-center">
+            <div class="max-w-xl text-white animate-fade-in">
+              <p
+                class="text-sm font-medium tracking-widest mb-3 text-rose-300 animate-slide-up"
+              >
+                {{ slide.subtitle }}
+              </p>
+              <h1
+                class="text-5xl md:text-6xl font-bold mb-4 leading-tight animate-slide-up"
+              >
+                {{ slide.title }}
+              </h1>
+              <p class="text-lg mb-8 text-gray-200 animate-slide-up">
+                {{ slide.description }}
+              </p>
+              <a
+                routerLink="/shop"
+                class="inline-block bg-rose-600 hover:bg-rose-700 text-white px-8 py-4 rounded-full font-semibold transition-all transform hover:scale-105 shadow-lg animate-slide-up"
+              >
+                {{ slide.buttonText }}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </swiper-slide>
+  </swiper-container>
+</section>
+
+<!-- Featured Products -->
+<section class="container mx-auto px-4 py-20">
+  <div class="text-center mb-12 animate-slide-up">
+    <h2 class="text-4xl font-bold text-gray-800 mb-3">Featured Collection</h2>
+    <p class="text-gray-600 max-w-2xl mx-auto">
+      Discover our handpicked selection of timeless pieces that embody elegance
+      and sophistication
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div
+      *ngFor="let product of products; trackBy: trackById"
+      class="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col"
+    >
+      <div
+        class="relative overflow-hidden aspect-[3/4]"
+        [routerLink]="['/product', product.id]"
+      >
+        <img
+          [src]="product.imageUrl"
+          [alt]="product.name"
+          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div
+          class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300"
+        ></div>
+      </div>
+      <div class="p-6 flex flex-col flex-grow">
+        <h3
+          class="text-lg font-bold text-gray-800 mb-2 group-hover:text-rose-600 transition-colors"
+        >
+          {{ product.name }}
+        </h3>
+        <p class="text-sm text-gray-600 mb-4 line-clamp-2 flex-grow">
+          {{ product.description }}
+        </p>
+        <div class="flex items-center justify-between mt-auto">
+          <span class="text-2xl font-bold text-rose-600"
+            >${{ product.price }}</span
+          >
+          <button
+            [routerLink]="['/product', product.id]"
+            class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all transform hover:scale-105"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-12">
+    <a
+      routerLink="/shop"
+      class="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-8 py-4 rounded-full font-semibold transition-all transform hover:scale-105"
+    >
+      View All Products
+      <svg
+        class="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M17 8l4 4m0 0l-4 4m4-4H3"
+        />
+      </svg>
+    </a>
+  </div>
+</section>
+
+<!-- About Section -->
+<section class="bg-gradient-to-br from-rose-50 to-pink-50 py-20">
+  <div class="container mx-auto px-4">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div class="relative">
+        <img
+          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800"
+          alt="About FASHION & STORE"
+          class="rounded-2xl shadow-2xl"
+        />
+        <div
+          class="absolute -bottom-6 -right-6 w-48 h-48 bg-rose-600 rounded-2xl -z-10"
+        ></div>
+      </div>
+
+      <div class="space-y-6">
+        <h2 class="text-4xl font-bold text-gray-800">About FASHION & STORE</h2>
+        <p class="text-gray-600 leading-relaxed text-lg">
+          Founded with a passion for timeless elegance, FASHION & STORE brings
+          you carefully curated pieces that blend classic sophistication with
+          modern sensibility. Each item in our collection is selected to help
+          you express your unique style with confidence.
+        </p>
+        <p class="text-gray-600 leading-relaxed text-lg">
+          We believe that fashion is more than just clothing—it's a form of
+          self-expression, a way to tell your story. Our commitment to quality,
+          sustainability, and exceptional design ensures that every piece you
+          choose becomes a cherished part of your wardrobe.
+        </p>
+        <div class="grid grid-cols-3 gap-6 pt-6">
+          <div class="text-center">
+            <div class="text-3xl font-bold text-rose-600 mb-2">500+</div>
+            <div class="text-sm text-gray-600">Products</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-rose-600 mb-2">50k+</div>
+            <div class="text-sm text-gray-600">Happy Customers</div>
+          </div>
+          <div class="text-center">
+            <div class="text-3xl font-bold text-rose-600 mb-2">100%</div>
+            <div class="text-sm text-gray-600">Quality Guarantee</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="container mx-auto px-4 py-20">
+  <div class="text-center mb-12">
+    <h2 class="text-4xl font-bold text-gray-800 mb-3">
+      Why Choose FASHION & STORE
+    </h2>
+    <p class="text-gray-600">
+      Experience the difference with our commitment to excellence
+    </p>
+  </div>
+
+  <div class="grid md:grid-cols-4 gap-8">
+    <!-- Feature Cards repeated -->
+    <div
+      class="text-center group hover:transform hover:scale-105 transition-all duration-300"
+    >
+      <div
+        class="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-rose-600 transition-colors"
+      >
+        <svg
+          class="w-10 h-10 text-rose-600 group-hover:text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      </div>
+      <h3 class="font-bold text-lg mb-2">Premium Quality</h3>
+      <p class="text-gray-600 text-sm">
+        Carefully selected materials for lasting elegance
+      </p>
+    </div>
+    <div
+      class="text-center group hover:transform hover:scale-105 transition-all duration-300"
+    >
+      <div
+        class="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-rose-600 transition-colors"
+      >
+        <svg
+          class="w-10 h-10 text-rose-600 group-hover:text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      </div>
+      <h3 class="font-bold text-lg mb-2">Fast Delivery</h3>
+      <p class="text-gray-600 text-sm">Quick shipping to your doorstep</p>
+    </div>
+    <div
+      class="text-center group hover:transform hover:scale-105 transition-all duration-300"
+    >
+      <div
+        class="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-rose-600 transition-colors"
+      >
+        <svg
+          class="w-10 h-10 text-rose-600 group-hover:text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+          />
+        </svg>
+      </div>
+      <h3 class="font-bold text-lg mb-2">Easy Returns</h3>
+      <p class="text-gray-600 text-sm">30-day hassle-free return policy</p>
+    </div>
+    <div
+      class="text-center group hover:transform hover:scale-105 transition-all duration-300"
+    >
+      <div
+        class="w-20 h-20 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-rose-600 transition-colors"
+      >
+        <svg
+          class="w-10 h-10 text-rose-600 group-hover:text-white"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+      </div>
+      <h3 class="font-bold text-lg mb-2">24/7 Support</h3>
+      <p class="text-gray-600 text-sm">Always here to help you</p>
+    </div>
+  </div>
+</section>

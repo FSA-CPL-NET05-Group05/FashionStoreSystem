@@ -1,0 +1,60 @@
+<div class="flex min-h-screen bg-gray-50">
+  <aside class="w-64 bg-white shadow-lg">
+    <div class="p-6 border-b">
+      <h2 class="font-bold text-xl">Admin Panel</h2>
+    </div>
+
+    <nav class="p-4">
+      <a
+        routerLink="/admin/dashboard"
+        routerLinkActive="bg-rose-100 text-rose-600"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 hover:bg-gray-100"
+      >
+        <span class="font-medium">Dashboard</span>
+      </a>
+
+      <a
+        routerLink="/admin/products"
+        routerLinkActive="bg-rose-100 text-rose-600"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 hover:bg-gray-100"
+      >
+        <span class="font-medium">Products</span>
+      </a>
+
+      <a
+        routerLink="/admin/orders"
+        routerLinkActive="bg-rose-100 text-rose-600"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 hover:bg-gray-100"
+      >
+        <span class="font-medium">Orders</span>
+      </a>
+
+      <a
+        routerLink="/admin/users"
+        routerLinkActive="bg-rose-100 text-rose-600"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 hover:bg-gray-100"
+      >
+        <span class="font-medium">Users</span>
+      </a>
+
+      <a
+        routerLink="/admin/reviews"
+        routerLinkActive="bg-rose-100 text-rose-600"
+        class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 hover:bg-gray-100"
+      >
+        <span class="font-medium">Reviews</span>
+      </a>
+
+      <button
+        (click)="logout()"
+        class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg mt-8"
+      >
+        <span class="font-medium">Logout</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main class="flex-1 overflow-y-auto">
+    <router-outlet></router-outlet>
+  </main>
+</div>
