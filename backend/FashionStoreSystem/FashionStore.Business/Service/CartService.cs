@@ -92,11 +92,16 @@ namespace FashionStore.Business.Service
             return cartDtos;
         }
 
-        public async Task<bool> RemoveFromCartAsync(int cartItemId)
+        public async Task<bool> RemoveFromCartAsync(int cartItemId, string userId)
         {
             var cartItem = await _cartRepo.GetByIdAsync(cartItemId);
 
             if (cartItem == null)
+            {
+                return false;
+            }
+
+            if (cartItem.UserId.ToString() != userId)
             {
                 return false;
             }
