@@ -36,6 +36,10 @@ namespace FashionStore.Business.Service.Service.Admin
                 CategoryName = p.Category?.Name,
                 TotalStock = p.ProductSizes?.Sum(ps => ps.Stock) ?? 0,
 
+
+                // Map Images
+                Images = p.Images?.Select(img => img.Url).ToList() ?? new()
+
             };
         }
 
@@ -60,14 +64,14 @@ namespace FashionStore.Business.Service.Service.Admin
             return MapToDto(product);
         }
 
-        public async Task<OperationResult<AdminProductDTO>> CreateAsync(
-            CreateProductRequest request,
-            CancellationToken ct = default)
+        public async Task<OperationResult<AdminProductDTO>> CreateAsync(CreateProductRequest request,
+           CancellationToken ct = default)
         {
-            // Business validation
+            // Validation
             if (!await _repo.CategoryExistsAsync(request.CategoryId, ct))
                 return OperationResult<AdminProductDTO>.Fail("Category không tồn tại");
 
+            // 1. Tạo Product
             var product = new Data.Models.Product
             {
                 Name = request.Name,
@@ -78,7 +82,16 @@ namespace FashionStore.Business.Service.Service.Admin
             };
 
             var created = await _repo.CreateAsync(product, ct);
-            var dto = MapToDto(created);
+
+            // 2. Thêm ảnh phụ (nếu có)
+            if (request.AdditionalImages != null && request.AdditionalImages.Any())
+            {
+                await _repo.AddImagesAsync(created.Id, request.AdditionalImages, ct);
+            }
+
+            // 3. Load lại đủ thông tin
+            var fullProduct = await _repo.GetByIdWithDetailsAsync(created.Id, ct);
+            var dto = MapToDto(fullProduct!);
 
             return OperationResult<AdminProductDTO>.Ok("Tạo sản phẩm thành công", dto);
         }
@@ -88,13 +101,16 @@ namespace FashionStore.Business.Service.Service.Admin
             UpdateProductRequest request,
             CancellationToken ct = default)
         {
+           
             var product = await _repo.GetByIdAsync(id, ct);
             if (product == null)
                 return OperationResult.Fail("Sản phẩm không tồn tại");
 
+           
             if (!await _repo.CategoryExistsAsync(request.CategoryId, ct))
                 return OperationResult.Fail("Category không tồn tại");
 
+            // 3. Update thông tin 
             product.Name = request.Name;
             product.Description = request.Description;
             product.Price = request.Price;
@@ -104,6 +120,16 @@ namespace FashionStore.Business.Service.Service.Admin
             var ok = await _repo.UpdateAsync(product, ct);
             if (!ok) return OperationResult.Fail("Cập nhật thất bại");
 
+            // 4. Update ảnh phụ
+            // Xóa tất cả ảnh cũ
+            await _repo.RemoveAllImagesAsync(id, ct);
+
+            // Thêm ảnh mới (nếu có)
+            if (request.AdditionalImages != null && request.AdditionalImages.Any())
+            {
+                await _repo.AddImagesAsync(id, request.AdditionalImages, ct);
+            }
+
             return OperationResult.Ok("Cập nhật sản phẩm thành công");
         }
 
@@ -112,6 +138,7 @@ namespace FashionStore.Business.Service.Service.Admin
             if (!await _repo.ExistsAsync(id, ct))
                 return OperationResult.Fail("Sản phẩm không tồn tại");
 
+            // DeleteBehavior.Cascade sẽ tự động xóa Images
             var ok = await _repo.DeleteAsync(id, ct);
             if (!ok) return OperationResult.Fail("Xóa thất bại");
 
