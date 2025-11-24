@@ -520,7 +520,7 @@
       "orderDate": "2025-11-24T02:47:50.474Z",
       "userId": "2",
       "totalAmount": 189,
-      "status": "pending",
+      "status": "completed",
       "id": 10
     },
     {
@@ -702,7 +702,8 @@
       "rating": 4,
       "comment": "good",
       "createdDate": "2025-11-24T03:08:28.958Z",
-      "id": 3
+      "id": 3,
+      "adminReply": "Thanks, I love you <3"
     }
   ],
   "purchaseHistory": [

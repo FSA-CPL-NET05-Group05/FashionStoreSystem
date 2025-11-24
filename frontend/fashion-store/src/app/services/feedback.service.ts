@@ -41,4 +41,10 @@ export class FeedbackService {
     };
     return this.http.post(`${this.apiUrl}/feedbacks`, newFeedback);
   }
+
+  replyToFeedback(id: number, reply: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/feedbacks/${id}`, {
+      adminReply: reply,
+    });
+  }
 }
