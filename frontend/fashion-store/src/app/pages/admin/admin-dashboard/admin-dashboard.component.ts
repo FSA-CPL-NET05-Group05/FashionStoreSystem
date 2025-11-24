@@ -5,11 +5,14 @@ import { forkJoin } from 'rxjs';
 import { ProductService } from '../../../services/product.services';
 import { AdminComponent } from '../admin.component';
 import { RouterModule } from '@angular/router';
+import { OrderService } from '../../../services/order.service';
+import { UserService } from '../../../services/user.service';
+import { FeedbackService } from '../../../services/feedback.service';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule,RouterModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './admin-dashboard.component.html',
 })
 export class AdminDashboardComponent implements OnInit {
@@ -18,20 +21,23 @@ export class AdminDashboardComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
-
+    private orderService: OrderService,
+    private userService: UserService,
+    private feedbackService: FeedbackService
   ) {}
 
   ngOnInit() {
-    // Chạy nhiều API song song
     forkJoin({
       products: this.productService.getProducts(),
-     
+      orders: this.orderService.getOrders(),
+      feedbacks: this.feedbackService.getFeedbacks(),
     }).subscribe({
-      next: ({ products,}) => {
-
-        // Set thống kê
+      next: ({ products, orders, feedbacks }) => {
         this.stats.products = products.length;
-      
+        this.stats.orders = orders.length;
+        this.stats.revenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+        this.stats.reviews = feedbacks.length;
+        this.recentOrders = orders.slice(0, 5);
       },
     });
   }

@@ -16,7 +16,7 @@
       "password": "customer123",
       "email": "customer1@example.com",
       "role": "customer",
-      "status": "banned",
+      "status": "active",
       "fullName": "Emma Johnson",
       "phone": "+84987654321"
     }
@@ -407,7 +407,7 @@
       "productId": 7,
       "sizeId": 4,
       "colorId": 1,
-      "stock": 7,
+      "stock": 6,
       "id": 22
     },
     {
@@ -426,15 +426,6 @@
       "colorId": 1,
       "quantity": 2,
       "id": 1
-    },
-    {
-      "userId": "2",
-      "productId": 3,
-      "sizeId": 1,
-      "colorId": 4,
-      "quantity": 1,
-      "addedAt": "2025-11-24T03:15:57.966Z",
-      "id": 2
     }
   ],
   "orders": [
@@ -555,8 +546,29 @@
       "orderDate": "2025-11-24T03:08:18.432Z",
       "userId": "2",
       "totalAmount": 39.99,
-      "status": "pending",
+      "status": "completed",
       "id": 15
+    },
+    {
+      "orderDate": "2025-11-24T04:12:34.384Z",
+      "userId": "2",
+      "totalAmount": 198.99,
+      "status": "pending",
+      "id": 16
+    },
+    {
+      "orderDate": "2025-11-24T04:12:36.069Z",
+      "userId": "2",
+      "totalAmount": 198.99,
+      "status": "pending",
+      "id": 17
+    },
+    {
+      "orderDate": "2025-11-24T04:12:40.849Z",
+      "userId": "2",
+      "totalAmount": 198.99,
+      "status": "pending",
+      "id": 18
     }
   ],
   "orderDetails": [
@@ -676,6 +688,60 @@
       "sizeId": 4,
       "colorId": 1,
       "id": 13
+    },
+    {
+      "orderId": 16,
+      "productId": 3,
+      "quantity": 1,
+      "price": 159,
+      "sizeId": 1,
+      "colorId": 4,
+      "id": 14
+    },
+    {
+      "orderId": 16,
+      "productId": 7,
+      "quantity": 1,
+      "price": 39.99,
+      "sizeId": 4,
+      "colorId": 1,
+      "id": 15
+    },
+    {
+      "orderId": 17,
+      "productId": 3,
+      "quantity": 1,
+      "price": 159,
+      "sizeId": 1,
+      "colorId": 4,
+      "id": 16
+    },
+    {
+      "orderId": 17,
+      "productId": 7,
+      "quantity": 1,
+      "price": 39.99,
+      "sizeId": 4,
+      "colorId": 1,
+      "id": 17
+    },
+    {
+      "orderId": 18,
+      "productId": 3,
+      "quantity": 1,
+      "price": 159,
+      "sizeId": 1,
+      "colorId": 4,
+      "id": 18
+    },
+    {
+      "orderId": 18,
+      "productId": 7,
+      "quantity": 1,
+      "price": 39.99,
+      "sizeId": 4,
+      "colorId": 1,
+      "id": 19
     }
   ],
   "feedbacks": [
@@ -796,6 +862,42 @@
       "productId": 7,
       "orderId": 15,
       "id": 15
+    },
+    {
+      "userId": "2",
+      "productId": 3,
+      "orderId": 16,
+      "id": 16
+    },
+    {
+      "userId": "2",
+      "productId": 7,
+      "orderId": 16,
+      "id": 17
+    },
+    {
+      "userId": "2",
+      "productId": 3,
+      "orderId": 17,
+      "id": 18
+    },
+    {
+      "userId": "2",
+      "productId": 7,
+      "orderId": 17,
+      "id": 19
+    },
+    {
+      "userId": "2",
+      "productId": 3,
+      "orderId": 18,
+      "id": 20
+    },
+    {
+      "userId": "2",
+      "productId": 7,
+      "orderId": 18,
+      "id": 21
     }
   ]
 }
