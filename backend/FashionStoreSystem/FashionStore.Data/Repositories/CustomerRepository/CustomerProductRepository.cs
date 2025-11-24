@@ -82,5 +82,7 @@ namespace FashionStore.Data.Repositories
                     .ThenInclude(ps => ps.Color)
                 .FirstOrDefaultAsync(p => p.Id == productId);
         }
+
+      
     }
 }

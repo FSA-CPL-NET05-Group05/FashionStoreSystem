@@ -4,6 +4,7 @@ using FashionStore.Business.Interfaces.Interfaces.Admin;
 ﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Customer;
 using FashionStore.Business.Interfaces.Interfaces.Login;
+using FashionStore.Business.Service.Customer.Service;
 using FashionStore.Business.Service.LoginService;
 using FashionStore.Business.Service.Service.Admin;
 using FashionStore.Business.Service.Service.Admin;
@@ -14,6 +15,7 @@ using FashionStore.Data.Interfaces.Interfaces.Customer;
 using FashionStore.Data.Interfaces.Interfaces.Login;
 using FashionStore.Data.Models;
 using FashionStore.Data.Models;
+using FashionStore.Data.Repositories.CustomerRepository;
 using FashionStore.Data.Repositories.LoginRepository;
 using FashionStore.Data.Repositories.Repositories.Admin;
 using FashionStore.Data.Repositories.Repositories.Admin;
@@ -127,6 +129,10 @@ builder.Services.AddCors(options =>
 // AddScopeTuanAnh
 builder.Services.AddScoped<IManagerAccountService, ManagerAccountService>();
 builder.Services.AddScoped<IManagerAccountRepository, ManagerAccountRepository>();
+
+
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 
 
