@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FashionStore.Business.Service.Customer.Service
 {
-    public class FeedbackService : IFeedbackService
+    public class FeedbackService:IFeedbackService
     {
         private readonly IFeedbackRepository _feedbackRepository;
 
@@ -32,6 +32,45 @@ namespace FashionStore.Business.Service.Customer.Service
             });
         }
 
-    
+        public async Task<FeedbackDTO> CreateFeedbackAsync(string userId, FeedbackCreateDTO dto)
+        {
+            // 1) Validate dữ liệu từ DTO
+            if (string.IsNullOrWhiteSpace(dto.Comment))
+                throw new ArgumentException("Comment cannot be empty.");
+
+            if (dto.Rating < 1 || dto.Rating > 5)
+                throw new ArgumentException("Rating must be between 1 and 5.");
+
+            // 2) Kiểm tra user đã mua product chưa
+            bool hasPurchased = await _feedbackRepository
+                .HasUserPurchasedAsync(userId, dto.ProductId);
+
+            if (!hasPurchased)
+                throw new UnauthorizedAccessException(
+                    "You must purchase this product before leaving a review."
+                );
+
+            // 3) Tạo Feedback entity
+            var feedback = new Feedback
+            {
+                UserId = userId,
+                ProductId = dto.ProductId,
+                Comment = dto.Comment,
+                Rating = dto.Rating,
+                CreatedDate = DateTime.Now
+            };
+
+            // 4) Lưu vào DB + load User lại từ DB
+            await _feedbackRepository.AddFeedbackAsync(feedback);
+
+            // 5) Trả về DTO cho frontend
+            return new FeedbackDTO
+            {
+                UserName = feedback.User?.UserName ?? "Unknown",
+                Comment = feedback.Comment,
+                Rating = feedback.Rating,
+                CreatedDate = feedback.CreatedDate
+            };
+        }
     }
 }

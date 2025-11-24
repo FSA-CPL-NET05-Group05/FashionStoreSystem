@@ -26,6 +26,34 @@ namespace FashionStore.WebAPI.Controllers.Controllers.Customer
             return Ok(feedbacks);
         }
 
-      
+        // Thêm feedback
+        [HttpPost]
+        [Authorize(Roles = "Customer")] // Chỉ cho phép khách hàng đã đăng nhập
+        public async Task<IActionResult> AddFeedback([FromBody] FeedbackCreateDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                // Lấy userId từ JWT
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (userId == null)
+                    return Unauthorized();
+
+                // Gọi Service
+                var added = await _feedbackService.CreateFeedbackAsync(userId, dto);
+
+                return Ok(added);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message }); // dữ liệu sai
+            }
+        }
     }
 }

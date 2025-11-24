@@ -11,6 +11,6 @@ namespace FashionStore.Business.Interfaces.Interfaces.Customer
     public interface IFeedbackService
     {
         Task<IEnumerable<FeedbackDTO>> GetFeedbacksByProductIdAsync(int productId);
-       
+        Task<FeedbackDTO> CreateFeedbackAsync(string userId, FeedbackCreateDTO dto);
     }
 }

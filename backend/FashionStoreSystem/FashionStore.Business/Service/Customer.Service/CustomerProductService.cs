@@ -22,7 +22,9 @@ namespace FashionStore.Business.Service
             _productRepository = productRepository;
         }
 
-        
+       
+
+
 
         // Phương thức phân trang và trả về ProductDTO
         public async Task<PagedResult<ProductDTO>> GetProductsAsync(string? searchTerm, int? categoryId, string? sortOrder, int pageNumber, int pageSize, CancellationToken ct)
@@ -69,6 +71,7 @@ namespace FashionStore.Business.Service
                 Items = productDTOs
             };
         }
+
         public async Task<ProductDetailDTO?> GetProductByIdAsync(int productId)
         {
             var product = await _productRepository.GetProductByIdAsync(productId);
@@ -78,7 +81,5 @@ namespace FashionStore.Business.Service
 
             return product.ToProductDetailDTO(); // mapping
         }
-
-
     }
 }

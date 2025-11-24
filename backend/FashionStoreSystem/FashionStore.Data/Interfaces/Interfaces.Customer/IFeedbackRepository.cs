@@ -11,6 +11,6 @@ namespace FashionStore.Data.Interfaces.Interfaces.Customer
     {
         Task<IEnumerable<Feedback>> GetFeedbacksByProductIdAsync(int productId);
         Task AddFeedbackAsync(Feedback feedback);
-       
+        Task<bool> HasUserPurchasedAsync(string userId, int productId);
     }
 }
