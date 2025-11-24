@@ -425,14 +425,23 @@ export class AdminProductsComponent implements OnInit {
       error: () => this.toastr.error('Failed to load stock data'),
     });
   }
-
   addStock() {
-    if (!this.stockForm.sizeId || !this.stockForm.colorId || this.stockForm.stock < 0) {
-      this.toastr.warning('Please fill all fields');
-      return;
-    }
+  const existingStock = this.currentProductSizes.find(
+    (ps) => 
+      ps.sizeId === +this.stockForm.sizeId && 
+      ps.colorId === +this.stockForm.colorId
+  );
 
-    const newStock = {
+  if (existingStock) {
+    // Tự động cộng dồn
+    const newStockAmount = existingStock.stock + +this.stockForm.stock;
+    this.toastr.info(`Updated existing stock from ${existingStock.stock} to ${newStockAmount}`);
+    this.updateStock(existingStock, newStockAmount);
+    this.stockForm = { sizeId: '', colorId: '', stock: 0 };
+    return;
+  }
+
+   const newStock = {
       productId: this.selectedProduct.id,
       sizeId: +this.stockForm.sizeId,
       colorId: +this.stockForm.colorId,
@@ -447,8 +456,10 @@ export class AdminProductsComponent implements OnInit {
       },
       error: () => this.toastr.error('Failed to add stock'),
     });
-  }
+  
+}
 
+  
   updateStock(ps: any, newStock: number) {
     if (newStock < 0) return;
 
