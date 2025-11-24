@@ -14,7 +14,6 @@ import { ProductService } from '../../../services/product.service';
   templateUrl: './admin-products.component.html',
 })
 export class AdminProductsComponent implements OnInit {
-  [x: string]: any;
   products: any[] = [];
   categories: any[] = [];
   sizes: any[] = [];
@@ -24,7 +23,7 @@ export class AdminProductsComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 8;
+  itemsPerPage = 4;
   totalPages = 0;
 
   showProductModal = false;
@@ -422,13 +421,18 @@ export class AdminProductsComponent implements OnInit {
   deleteStock(id: number) {
     if (!confirm('Delete this stock entry?')) return;
 
-    this.productService.deleteProductSize(id).subscribe({
-      next: () => {
+    this.productService
+      .deleteProductSize(id)
+      .pipe(
+        catchError((err) => {
+          console.warn(`Stock ${id} might already be deleted`, err);
+          return of(null);
+        })
+      )
+      .subscribe(() => {
         this.toastr.success('Stock deleted!');
         this.manageStock(this.selectedProduct);
-      },
-      error: () => this.toastr.error('Failed to delete stock'),
-    });
+      });
   }
 
   closeProductModal() {

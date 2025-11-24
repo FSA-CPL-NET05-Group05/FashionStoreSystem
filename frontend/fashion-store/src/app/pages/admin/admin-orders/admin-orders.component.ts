@@ -19,7 +19,7 @@ export class AdminOrdersComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 10;
+  itemsPerPage = 7;
   totalPages = 0;
 
   constructor(

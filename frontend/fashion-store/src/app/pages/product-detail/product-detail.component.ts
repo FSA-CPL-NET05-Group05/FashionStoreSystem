@@ -9,10 +9,11 @@ import { FeedbackService } from '../../services/feedback.service';
 import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { HttpClient } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-product-detail',
-  imports: [RouterModule, FormsModule],
+  imports: [RouterModule, FormsModule, CommonModule],
   templateUrl: '../product-detail/product-detail.component.html',
 })
 export class ProductDetailComponent implements OnInit {
@@ -178,6 +179,11 @@ export class ProductDetailComponent implements OnInit {
   }
 
   addToCart() {
+    if (this.isAdmin()) {
+      this.toastr.warning('Admin cannot purchase products');
+      return;
+    }
+
     if (!this.selectedSize || !this.selectedColor) {
       this.toastr.warning('Please select size and color');
       return;
@@ -264,5 +270,10 @@ export class ProductDetailComponent implements OnInit {
       month: 'long',
       day: 'numeric',
     });
+  }
+
+  isAdmin(): boolean {
+    const user = this.authService.currentUserValue;
+    return user?.role === 'admin';
   }
 }

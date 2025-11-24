@@ -14,7 +14,7 @@ export class AdminUsersComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 10;
+  itemsPerPage = 4;
   totalPages = 0;
 
   constructor(

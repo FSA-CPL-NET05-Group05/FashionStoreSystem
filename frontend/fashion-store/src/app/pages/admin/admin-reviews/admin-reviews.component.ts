@@ -17,7 +17,7 @@ export class AdminReviewsComponent implements OnInit {
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 5;
+  itemsPerPage = 4;
   totalPages = 0;
 
   constructor(
