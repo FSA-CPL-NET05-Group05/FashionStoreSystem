@@ -72,6 +72,15 @@ namespace FashionStore.Data.Repositories
                 Items = products
             };
         }
-       
+        public async Task<Product> GetProductByIdAsync(int productId)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.ProductSizes)
+                    .ThenInclude(ps => ps.Size)
+                .Include(p => p.ProductSizes)
+                    .ThenInclude(ps => ps.Color)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FashionStore.Business.Dtos;
+using FashionStore.Business.Dtos.Dtos.Customer;
 using FashionStore.Business.Interfaces;
 using FashionStore.Business.Interfaces.Interfaces.Customer;
 using FashionStore.Business.Mapping;
@@ -68,6 +69,16 @@ namespace FashionStore.Business.Service
                 Items = productDTOs
             };
         }
+        public async Task<ProductDetailDTO?> GetProductByIdAsync(int productId)
+        {
+            var product = await _productRepository.GetProductByIdAsync(productId);
+
+            if (product == null)
+                return null;
+
+            return product.ToProductDetailDTO(); // mapping
+        }
+
 
     }
 }

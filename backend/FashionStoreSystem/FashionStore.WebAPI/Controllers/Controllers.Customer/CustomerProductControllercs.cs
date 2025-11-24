@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FashionStore.API.Controllers
 {
-    [Route("api/products")]
+    [Route("api/[controller]")]
     [ApiController]
     public class CustomerProductController : ControllerBase
     {
@@ -43,5 +43,16 @@ namespace FashionStore.API.Controllers
             return Ok(products);
         }
 
+        // API hiển thị chi tiết sản phẩm theo Id
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProductDetail(int id)
+        {
+            var productDto = await _productService.GetProductByIdAsync(id);
+
+            if (productDto == null)
+                return NotFound(new { message = "Product not found" });
+
+            return Ok(productDto);
+        }
     }
 }
