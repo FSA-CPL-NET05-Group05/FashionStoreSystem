@@ -36,20 +36,6 @@ namespace FashionStore.Business.Service.Service.Admin
                 CategoryName = p.Category?.Name,
                 TotalStock = p.ProductSizes?.Sum(ps => ps.Stock) ?? 0,
 
-                // Thêm để map dữ liệu có được để xem chi tiết
-
-                Variants = p.ProductSizes?.Select(ps => new ProductVariantDTO
-                {
-                    Id = ps.Id,
-                    SizeId = ps.SizeId,
-                    SizeName = ps.Size?.Name ?? "",
-                    ColorId = ps.ColorId,
-                    ColorName = ps.Color?.Name ?? "",
-                    Stock = ps.Stock
-                }).ToList() ?? new()
-
-
-
             };
         }
 

@@ -22,20 +22,13 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
 
         public async Task<(List<Models.Product> Items, int TotalCount)> GetPagedAsync(ProductQueryParameters parameters, CancellationToken ct = default)
         {
-            //var query = _context.Products
-            //    .Include(p => p.Category)
-            //    .Include(p => p.ProductSizes) 
-            //    .AsNoTracking()
-            //    .AsQueryable();
-
             var query = _context.Products
-                        .Include(p => p.Category)
-                        .Include(p => p.ProductSizes)        
-                        .ThenInclude(ps => ps.Size)       
-                        .Include(p => p.ProductSizes)       
-                        .ThenInclude(ps => ps.Color)     
-                        .AsNoTracking()
-                        .AsQueryable();
+                .Include(p => p.Category)
+                .Include(p => p.ProductSizes)
+                .AsNoTracking()
+                .AsQueryable();
+
+
 
 
 
