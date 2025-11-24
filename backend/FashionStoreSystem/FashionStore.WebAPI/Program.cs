@@ -2,28 +2,25 @@
 
 using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Login;
+using FashionStore.Business.Mapping;
 using FashionStore.Business.Service.LoginService;
 using FashionStore.Business.Service.Service.Admin;
 using FashionStore.Data.DBContext;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
 using FashionStore.Data.Interfaces.Interfaces.Login;
 using FashionStore.Data.Models;
+using FashionStore.Data.Models;
 using FashionStore.Data.Repositories.LoginRepository;
 using FashionStore.Data.Repositories.Repositories.Admin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
 
-﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
-using FashionStore.Business.Service.Service.Admin;
-using FashionStore.Data.Interfaces.Interfaces.Admin;
-using FashionStore.Data.Models;
-using FashionStore.Data.Repositories.Repositories.Admin;
-using Microsoft.AspNetCore.Identity;
-
-﻿
 
 
 
@@ -31,7 +28,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+
+    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped<ILoginServices, LoginService>();
@@ -155,11 +157,17 @@ builder.Services.AddSingleton<IConnection>(sp =>
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IHomeService, HomeService>();
+
 builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
 
 builder.Services.AddHostedService<OrderConsumer>();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 
 var app = builder.Build();

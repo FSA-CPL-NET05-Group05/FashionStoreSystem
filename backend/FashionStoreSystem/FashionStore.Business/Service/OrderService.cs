@@ -26,13 +26,43 @@ namespace FashionStore.Business.Service
         {
 
             var allCartItems = await _cartRepo.GetAllAsync();
-            var myCartItems = allCartItems.Where(c => c.UserId == dto.UserId.ToString()).ToList();
 
-            if (myCartItems.Count == 0) return; 
+            var myCartItems = allCartItems
+                .Where(c => string.Equals(c.UserId, dto.UserId.ToString(), StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (myCartItems.Count == 0) 
+            {
+                return;
+            
+            }
+            if (dto.Items != null && dto.Items.Any())
+            {
+                foreach (var itemDto in dto.Items)
+                {
+
+                    var itemInDb = myCartItems.FirstOrDefault(c =>
+                        c.ProductId == itemDto.ProductId &&
+                        c.SizeId == itemDto.SizeId &&
+                        c.ColorId == itemDto.ColorId
+                    );
+
+
+                    if (itemInDb != null && itemInDb.Quantity != itemDto.Quantity)
+                    {
+
+                        itemInDb.Quantity = itemDto.Quantity;
+                        await _cartRepo.UpdateAsync(itemInDb);
+                    }
+                }
+            }
 
             var message = new OrderMessage
             {
                 UserId = dto.UserId,
+                CustomerName = dto.CustomerName,
+                CustomerPhone = dto.CustomerPhone,
+                CustomerEmail = dto.CustomerEmail,
                 Items = new List<OrderItemMessage>()
             };
 
@@ -43,7 +73,7 @@ namespace FashionStore.Business.Service
                     ProductId = item.ProductId,
                     SizeId = item.SizeId,
                     ColorId = item.ColorId,
-                    Quantity = item.Quantity
+                    Quantity = item.Quantity 
                 });
             }
 

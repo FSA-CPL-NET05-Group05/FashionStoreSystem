@@ -17,6 +17,9 @@ namespace FashionStore.Business.Messaging
     public class OrderMessage
     {
         public Guid UserId { get; set; }
+        public string CustomerName { get; set; }
+        public string CustomerPhone { get; set; }
+        public string CustomerEmail { get; set; }
         public List<OrderItemMessage> Items { get; set; } = new List<OrderItemMessage>();
     }
 }
