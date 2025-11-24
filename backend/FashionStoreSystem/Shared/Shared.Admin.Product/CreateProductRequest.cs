@@ -26,7 +26,8 @@ namespace FashionStore.Shared.Shared.Admin.Product
         [Range(1, int.MaxValue, ErrorMessage = "Phải chọn Category")]
         public int CategoryId { get; set; }
 
-
+        // THÊM MỚI: Danh sách ảnh phụ
+        public List<string>? AdditionalImages { get; set; }
 
 
     }

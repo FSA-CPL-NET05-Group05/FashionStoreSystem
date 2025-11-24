@@ -12,9 +12,7 @@ namespace FashionStore.Data.Interfaces.Interfaces.Admin
     {
 
         // Paging + Search + Filter
-        Task<(List<Product> Items, int TotalCount)> GetPagedAsync(
-            ProductQueryParameters parameters,
-            CancellationToken ct = default);
+        Task<(List<Product> Items, int TotalCount)> GetPagedAsync(ProductQueryParameters parameters,CancellationToken ct = default);
 
         Task<Product?> GetByIdAsync(int id, CancellationToken ct = default);
         Task<Product?> GetByIdWithDetailsAsync(int id, CancellationToken ct = default); // Include Category
@@ -23,6 +21,13 @@ namespace FashionStore.Data.Interfaces.Interfaces.Admin
         Task<bool> DeleteAsync(int id, CancellationToken ct = default);
         Task<bool> ExistsAsync(int id, CancellationToken ct = default);
         Task<bool> CategoryExistsAsync(int categoryId, CancellationToken ct = default);
+
+
+        // Quản lý ProductImages
+        Task AddImagesAsync(int productId, List<string> imageUrls, CancellationToken ct = default);
+        Task RemoveAllImagesAsync(int productId, CancellationToken ct = default);
+
+
 
     }
 }
