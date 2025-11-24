@@ -14,11 +14,18 @@ import { ProductService } from '../../../services/product.service';
   templateUrl: './admin-products.component.html',
 })
 export class AdminProductsComponent implements OnInit {
+  [x: string]: any;
   products: any[] = [];
   categories: any[] = [];
   sizes: any[] = [];
   colors: any[] = [];
   currentProductSizes: any[] = [];
+  Math = Math;
+
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 8;
+  totalPages = 0;
 
   showProductModal = false;
   showStockModal = false;
@@ -70,8 +77,42 @@ export class AdminProductsComponent implements OnInit {
         this.categories = categories;
         this.sizes = sizes;
         this.colors = colors;
+        this.calculateTotalPages();
       },
     });
+  }
+
+  // Pagination methods
+  get paginatedProducts() {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.products.slice(start, end);
+  }
+
+  calculateTotalPages() {
+    this.totalPages = Math.ceil(this.products.length / this.itemsPerPage);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  get pageNumbers(): number[] {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   getCategoryName(id: number): string {
@@ -96,7 +137,6 @@ export class AdminProductsComponent implements OnInit {
       imageUrl: '',
       imagesText: '',
     };
-    // Reset validation errors
     this.validationErrors = {
       name: '',
       imageUrl: '',
@@ -113,7 +153,6 @@ export class AdminProductsComponent implements OnInit {
       ...product,
       imagesText: product.images?.join(', ') || '',
     };
-    // Reset validation errors
     this.validationErrors = {
       name: '',
       imageUrl: '',
@@ -127,7 +166,6 @@ export class AdminProductsComponent implements OnInit {
   saveProduct(e: Event) {
     e.preventDefault();
 
-    // Validate form trước khi submit
     if (!this.validateProduct(this.productForm)) {
       this.toastr.warning('Please fix all validation errors');
       return;
@@ -174,7 +212,6 @@ export class AdminProductsComponent implements OnInit {
     )
       return;
 
-    // Lấy tất cả dữ liệu liên quan
     forkJoin({
       productSizes: this.productService.getProductSizes(id),
       cart: this.http.get<any[]>(`http://localhost:3000/cart?productId=${id}`),
@@ -197,7 +234,6 @@ export class AdminProductsComponent implements OnInit {
       }) => {
         const deleteRequests: any[] = [];
 
-        // Thêm các request xóa productSizes với error handling
         productSizes.forEach((ps) => {
           deleteRequests.push(
             this.productService.deleteProductSize(ps.id).pipe(
@@ -211,7 +247,6 @@ export class AdminProductsComponent implements OnInit {
           );
         });
 
-        // Thêm các request xóa cart items với error handling
         cart.forEach((item) => {
           deleteRequests.push(
             this.http.delete(`http://localhost:3000/cart/${item.id}`).pipe(
@@ -225,7 +260,6 @@ export class AdminProductsComponent implements OnInit {
           );
         });
 
-        // Thêm các request xóa orderDetails với error handling
         orderDetails.forEach((detail) => {
           deleteRequests.push(
             this.http
@@ -241,7 +275,6 @@ export class AdminProductsComponent implements OnInit {
           );
         });
 
-        // Thêm các request xóa feedbacks với error handling
         feedbacks.forEach((feedback) => {
           deleteRequests.push(
             this.http
@@ -257,7 +290,6 @@ export class AdminProductsComponent implements OnInit {
           );
         });
 
-        // Thêm các request xóa purchaseHistory với error handling
         purchaseHistory.forEach((history) => {
           deleteRequests.push(
             this.http
@@ -273,7 +305,6 @@ export class AdminProductsComponent implements OnInit {
           );
         });
 
-        // Nếu có dữ liệu liên quan thì xóa tất cả trước
         if (deleteRequests.length > 0) {
           forkJoin(deleteRequests)
             .pipe(
@@ -282,12 +313,11 @@ export class AdminProductsComponent implements OnInit {
                   'Some items could not be deleted, but continuing...',
                   err
                 );
-                return of(null); // Bỏ qua lỗi tổng thể
+                return of(null);
               })
             )
             .subscribe({
               next: () => {
-                // Sau khi xóa hết dữ liệu liên quan, xóa product
                 this.productService
                   .deleteProduct(id)
                   .pipe(
@@ -309,7 +339,6 @@ export class AdminProductsComponent implements OnInit {
               },
             });
         } else {
-          // Nếu không có dữ liệu liên quan thì xóa product luôn
           this.productService
             .deleteProduct(id)
             .pipe(
@@ -404,7 +433,6 @@ export class AdminProductsComponent implements OnInit {
 
   closeProductModal() {
     this.showProductModal = false;
-    // Reset validation errors
     this.validationErrors = {
       name: '',
       imageUrl: '',
@@ -422,9 +450,7 @@ export class AdminProductsComponent implements OnInit {
     return item.id;
   }
 
-  // Hàm validate product
   validateProduct(product: any): boolean {
-    // Reset lỗi
     this.validationErrors = {
       name: '',
       imageUrl: '',
@@ -435,7 +461,6 @@ export class AdminProductsComponent implements OnInit {
 
     let isValid = true;
 
-    // Validate name
     if (!product.name || product.name.trim() === '') {
       this.validationErrors.name = 'Product name is required';
       isValid = false;
@@ -448,7 +473,6 @@ export class AdminProductsComponent implements OnInit {
       isValid = false;
     }
 
-    // Validate price
     if (
       product.price === null ||
       product.price === undefined ||
@@ -464,7 +488,6 @@ export class AdminProductsComponent implements OnInit {
       isValid = false;
     }
 
-    // Validate description
     if (!product.description || product.description.trim() === '') {
       this.validationErrors.description = 'Description is required';
       isValid = false;
@@ -478,7 +501,6 @@ export class AdminProductsComponent implements OnInit {
       isValid = false;
     }
 
-    // Validate categoryId
     if (!product.categoryId || product.categoryId === '') {
       this.validationErrors.categoryId = 'Please select a category';
       isValid = false;

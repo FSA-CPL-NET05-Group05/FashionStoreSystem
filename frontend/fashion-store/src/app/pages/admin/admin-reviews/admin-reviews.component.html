@@ -2,7 +2,7 @@
   <h1 class="text-3xl font-bold mb-8">Reviews Management</h1>
 
   <div class="space-y-6">
-    @for (feedback of feedbacks; track feedback.id) {
+    @for (feedback of paginatedFeedbacks; track feedback.id) {
     <div class="bg-white rounded-xl p-6 shadow-md">
       <div class="flex items-start justify-between mb-4">
         <div>
@@ -64,4 +64,67 @@
     </div>
     }
   </div>
+
+  <!-- Pagination -->
+  @if (totalPages > 1) {
+  <div
+    class="flex items-center justify-center gap-2 mt-8 bg-white rounded-xl p-4 shadow-md"
+  >
+    <button
+      (click)="goToPage(currentPage - 1)"
+      [disabled]="currentPage === 1"
+      [class.opacity-50]="currentPage === 1"
+      [class.cursor-not-allowed]="currentPage === 1"
+      class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white transition-colors"
+    >
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+    </button>
+
+    @for (page of pageNumbers; track page) {
+    <button
+      (click)="goToPage(page)"
+      [class.bg-rose-600]="page === currentPage"
+      [class.text-white]="page === currentPage"
+      [class.bg-white]="page !== currentPage"
+      class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-rose-100 transition-colors font-medium"
+    >
+      {{ page }}
+    </button>
+    }
+
+    <button
+      (click)="goToPage(currentPage + 1)"
+      [disabled]="currentPage === totalPages"
+      [class.opacity-50]="currentPage === totalPages"
+      [class.cursor-not-allowed]="currentPage === totalPages"
+      class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white transition-colors"
+    >
+      <svg
+        class="w-4 h-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 5l7 7-7 7"
+        />
+      </svg>
+    </button>
+  </div>
+  }
 </div>

@@ -9,13 +9,18 @@ import { OrderService } from '../../../services/order.service';
   selector: 'app-admin-orders',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './admin-orders.component.html'
+  templateUrl: './admin-orders.component.html',
 })
 export class AdminOrdersComponent implements OnInit {
   orders: any[] = [];
   showOrderDetail = false;
   selectedOrder: any = null;
   orderDetails: any[] = [];
+
+  // Pagination
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 0;
 
   constructor(
     private orderService: OrderService,
@@ -25,7 +30,41 @@ export class AdminOrdersComponent implements OnInit {
   ngOnInit() {
     this.orderService.getOrders().subscribe((orders) => {
       this.orders = orders;
+      this.calculateTotalPages();
     });
+  }
+
+  // Pagination methods
+  get paginatedOrders() {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    return this.orders.slice(start, end);
+  }
+
+  calculateTotalPages() {
+    this.totalPages = Math.ceil(this.orders.length / this.itemsPerPage);
+  }
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  }
+
+  get pageNumbers(): number[] {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(this.totalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 
   viewOrderDetail(order: any) {
