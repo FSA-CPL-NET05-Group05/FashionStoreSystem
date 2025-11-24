@@ -29,7 +29,6 @@ export class AuthService {
     return this.http
       .post(`${this.apiUrl}/auth/login`, { username, password })
       .pipe(
-        //ignore 404
         catchError(() => of(null)),
 
         switchMap(() =>
@@ -42,6 +41,11 @@ export class AuthService {
           if (!users.length) throw new Error('Invalid credentials');
 
           const user = users[0];
+
+          if (user.status === 'banned') {
+            throw new Error('Your account has been banned');
+          }
+
           const fakeToken = 'FAKE_JWT_' + user.id;
 
           localStorage.setItem('token', fakeToken);

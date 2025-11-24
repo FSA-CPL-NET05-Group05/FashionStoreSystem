@@ -1,0 +1,51 @@
+<div class="p-8">
+  <h1 class="text-3xl font-bold mb-8">Users Management</h1>
+
+  <div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="text-left py-4 px-6">User</th>
+          <th class="text-left py-4 px-6">Email</th>
+          <th class="text-left py-4 px-6">Role</th>
+          <th class="text-left py-4 px-6">Status</th>
+          <th class="text-left py-4 px-6">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of users; track user.id) {
+        <tr class="border-b hover:bg-gray-50">
+          <td class="py-4 px-6 font-medium">{{ user.fullName }}</td>
+          <td class="py-4 px-6">{{ user.email }}</td>
+          <td class="py-4 px-6">{{ user.role }}</td>
+          <td class="py-4 px-6">
+            <span
+              [class.text-green-600]="user.status === 'active'"
+              [class.text-red-600]="user.status === 'banned'"
+              class="font-semibold"
+              >{{ user.status }}</span
+            >
+          </td>
+          <td class="py-4 px-6">
+            @if (user.role !== 'admin') { @if (user.status === 'active') {
+            <button
+              (click)="banUser(user.id)"
+              class="px-3 py-1 bg-red-100 text-red-600 rounded-lg text-sm hover:bg-red-200"
+            >
+              Ban
+            </button>
+            } @else {
+            <button
+              (click)="unbanUser(user.id)"
+              class="px-3 py-1 bg-green-100 text-green-600 rounded-lg text-sm hover:bg-green-200"
+            >
+              Unban
+            </button>
+            } }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -16,7 +16,7 @@
       "password": "customer123",
       "email": "customer1@example.com",
       "role": "customer",
-      "status": "active",
+      "status": "banned",
       "fullName": "Emma Johnson",
       "phone": "+84987654321"
     }
