@@ -25,7 +25,8 @@ namespace FashionStore.Shared.Shared.Admin.Product
         [Range(1, int.MaxValue)]
         public int CategoryId { get; set; }
 
-
+        // Danh sách ảnh phụ
+        public List<string>? AdditionalImages { get; set; }
 
     }
 }

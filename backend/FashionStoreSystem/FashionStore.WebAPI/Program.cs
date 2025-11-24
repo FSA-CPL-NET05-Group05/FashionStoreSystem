@@ -112,6 +112,10 @@ builder.Services.AddScoped<IAdminProductService, AdminProductService>();
 builder.Services.AddScoped<IAdminProductSizeRepository, AdminProductSizeRepository>();
 builder.Services.AddScoped<IAdminProductSizeService, AdminProductSizeService>();
 
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+
+
 
 
 
@@ -137,10 +141,16 @@ builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICartService, CartService>();
+
+builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
+builder.Services.AddScoped<ICustomerProductService, CustomerProductService>();
+builder.Services.AddScoped<ICustomerProductRepository, CustomerProductRepository>();
+
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
+
 
 builder.Services.AddHostedService<OrderConsumer>();
 

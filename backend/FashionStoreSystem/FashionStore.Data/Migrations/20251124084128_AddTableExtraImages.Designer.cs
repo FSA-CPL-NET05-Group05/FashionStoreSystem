@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FashionStore.Data.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20251120161916_InitialCreated")]
-    partial class InitialCreated
+    [Migration("20251124084128_AddTableExtraImages")]
+    partial class AddTableExtraImages
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -139,6 +139,9 @@ namespace FashionStore.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("ColorId")
                         .HasColumnType("int");
 
@@ -152,7 +155,6 @@ namespace FashionStore.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -249,6 +251,18 @@ namespace FashionStore.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerPhone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
 
@@ -340,6 +354,28 @@ namespace FashionStore.Data.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("FashionStore.Data.Models.ProductImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductImages");
                 });
 
             modelBuilder.Entity("FashionStore.Data.Models.ProductSize", b =>
@@ -567,8 +603,7 @@ namespace FashionStore.Data.Migrations
                     b.HasOne("FashionStore.Data.Models.AppUser", "User")
                         .WithMany("CartItems")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Color");
 
@@ -652,6 +687,17 @@ namespace FashionStore.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("FashionStore.Data.Models.ProductImage", b =>
+                {
+                    b.HasOne("FashionStore.Data.Models.Product", "Product")
+                        .WithMany("Images")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("FashionStore.Data.Models.ProductSize", b =>
@@ -759,6 +805,8 @@ namespace FashionStore.Data.Migrations
             modelBuilder.Entity("FashionStore.Data.Models.Product", b =>
                 {
                     b.Navigation("Feedbacks");
+
+                    b.Navigation("Images");
 
                     b.Navigation("OrderDetails");
 

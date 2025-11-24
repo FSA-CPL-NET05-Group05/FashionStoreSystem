@@ -1,5 +1,6 @@
 ﻿using FashionStore.Data.DBContext;
 using FashionStore.Data.Interfaces.Interfaces.Admin;
+using FashionStore.Data.Models;
 using FashionStore.Shared.Shared.Admin.Product;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -25,6 +26,7 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
             var query = _context.Products
                 .Include(p => p.Category)
                 .Include(p => p.ProductSizes)
+                .Include(p => p.Images)        // Include ProductImages
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -88,6 +90,7 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
                     .ThenInclude(ps => ps.Size)
                 .Include(p => p.ProductSizes)
                     .ThenInclude(ps => ps.Color)
+                    .Include(p => p.Images)  // Include Images
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id, ct);
         }
@@ -124,6 +127,35 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
         public async Task<bool> CategoryExistsAsync(int categoryId, CancellationToken ct = default)
         {
             return await _context.Categories.AnyAsync(c => c.Id == categoryId, ct);
+        }
+
+
+        //  Quản lý ProductImages
+        public async Task AddImagesAsync(int productId, List<string> imageUrls, CancellationToken ct = default)
+        {
+            if (imageUrls == null || !imageUrls.Any()) return;
+
+            var images = imageUrls.Select(url => new ProductImage
+            {
+                ProductId = productId,
+                Url = url
+            }).ToList();
+
+            await _context.ProductImages.AddRangeAsync(images, ct);
+            await _context.SaveChangesAsync(ct);
+        }
+
+        public async Task RemoveAllImagesAsync(int productId, CancellationToken ct = default)
+        {
+            var images = await _context.ProductImages
+                .Where(img => img.ProductId == productId)
+                .ToListAsync(ct);
+
+            if (images.Any())
+            {
+                _context.ProductImages.RemoveRange(images);
+                await _context.SaveChangesAsync(ct);
+            }
         }
 
 
