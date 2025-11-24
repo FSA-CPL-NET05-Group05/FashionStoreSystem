@@ -4,7 +4,11 @@ using FashionStore.Business.Interfaces.Interfaces.Admin;
 ﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Customer;
 using FashionStore.Business.Interfaces.Interfaces.Login;
+<<<<<<< HEAD
 using FashionStore.Business.Service.Customer.Service;
+=======
+using FashionStore.Business.Mapping;
+>>>>>>> develop
 using FashionStore.Business.Service.LoginService;
 using FashionStore.Business.Service.Service.Admin;
 using FashionStore.Business.Service.Service.Admin;
@@ -15,18 +19,29 @@ using FashionStore.Data.Interfaces.Interfaces.Customer;
 using FashionStore.Data.Interfaces.Interfaces.Login;
 using FashionStore.Data.Models;
 using FashionStore.Data.Models;
+<<<<<<< HEAD
 using FashionStore.Data.Repositories.CustomerRepository;
+=======
+>>>>>>> develop
 using FashionStore.Data.Repositories.LoginRepository;
 using FashionStore.Data.Repositories.Repositories.Admin;
 using FashionStore.Data.Repositories.Repositories.Admin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity;
+<<<<<<< HEAD
+=======
+using Microsoft.Extensions.DependencyInjection;
+>>>>>>> develop
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 
 
+<<<<<<< HEAD
 ﻿
+=======
+>>>>>>> develop
 
 
 
@@ -34,7 +49,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+
+    x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddScoped<ILoginServices, LoginService>();
@@ -130,6 +150,12 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IManagerAccountService, ManagerAccountService>();
 builder.Services.AddScoped<IManagerAccountRepository, ManagerAccountRepository>();
 
+// Product services
+builder.Services.AddScoped<IAdminProductRepository, AdminProductRepository>();
+builder.Services.AddScoped<IAdminProductService, AdminProductService>();
+
+builder.Services.AddScoped<IAdminProductSizeRepository, AdminProductSizeRepository>();
+builder.Services.AddScoped<IAdminProductSizeService, AdminProductSizeService>();
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
@@ -156,13 +182,23 @@ builder.Services.AddSingleton<IConnection>(sp =>
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICartService, CartService>();
+<<<<<<< HEAD
 builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
 builder.Services.AddScoped<ICustomerProductService, CustomerProductService>();
 builder.Services.AddScoped<ICustomerProductRepository, CustomerProductRepository>();
+=======
+builder.Services.AddScoped<IHomeService, HomeService>();
+
+builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
+>>>>>>> develop
 
 builder.Services.AddHostedService<OrderConsumer>();
+
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 
 var app = builder.Build();

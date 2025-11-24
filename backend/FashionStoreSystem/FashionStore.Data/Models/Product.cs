@@ -20,5 +20,6 @@ namespace FashionStore.Data.Models
         public ICollection<OrderDetail> OrderDetails { get; set; }
         public ICollection<Feedback> Feedbacks { get; set; }
         public ICollection<ProductSize> ProductSizes { get; set; }
+        public ICollection<ProductImage> Images { get; set; } = new List<ProductImage>();
     }
 }

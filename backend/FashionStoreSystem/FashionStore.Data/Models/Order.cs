@@ -12,7 +12,11 @@ namespace FashionStore.Data.Models
         public DateTime OrderDate { get; set; } = DateTime.Now;
         public string? UserId { get; set; }             
         public decimal TotalAmount { get; set; }
-        public string Status { get; set; }              
+        public string Status { get; set; }
+
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerPhone { get; set; } = string.Empty;
+        public string CustomerEmail { get; set; } = string.Empty;
 
 
         // Foreign Key

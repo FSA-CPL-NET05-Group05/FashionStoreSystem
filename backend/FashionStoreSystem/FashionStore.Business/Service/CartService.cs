@@ -92,9 +92,37 @@ namespace FashionStore.Business.Service
             return cartDtos;
         }
 
-        public async Task<bool> RemoveFromCartAsync(int cartItemId)
+        public async Task<bool> RemoveFromCartAsync(int cartItemId, string userId)
         {
+            var cartItem = await _cartRepo.GetByIdAsync(cartItemId);
+
+            if (cartItem == null)
+            {
+                return false;
+            }
+
+            if (cartItem.UserId.ToString() != userId)
+            {
+                return false;
+            }
             await _cartRepo.DeleteAsync(cartItemId);
+            return true;
+        }
+
+
+        public async Task<bool> UpdateCartItemQuantityAsync(UpdateCartItemDto dto)
+        {
+
+            var cartItem = await _cartRepo.GetByIdAsync(dto.CartItemId);
+
+            if (cartItem == null)
+            {
+                return false;
+            }
+
+            cartItem.Quantity = dto.NewQuantity;
+            await _cartRepo.UpdateAsync(cartItem);
+
             return true;
         }
     }

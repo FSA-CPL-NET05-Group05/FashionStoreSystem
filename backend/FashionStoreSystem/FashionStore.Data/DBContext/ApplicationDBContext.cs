@@ -21,7 +21,7 @@ namespace FashionStore.Data.DBContext
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
-
+        public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<AccountLockHistory> AccountLockHistories { get; set; }
 
 
@@ -193,6 +193,20 @@ namespace FashionStore.Data.DBContext
                 entity.Property(e => e.Name)
                       .IsRequired()
                       .HasMaxLength(50);
+            });
+
+            // --- ProductImage ---
+            builder.Entity<ProductImage>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Url)
+                      .IsRequired();
+
+                entity.HasOne(d => d.Product)
+                      .WithMany(p => p.Images) 
+                      .HasForeignKey(d => d.ProductId)
+                      .OnDelete(DeleteBehavior.Cascade); 
             });
 
 
