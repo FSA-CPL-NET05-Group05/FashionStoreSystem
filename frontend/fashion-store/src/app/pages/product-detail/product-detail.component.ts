@@ -7,6 +7,8 @@ import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../services/auth.service';
 import { FeedbackService } from '../../services/feedback.service';
 import { FormsModule } from '@angular/forms';
+import { CartService } from '../../services/cart.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-product-detail',
@@ -38,11 +40,17 @@ export class ProductDetailComponent implements OnInit {
   toastr = inject(ToastrService);
   authService = inject(AuthService);
   feedbackService = inject(FeedbackService);
+  cartService = inject(CartService);
+  http = inject(HttpClient);
+
+  private apiUrl = 'http://localhost:3000';
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
     const id = +this.route.snapshot.params['id'];
     this.loadProductDetail(id);
+    this.loadFeedbacks(id);
+    this.checkReviewPermission(id);
   }
 
   loadProductDetail(id: number) {
@@ -79,16 +87,50 @@ export class ProductDetailComponent implements OnInit {
   }
 
   loadFeedbacks(productId: number) {
-    this.feedbackService.getFeedbacks(productId).subscribe((feedbacks) => {
-      this.feedbacks = feedbacks;
-      if (feedbacks.length) {
-        const sum = feedbacks.reduce(
-          (acc: number, f: any) => acc + f.rating,
-          0
-        );
-        this.averageRating = Math.round(sum / feedbacks.length);
-      }
+    this.feedbackService.getFeedbacks(productId).subscribe({
+      next: (feedbacks) => {
+        this.feedbacks = feedbacks;
+
+        if (feedbacks.length) {
+          const sum = feedbacks.reduce(
+            (acc: number, f: any) => acc + f.rating,
+            0
+          );
+          this.averageRating = Math.round(sum / feedbacks.length);
+        }
+
+        if (this.authService.currentUserValue) {
+          const userId = this.authService.currentUserValue.id;
+          this.hasReviewed = feedbacks.some((f: any) => f.userId === userId);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load feedbacks:', err);
+      },
     });
+  }
+
+  checkReviewPermission(productId: number) {
+    if (!this.authService.isCustomer()) {
+      this.canReview = false;
+      return;
+    }
+
+    const userId = this.authService.currentUserValue.id;
+
+    this.http
+      .get<any[]>(
+        `${this.apiUrl}/purchaseHistory?userId=${userId}&productId=${productId}`
+      )
+      .subscribe({
+        next: (purchases) => {
+          this.canReview = purchases.length > 0;
+        },
+        error: (err) => {
+          console.error('Failed to check purchase history:', err);
+          this.canReview = false;
+        },
+      });
   }
 
   selectSize(size: any) {
@@ -106,11 +148,17 @@ export class ProductDetailComponent implements OnInit {
 
     this.stockService
       .getStock(this.product.id, this.selectedSize.id, this.selectedColor.id)
-      .subscribe((productSize) => {
-        this.currentStock = productSize?.stock || 0;
-        if (this.quantity > this.currentStock) {
-          this.quantity = Math.max(1, this.currentStock);
-        }
+      .subscribe({
+        next: (productSize) => {
+          this.currentStock = productSize?.stock || 0;
+          if (this.quantity > this.currentStock) {
+            this.quantity = Math.max(1, this.currentStock);
+          }
+        },
+        error: (err) => {
+          console.error('Failed to get stock:', err);
+          this.currentStock = 0;
+        },
       });
   }
 
@@ -129,8 +177,50 @@ export class ProductDetailComponent implements OnInit {
     if (this.quantity > 1) this.quantity--;
   }
 
+  addToCart() {
+    if (!this.selectedSize || !this.selectedColor) {
+      this.toastr.warning('Please select size and color');
+      return;
+    }
+
+    if (this.currentStock < this.quantity) {
+      this.toastr.error('Not enough stock available');
+      return;
+    }
+
+    const userId = this.authService.currentUserValue?.id;
+
+    if (!userId) {
+      this.toastr.warning('Please login to add items to cart');
+      return;
+    }
+
+    this.cartService
+      .addToCart({
+        userId: userId,
+        productId: this.product.id,
+        sizeId: this.selectedSize.id,
+        colorId: this.selectedColor.id,
+        quantity: this.quantity,
+      })
+      .subscribe({
+        next: () => {
+          this.toastr.success('Added to cart successfully!');
+          this.updateStock();
+        },
+        error: (err) => {
+          this.toastr.error(err.message || 'Failed to add to cart');
+        },
+      });
+  }
+
   submitReview(e: Event) {
     e.preventDefault();
+
+    if (!this.authService.isCustomer()) {
+      this.toastr.warning('Only customers can write reviews');
+      return;
+    }
 
     if (!this.canReview) {
       this.toastr.warning('You need to purchase this product first');
@@ -139,6 +229,11 @@ export class ProductDetailComponent implements OnInit {
 
     if (this.hasReviewed) {
       this.toastr.warning('You have already reviewed this product');
+      return;
+    }
+
+    if (!this.reviewForm.comment.trim()) {
+      this.toastr.warning('Please write your review');
       return;
     }
 
@@ -151,13 +246,15 @@ export class ProductDetailComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.toastr.success('Review submitted!');
+          this.toastr.success('Review submitted successfully!');
           this.showReviewForm = false;
           this.reviewForm = { rating: 5, comment: '' };
           this.loadFeedbacks(this.product.id);
           this.hasReviewed = true;
         },
-        error: () => this.toastr.error('Failed to submit review'),
+        error: (err) => {
+          this.toastr.error(err.message || 'Failed to submit review');
+        },
       });
   }
 

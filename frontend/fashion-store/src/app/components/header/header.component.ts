@@ -1,31 +1,62 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-header',
   imports: [RouterModule, FormsModule, CommonModule],
   templateUrl: '../header/header.component.html',
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   cartCount = 0;
   showMenu = false;
   showLoginModal = false;
   loginForm = { username: '', password: '' };
 
-  authService = inject(AuthService);
-  router = inject(Router);
+  private cartCountSubscription?: Subscription;
+  private authSubscription?: Subscription;
 
-  constructor(private toast: ToastrService) {}
+  authService = inject(AuthService);
+  cartService = inject(CartService);
+  router = inject(Router);
+  toast = inject(ToastrService);
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe((user) => {
+    this.authSubscription = this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
-      const userId = user ? user.id : 'guest';
+
+      if (user && user.id) {
+        this.cartService.initializeCart(user.id);
+      } else {
+        this.cartCount = 0;
+      }
     });
+
+    this.cartCountSubscription = this.cartService.cartCount$.subscribe({
+      next: (count) => {
+        this.cartCount = count;
+        console.log('Cart count updated in header:', count);
+      },
+      error: (err) => {
+        console.error('Error subscribing to cart count:', err);
+        this.cartCount = 0;
+      },
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.cartCountSubscription) {
+      this.cartCountSubscription.unsubscribe();
+    }
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 
   getUserInitials() {
@@ -40,19 +71,30 @@ export class HeaderComponent implements OnInit {
 
   login(e: Event) {
     e.preventDefault();
+
+    if (!this.loginForm.username || !this.loginForm.password) {
+      this.toast.warning('Please enter username and password');
+      return;
+    }
+
     this.authService
       .login(this.loginForm.username, this.loginForm.password)
       .subscribe({
-        next: (user) => {
+        next: (response) => {
           this.showLoginModal = false;
           this.loginForm = { username: '', password: '' };
           this.toast.success('Login successful');
-          if (user.role === 'admin') {
+
+          this.cartService.initializeCart(response.user.id);
+
+          if (response.user.role === 'admin') {
             this.router.navigate(['/admin']);
+          } else {
+            this.router.navigate(['/']);
           }
         },
         error: (err) => {
-          this.toast.error(err.message || 'Login failed');
+          this.toast.error(err.message || 'Invalid username or password');
         },
       });
   }
@@ -60,6 +102,8 @@ export class HeaderComponent implements OnInit {
   logout() {
     this.authService.logout();
     this.showMenu = false;
+    this.cartCount = 0;
     this.toast.info('Logged out successfully');
+    this.router.navigate(['/']);
   }
 }

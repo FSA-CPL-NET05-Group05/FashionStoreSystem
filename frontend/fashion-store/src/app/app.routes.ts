@@ -5,6 +5,7 @@ import { ProductDetailComponent } from './pages/product-detail/product-detail.co
 import { HomeComponent } from './pages/home/home.component';
 import { AdminComponent } from './pages/admin/admin.component';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard.component';
+import { CartComponent } from './pages/cart/cart.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -13,4 +14,5 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'admin', component: AdminComponent },
   { path: 'dashboard', component: AdminDashboardComponent },
+  { path: 'cart', component: CartComponent },
 ];

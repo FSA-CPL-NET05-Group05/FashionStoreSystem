@@ -202,6 +202,7 @@
 
         <!-- Add to Cart -->
         <button
+          (click)="addToCart()"
           [disabled]="currentStock === 0"
           [class.opacity-50]="currentStock === 0"
           [class.cursor-not-allowed]="currentStock === 0"
@@ -285,6 +286,7 @@
         <h2 class="text-xl font-bold text-gray-800">Customer Reviews</h2>
         @if (authService.isCustomer() && canReview && !hasReviewed) {
         <button
+          (click)="showReviewForm = true"
           class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all transform hover:scale-105"
         >
           Write a Review
