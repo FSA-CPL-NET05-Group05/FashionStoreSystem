@@ -1,0 +1,55 @@
+
+<div class="p-8">
+  <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="bg-white rounded-xl p-6 shadow-md">
+      <h3 class="text-gray-600 mb-2">Total Products</h3>
+      <p class="text-3xl font-bold">{{ stats.products }}</p>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-md">
+      <h3 class="text-gray-600 mb-2">Total Orders</h3>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-md">
+      <h3 class="text-gray-600 mb-2">Total Revenue</h3>
+    </div>
+
+    <div class="bg-white rounded-xl p-6 shadow-md">
+      <h3 class="text-gray-600 mb-2">Total Reviews</h3>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl p-6 shadow-md">
+    <h2 class="text-xl font-bold mb-6">Recent Orders</h2>
+
+    <table class="w-full">
+      <thead>
+        <tr class="border-b">
+          <th class="text-left py-3">Order ID</th>
+          <th class="text-left py-3">Customer</th>
+          <th class="text-left py-3">Total</th>
+          <th class="text-left py-3">Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        
+        <!-- @for (order of recentOrders; track order.id) {
+        <tr class="border-b hover:bg-gray-50">
+          <td class="py-3">#{{ order.id }}</td>
+
+          <td class="py-3">
+            {{ order.user?.fullName || order.guestName }}
+          </td>
+
+          <td class="py-3">${{ order.totalAmount }}</td>
+
+          <td class="py-3">{{ order.status }}</td>
+        </tr>
+        } -->
+      </tbody>
+    </table>
+  </div>
+</div>
