@@ -75,12 +75,13 @@ namespace FashionStore.Data.Repositories
         public async Task<Product> GetProductByIdAsync(int productId)
         {
             return await _context.Products
-                .Include(p => p.Category)
-                .Include(p => p.ProductSizes)
-                    .ThenInclude(ps => ps.Size)
-                .Include(p => p.ProductSizes)
-                    .ThenInclude(ps => ps.Color)
-                .FirstOrDefaultAsync(p => p.Id == productId);
+         .Include(p => p.Category)
+         .Include(p => p.ProductSizes)
+             .ThenInclude(ps => ps.Size)
+         .Include(p => p.ProductSizes)
+             .ThenInclude(ps => ps.Color)
+         .Include(p => p.Images)      // 🔥 thêm dòng này
+         .FirstOrDefaultAsync(p => p.Id == productId);
         }
 
       

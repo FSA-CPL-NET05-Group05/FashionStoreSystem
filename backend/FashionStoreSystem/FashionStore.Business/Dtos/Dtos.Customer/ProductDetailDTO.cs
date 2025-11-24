@@ -12,11 +12,11 @@ namespace FashionStore.Business.Dtos.Dtos.Customer
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; }
         public decimal Price { get; set; }
-        public string ImageUrl { get; set; }
 
         public string CategoryName { get; set; }
         public int TotalStock { get; set; }
 
+        public List<string> Images { get; set; } = new();
         public List<ProductVarianDTO> Variants { get; set; }
     }
 }

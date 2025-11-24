@@ -33,9 +33,11 @@ namespace FashionStore.Business.Mapping
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
-                ImageUrl = product.ImageUrl,
                 CategoryName = product.Category.Name,
                 TotalStock = product.ProductSizes.Sum(ps => ps.Stock),
+
+                Images = product.Images.Select(img => img.Url).ToList(),
+                                              
 
                 Variants = product.ProductSizes.Select(ps => new ProductVarianDTO
                 {
