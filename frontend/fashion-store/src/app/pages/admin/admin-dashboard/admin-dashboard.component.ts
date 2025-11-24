@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { forkJoin } from 'rxjs';
-import { ProductService } from '../../../services/product.services';
 import { AdminComponent } from '../admin.component';
 import { RouterModule } from '@angular/router';
 import { OrderService } from '../../../services/order.service';
 import { UserService } from '../../../services/user.service';
 import { FeedbackService } from '../../../services/feedback.service';
+import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-admin-dashboard',

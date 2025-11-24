@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { register } from 'swiper/element/bundle';
-import { ProductService } from '../../services/product.services';
+import { ProductService } from '../../services/product.service';
 
 register();
 

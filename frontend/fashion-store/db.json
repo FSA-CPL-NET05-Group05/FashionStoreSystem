@@ -188,7 +188,7 @@
       "productId": 1,
       "sizeId": 1,
       "colorId": 1,
-      "stock": 19
+      "stock": 21
     },
     {
       "id": 2,
@@ -336,13 +336,6 @@
       "colorId": 3,
       "stock": 10,
       "id": 23
-    },
-    {
-      "productId": 7,
-      "sizeId": 1,
-      "colorId": 4,
-      "stock": 1,
-      "id": 24
     }
   ],
   "cart": [

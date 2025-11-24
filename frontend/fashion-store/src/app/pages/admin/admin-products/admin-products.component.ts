@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 
 import { ToastrService } from 'ngx-toastr';
 import { catchError, forkJoin, of } from 'rxjs';
-import { ProductService } from '../../../services/product.services';
+import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-admin-products',
@@ -40,13 +40,12 @@ export class AdminProductsComponent implements OnInit {
     stock: 0,
   };
 
-  // Object lưu trữ lỗi validation
   validationErrors: any = {
     name: '',
     imageUrl: '',
     price: '',
     description: '',
-    categoryId: ''
+    categoryId: '',
   };
 
   constructor(
@@ -103,7 +102,7 @@ export class AdminProductsComponent implements OnInit {
       imageUrl: '',
       price: '',
       description: '',
-      categoryId: ''
+      categoryId: '',
     };
     this.showProductModal = true;
   }
@@ -120,7 +119,7 @@ export class AdminProductsComponent implements OnInit {
       imageUrl: '',
       price: '',
       description: '',
-      categoryId: ''
+      categoryId: '',
     };
     this.showProductModal = true;
   }
@@ -167,88 +166,7 @@ export class AdminProductsComponent implements OnInit {
     }
   }
 
-  // deleteProduct(id: number) {
-  //   if (
-  //     !confirm(
-  //       'Delete this product? This will remove all related data including orders, reviews, and cart items.'
-  //     )
-  //   )
-  //     return;
-
-  //   forkJoin({
-  //     productSizes: this.productService.getProductSizes(id),
-  //     cart: this.http.get<any[]>(`http://localhost:3000/cart?productId=${id}`),
-  //     orderDetails: this.http.get<any[]>(`http://localhost:3000/orderDetails?productId=${id}`),
-  //     feedbacks: this.http.get<any[]>(`http://localhost:3000/feedbacks?productId=${id}`),
-  //     purchaseHistory: this.http.get<any[]>(`http://localhost:3000/purchaseHistory?productId=${id}`),
-  //   }).subscribe({
-  //     next: ({ productSizes, cart, orderDetails, feedbacks, purchaseHistory }) => {
-  //       const deleteRequests: any[] = [];
-
-  //       productSizes.forEach((ps) => {
-  //         deleteRequests.push(
-  //           this.productService.deleteProductSize(ps.id).pipe(
-  //             catchError(() => of(null))
-  //           )
-  //         );
-  //       });
-
-  //       cart.forEach((item) => {
-  //         deleteRequests.push(
-  //           this.http.delete(`http://localhost:3000/cart/${item.id}`).pipe(
-  //             catchError(() => of(null))
-  //           )
-  //         );
-  //       });
-
-  //       orderDetails.forEach((detail) => {
-  //         deleteRequests.push(
-  //           this.http.delete(`http://localhost:3000/orderDetails/${detail.id}`).pipe(
-  //             catchError(() => of(null))
-  //           )
-  //         );
-  //       });
-
-  //       feedbacks.forEach((feedback) => {
-  //         deleteRequests.push(
-  //           this.http.delete(`http://localhost:3000/feedbacks/${feedback.id}`).pipe(
-  //             catchError(() => of(null))
-  //           )
-  //         );
-  //       });
-
-  //       purchaseHistory.forEach((history) => {
-  //         deleteRequests.push(
-  //           this.http.delete(`http://localhost:3000/purchaseHistory/${history.id}`).pipe(
-  //             catchError(() => of(null))
-  //           )
-  //         );
-  //       });
-
-  //       if (deleteRequests.length > 0) {
-  //         forkJoin(deleteRequests).subscribe({
-  //           next: () => {
-  //             this.productService.deleteProduct(id).subscribe({
-  //               next: () => {
-  //                 this.toastr.success('Product and all related data deleted!');
-  //                 this.loadData();
-  //               },
-  //             });
-  //           },
-  //         });
-  //       } else {
-  //         this.productService.deleteProduct(id).subscribe({
-  //           next: () => {
-  //             this.toastr.success('Product deleted!');
-  //             this.loadData();
-  //           },
-  //         });
-  //       }
-  //     },
-  //     error: () => this.toastr.error('Failed to load product data'),
-  //   });
-  // }
- deleteProduct(id: number) {
+  deleteProduct(id: number) {
     if (
       !confirm(
         'Delete this product? This will remove all related data including orders, reviews, and cart items.'
@@ -287,7 +205,7 @@ export class AdminProductsComponent implements OnInit {
                 console.warn(
                   `ProductSize ${ps.id} already deleted or not found`
                 );
-                return of(null); // Bỏ qua lỗi và tiếp tục
+                return of(null);
               })
             )
           );
@@ -427,8 +345,19 @@ export class AdminProductsComponent implements OnInit {
   }
 
   addStock() {
-    if (!this.stockForm.sizeId || !this.stockForm.colorId || this.stockForm.stock < 0) {
-      this.toastr.warning('Please fill all fields');
+    const existingStock = this.currentProductSizes.find(
+      (ps) =>
+        ps.sizeId === +this.stockForm.sizeId &&
+        ps.colorId === +this.stockForm.colorId
+    );
+
+    if (existingStock) {
+      const newStockAmount = existingStock.stock + +this.stockForm.stock;
+      this.toastr.info(
+        `Updated existing stock from ${existingStock.stock} to ${newStockAmount}`
+      );
+      this.updateStock(existingStock, newStockAmount);
+      this.stockForm = { sizeId: '', colorId: '', stock: 0 };
       return;
     }
 
@@ -481,7 +410,7 @@ export class AdminProductsComponent implements OnInit {
       imageUrl: '',
       price: '',
       description: '',
-      categoryId: ''
+      categoryId: '',
     };
   }
 
@@ -493,8 +422,6 @@ export class AdminProductsComponent implements OnInit {
     return item.id;
   }
 
-  // ==================== VALIDATION ====================
-
   // Hàm validate product
   validateProduct(product: any): boolean {
     // Reset lỗi
@@ -503,7 +430,7 @@ export class AdminProductsComponent implements OnInit {
       imageUrl: '',
       price: '',
       description: '',
-      categoryId: ''
+      categoryId: '',
     };
 
     let isValid = true;
@@ -516,14 +443,17 @@ export class AdminProductsComponent implements OnInit {
       this.validationErrors.name = 'Product name must be at least 3 characters';
       isValid = false;
     } else if (product.name.trim().length > 100) {
-      this.validationErrors.name = 'Product name must not exceed 100 characters';
+      this.validationErrors.name =
+        'Product name must not exceed 100 characters';
       isValid = false;
     }
 
-    
-
     // Validate price
-    if (product.price === null || product.price === undefined || product.price === '') {
+    if (
+      product.price === null ||
+      product.price === undefined ||
+      product.price === ''
+    ) {
       this.validationErrors.price = 'Price is required';
       isValid = false;
     } else if (product.price <= 0) {
@@ -539,10 +469,12 @@ export class AdminProductsComponent implements OnInit {
       this.validationErrors.description = 'Description is required';
       isValid = false;
     } else if (product.description.trim().length < 10) {
-      this.validationErrors.description = 'Description must be at least 10 characters';
+      this.validationErrors.description =
+        'Description must be at least 10 characters';
       isValid = false;
     } else if (product.description.trim().length > 1000) {
-      this.validationErrors.description = 'Description must not exceed 1000 characters';
+      this.validationErrors.description =
+        'Description must not exceed 1000 characters';
       isValid = false;
     }
 
@@ -554,26 +486,4 @@ export class AdminProductsComponent implements OnInit {
 
     return isValid;
   }
-
-//test delete
-testDelete(id: number) {
-  console.log('Testing simple delete for ID:', id);
-  
-  this.productService.deleteProduct(id).subscribe({
-    next: (response) => {
-      console.log('✅ Delete successful:', response);
-      this.toastr.success('Product deleted!');
-      this.loadData();
-    },
-    error: (error) => {
-      console.error('❌ Delete failed:', error);
-      console.error('Status:', error.status);
-      console.error('Message:', error.message);
-      this.toastr.error(`Delete failed: ${error.message}`);
-    }
-  });
-}
-
-
-
 }
