@@ -1,29 +1,5 @@
 
 
-using FashionStore.Business.Interfaces.Interfaces.Admin;
-using FashionStore.Business.Interfaces.Interfaces.Login;
-using FashionStore.Business.Mapping;
-using FashionStore.Business.Service.LoginService;
-using FashionStore.Business.Service.Service.Admin;
-using FashionStore.Data.DBContext;
-using FashionStore.Data.Interfaces.Interfaces.Admin;
-using FashionStore.Data.Interfaces.Interfaces.Login;
-using FashionStore.Data.Models;
-using FashionStore.Data.Models;
-using FashionStore.Data.Repositories.LoginRepository;
-using FashionStore.Data.Repositories.Repositories.Admin;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Text.Json.Serialization;
-
-
-
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -162,6 +138,7 @@ builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IHomeService, HomeService>();
+builder.Services.AddScoped<ICartRepository, CartRepository>();
 
 builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
 
