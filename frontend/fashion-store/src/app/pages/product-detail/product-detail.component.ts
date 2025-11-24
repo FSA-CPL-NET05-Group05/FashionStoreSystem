@@ -112,27 +112,60 @@ export class ProductDetailComponent implements OnInit {
   }
 
   checkReviewPermission(productId: number) {
-    if (!this.authService.isCustomer()) {
-      this.canReview = false;
-      return;
-    }
-
-    const userId = this.authService.currentUserValue.id;
-
-    this.http
-      .get<any[]>(
-        `${this.apiUrl}/purchaseHistory?userId=${userId}&productId=${productId}`
-      )
-      .subscribe({
-        next: (purchases) => {
-          this.canReview = purchases.length > 0;
-        },
-        error: (err) => {
-          console.error('Failed to check purchase history:', err);
-          this.canReview = false;
-        },
-      });
+  if (!this.authService.isCustomer()) {
+    this.canReview = false;
+    return;
   }
+
+  const userId = this.authService.currentUserValue.id;
+
+  // Lấy tất cả lịch sử mua hàng và feedback
+  forkJoin({
+    purchases: this.http.get<any[]>(
+      `${this.apiUrl}/purchaseHistory?userId=${userId}&productId=${productId}`
+    ),
+    feedbacks: this.http.get<any[]>(
+      `${this.apiUrl}/feedbacks?userId=${userId}&productId=${productId}`
+    )
+  }).subscribe({
+    next: ({ purchases, feedbacks }) => {
+      // Số lần mua
+      const purchaseCount = purchases.length;
+      // Số lần đã review
+      const reviewCount = feedbacks.length;
+      
+      // Chỉ cho review khi số lần mua > số lần review
+      this.canReview = purchaseCount > reviewCount;
+      this.hasReviewed = purchaseCount <= reviewCount;
+    },
+    error: (err) => {
+      console.error('Failed to check review permission:', err);
+      this.canReview = false;
+    },
+  });
+}
+  // checkReviewPermission(productId: number) {
+  //   if (!this.authService.isCustomer()) {
+  //     this.canReview = false;
+  //     return;
+  //   }
+
+  //   const userId = this.authService.currentUserValue.id;
+
+  //   this.http
+  //     .get<any[]>(
+  //       `${this.apiUrl}/purchaseHistory?userId=${userId}&productId=${productId}`
+  //     )
+  //     .subscribe({
+  //       next: (purchases) => {
+  //         this.canReview = purchases.length > 0;
+  //       },
+  //       error: (err) => {
+  //         console.error('Failed to check purchase history:', err);
+  //         this.canReview = false;
+  //       },
+  //     });
+  // }
 
   selectSize(size: any) {
     this.selectedSize = size;
