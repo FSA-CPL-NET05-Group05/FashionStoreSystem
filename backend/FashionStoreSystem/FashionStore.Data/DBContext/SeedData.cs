@@ -39,6 +39,8 @@ namespace FashionStore.Data.DBContext
             await SeedProductSizes(context);
 
             await SeedFeedbacks(context);
+
+            await SeedProductImages(context);
         }
 
         private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
@@ -145,11 +147,11 @@ namespace FashionStore.Data.DBContext
             {
                 var categories = new List<Category>
                 {
-                    new Category { Name = "Áo Thun (T-Shirt)" },
-                    new Category { Name = "Áo Sơ Mi (Shirt)" },
-                    new Category { Name = "Quần Jean (Jeans)" },
-                    new Category { Name = "Váy (Dress)" },
-                    new Category { Name = "Áo Khoác (Jacket)" }
+                    new Category { Name = "Áo Thun" },
+                    new Category { Name = "Áo Sơ Mi" },
+                    new Category { Name = "Quần Jean" },
+                    new Category { Name = "Váy" },
+                    new Category { Name = "Áo Khoác" }
                 };
                 await context.Categories.AddRangeAsync(categories);
                 await context.SaveChangesAsync();
@@ -320,6 +322,167 @@ namespace FashionStore.Data.DBContext
                 }
 
                 await context.Feedbacks.AddRangeAsync(feedbacks);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        private static async Task SeedProductImages(ApplicationDBContext context)
+        {
+            if (!context.ProductImages.Any())
+            {
+                var products = await context.Products.ToListAsync();
+                if (!products.Any()) return;
+
+                var productImages = new List<ProductImage>();
+
+                var imageMapping = new Dictionary<string, List<string>>
+                {
+                    // --- 1. NHÓM ÁO THUN ---
+                    {
+                        "Áo Thun Basic Cotton",
+                        new List<string> {
+                            "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcToA8mpPPnN0KL2UFaeto26O6HaUF240ax4o5LqRk6Igb5VUYpI4j1Fdqpt5R-kaAVI2niphKUFeu8BkOeYmgJx3cs9VxZ-feuEeBXaEfLLybNjhZXvw5M-c0LgCweiDkHEeirDizeP&usqp=CAc",
+                            "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcT13C7WRAvjkSDs3Zw1pDvt4bdnYW0wBED0tc2cyRmKeDJXKjHOHSUP9fnhy-8J5Qd-58XdmXteFSwRchAZCa8YabiWUm86d6JmRmdDkbc4bkrLbHn1c91k1BgDNr2Er9v067vbXe3Z&usqp=CAc",
+                            "https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcT5FQY9lPoLOQNyZv2vMElCLyn6LaV26WjPtFt0Wh3KcTENYp2LY27WDkzrWXNsBalw2TZmcSCKTghVFWfcQURpM3Hsa0kvLmlBDgDpAa7tj5a-w2U-kDJN5fGZ9N1dz_6zdApnMA1-&usqp=CAc",
+                            "https://chodole.com/cdn/shop/products/CDL5_1_1024x1024.jpg?v=1586758906"
+                        }
+                    },
+                    {
+                        "Áo Thun Graphic Streetwear",
+                        new List<string> {
+                            "https://bizweb.dktcdn.net/100/287/440/products/ao-thun-in-hinh-tran-vien-mau-den-form-rong-local-brand-davies.jpg?v=1713778019587",
+                            "https://bizweb.dktcdn.net/100/287/440/products/ao-thun-in-hinh-tran-vien-nam-nu-form-rong-den-trang-thun-cotton-local-brand-3-c62236a0-2bf7-4d48-82bd-51a7ce72e1cc.jpg?v=1729916781917",
+                            "https://inaothunviet.com/wp-content/uploads/2025/03/ao_thun_in_hinh_thiet_ke_ca_map_streetwear_mau_den-300x300.jpg",
+                            "https://bizweb.dktcdn.net/thumb/large/100/287/440/products/ao-thun-nam-nu-form-rong-davies-thiet-ke-hinh-in-chu-cach-dieu-dam-chat-duong-pho-co-gian-1.jpg?v=1758882635073"
+                        }
+                    },
+                    {
+                        "Áo Polo Nam Cổ Bẻ",
+                        new List<string> {
+                            "https://bizweb.dktcdn.net/thumb/1024x1024/100/290/346/products/ao-polo-nam-aristino-apsr10-anh-1.jpg",
+                            "https://product.hstatic.net/1000369857/product/ao_ab19_xanh_den_1_c691c6dc769d483e860b6a1805be1b6f.jpg",
+                            "https://bizweb.dktcdn.net/thumb/1024x1024/100/290/346/products/28-fada0d57-4b2e-4505-b6cf-f5ee145a8de5.jpg",
+                            "https://bizweb.dktcdn.net/thumb/1024x1024/100/290/346/products/ao-polo-nam-aristino-aps011as1-1.jpg?v=1737459813673"
+                        }
+                    },
+
+                    // --- 2. NHÓM SƠ MI ---
+                    {
+                        "Áo Sơ Mi Trắng Công Sở",
+                        new List<string> {
+                            "https://dongphuchaianh.vn/wp-content/uploads/2022/08/dong-phuc-ao-so-mi-nu-cong-so-mau-trang.jpg",
+                            "https://dongphucbonmua.com/wp-content/uploads/2024/11/ao-so-mi-nam-dong-phuc-cong-so.jpg",
+                            "https://js0fpsb45jobj.vcdn.cloud/storage/upload/media/3-trang-ae09043.jpg",
+                            "https://pos.nvncdn.com/650b61-144700/art/artCT/20240517_rM6wXkIO.jpg"
+                        }
+                    },
+                    {
+                        "Áo Sơ Mi Flannel Caro",
+                        new List<string> {
+                            "https://maylanstore.com/wp-content/uploads/2024/03/ao-so-mi-flannel-ke-soc-10.jpg",
+                            "https://aoxuanhe.com/upload/product/axh-148/ao-so-mi-flannel-caro-du-lich-nau.jpg",
+                            "https://zeanus.vn/upload/product/zn-0124/ao-so-mi-nam-caro-do-du-lich-axh-114.jpg",
+                            "https://img.lazcdn.com/g/p/5fec6fa5efd191b22442a2b40ef86380.jpg_720x720q80.jpg"
+                        }
+                    },
+
+                    // --- 3. NHÓM QUẦN JEAN ---
+                    {
+                        "Quần Jean Slim Fit",
+                        new List<string> {
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhJ_VX8mMb7c6NRRBeiecDeBwp2lFi9zbY9w&s",
+                            "https://pos.nvncdn.com/d0f3ca-7136/ps/20220915_9nYTI93O3l5MBMcc8mq3CSPS.jpg?v=1673542440",
+                            "https://4men.com.vn/images/thumbs/2019/08/quan-jean-slimfit-xanh-bien-qj1653-14633-slide-products-5d64ff79d9e5f.JPG",
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7bgTupkVkkzaWk5yzXSaTKoK-vvCi4Qa5Ow&s"
+                        }
+                    },
+                    {
+                        "Quần Jean Baggy Ống Rộng",
+                        new List<string> {
+                            "https://zizoou.com/cdn/shop/products/Quan-Baggy-Jean-nam-nu-2b-1-Quan-ong-rong-xanh-classic-ZiZoou-Store_4472x.jpg?v=1680283265",
+                            "https://tashop.vn/templates/pictures/products/1584371768_quan-jean-baggy-ong-rong-77.jpg",
+                            "https://lh6.googleusercontent.com/ZSswzo340XbSu_ee9GFyivmoGwrpOY093GE89isK79HONSP3_LR5Xk4GyDDUembNX3X2dD6GyEO01Lwfqc2GX2ktvWqdNuH_Vad4chxSgkwrRqWY996iDY2SfFKzyHstNrQ8XjS-5Bhna6YJwRvRSw",
+                            "https://salt.tikicdn.com/cache/w300/ts/product/c0/b4/05/887b08ba90d1c69d3b00b603b59bc03f.jpg"
+                        }
+                    },
+                    {
+                        "Quần Short Jean Mùa Hè",
+                        new List<string> {
+                            "https://img.lazcdn.com/g/p/d2f0bedd2ddf9572cdb670d46270d96e.jpg_720x720q80.jpg",
+                            "https://bizweb.dktcdn.net/thumb/grande/100/396/594/products/carbon-1.jpg?v=1711764388850",
+                            "https://salt.tikicdn.com/cache/w300/ts/product/47/1c/a8/72c55776c8a530bbdafe1d191ce1b9e1.jpg",
+                            "https://image.made-in-china.com/202f0j00isIcFfkgrSqb/Custom-Summer-Streetwear-Vintage-Short-Half-Pants-Loose-Work-Shorts-Fashion-Men-s-Jorts-Baggy-Denim-Jean-Shorts-Men.webp"
+                        }
+                    },
+
+                    // --- 4. NHÓM VÁY ---
+                    {
+                        "Váy Hoa Nhí Vintage",
+                        new List<string> {
+                            "https://lamia.com.vn/storage/vay-hoa-nhi-1.jpg",
+                            "https://salt.tikicdn.com/cache/550x550/ts/product/23/ec/c6/64e3cd85aec3192120813502d2df513b.jpg",
+                            "https://img.riokupon.com/upload/images/2023/03/23/6f2e2598ac6f256f90810a008cec1c48.jpg",
+                            "https://bloganchoi.com/wp-content/uploads/2018/04/vay-hoa-nhi.jpg"
+                        }
+                    },
+                    {
+                        "Đầm Dạ Hội Sang Trọng",
+                        new List<string> {
+                            "https://lh3.googleusercontent.com/proxy/281GP7V2VQQtjCwKT7G5_57B4A4Kn_Us0Ex6HxVrIwnxNcs9l7_jbfxwdpMzYfKPd_X_q0VZaqUBqu7SFJxTZ7F4WPvR2AiBhGUDZ4-bu5QslHleVB4uFofNznfPpUIMJZc",
+                            "https://shopviets.com/wp-content/uploads/2023/05/Cac-mau-dam-da-hoi-sang-trong-mau-dam-da-hoi-moi-nhat-VDH33-3.jpg",
+                            "https://product.hstatic.net/1000318527/product/141279554_2759566720950868_4151769136115659930_o_7f872a3e6d624b05a5ea7652f97d415f_master.jpg",
+                            "https://img.lazcdn.com/g/ff/kf/S8602f76621804dd5b6ad14c403d32d450.jpg_720x720q80.jpg"
+                        }
+                    },
+
+                     // --- 5. NHÓM ÁO KHOÁC ---
+                    {
+                        "Áo Khoác Denim",
+                        new List<string> {
+                            "https://bizweb.dktcdn.net/100/502/737/products/o1cn01da6ath1lkuuqdhr173965984.jpg?v=1734772093710",
+                            "https://s3.ap-southeast-1.amazonaws.com/thegmen.vn/2023/3/1679305993206xqu3f.jpg",
+                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRg7OcXOTOU3QUyx1NZz0FYF21LeGutXltIIg&s",
+                            "https://content.pancake.vn/1/s800x600/fwebp/24/ec/f7/55/240ea2b44625e7cca1b3e38716c5a710d2244909f1ae46f9a8310c4a-w:800-h:600-l:95724-t:image/jpeg.jpeg"
+                        }
+                    },
+                    {
+                        "Áo Hoodie Unisex",
+                        new List<string> {
+                            "https://dongphuchaianh.com/wp-content/uploads/2022/04/ao-khoac-ni-hoodie-unisex-mau-den.jpg",
+                            "https://product.hstatic.net/200000755737/product/z6048366686279_258043bb579ab3dfbe984f8a5fef1734_1474b8de750b46ceac673e179ac84c5b.jpg",
+                            "https://cache.maysoichivang.com/wp-content/uploads/2022/02/e5739d1ac504e86bd44fa447ad2ad7b6.jpg",
+                            "https://product.hstatic.net/200000370449/product/hoodie_fire_den_sau_c133f948ef644d4a81a2592dac02ecc2_master.png"
+                        }
+                    },
+                    {
+                        "Áo Blazer Hàn Quốc",
+                        new List<string> {
+                            "https://bizweb.dktcdn.net/100/360/581/files/phoi-do-voi-blazer-nam-han-quoc-9.jpg?v=1710472586336",
+                            "https://vn-test-11.slatic.net/p/592d3087d2be03a1889238d5e1e9b833.jpg",
+                            "https://dukistore.vn/files/thumb/400/400//uploads/content/T04-2024/ao-blazer-nu-3-cuc-mau-kem-khong-co-BLU0109-2.jpg",
+                            "https://lh7-us.googleusercontent.com/kJaE9IuTjYlnWcH771hqvXgtzj9h5a642ggD14XJogTwbAuAD5fGDASMflpzWfql4UD_J31Oc8Qg_uRTioA6ffTxctxblffJbdd9om0iOPFpdgRM2NUmutVhM93FtiB9uHrbBb9l-aCe1xJE5907dQ"
+                        }
+                    }
+                };
+
+                foreach (var product in products)
+                {
+                    if (imageMapping.ContainsKey(product.Name))
+                    {
+                        var specificImages = imageMapping[product.Name];
+
+                        foreach (var url in specificImages)
+                        {
+                            productImages.Add(new ProductImage
+                            {
+                                ProductId = product.Id, 
+                                Url = url
+                            });
+                        }
+                    }
+                }
+
+                await context.ProductImages.AddRangeAsync(productImages);
                 await context.SaveChangesAsync();
             }
         }
