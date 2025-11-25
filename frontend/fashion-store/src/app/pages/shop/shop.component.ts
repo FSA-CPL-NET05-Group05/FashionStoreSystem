@@ -1,8 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { ProductService } from '../../services/product.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Component, inject, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-shop',

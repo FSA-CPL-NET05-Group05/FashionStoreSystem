@@ -7,17 +7,18 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class ProductService {
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'https://localhost:7057/api';
 
   constructor(private http: HttpClient) {}
 
   // ===== READ =====
   getProducts(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/products`);
+    return this.http
+      .get<any>(`${this.apiUrl}/CustomerProduct`)
+      .pipe(map((response) => response.items ?? []));
   }
-
   getProduct(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/products/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/CustomerProduct/${id}`);
   }
 
   getProductsWithDetails(): Observable<any[]> {
@@ -49,7 +50,15 @@ export class ProductService {
   }
 
   getCategories(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/categories`);
+    return this.http.get<any[]>(`${this.apiUrl}/Categories`);
+  }
+
+  getProductsByCategory(categoryId: number): Observable<any[]> {
+    return this.http
+      .get<any>(`${this.apiUrl}/CustomerProduct`, {
+        params: { categoryId: categoryId.toString() },
+      })
+      .pipe(map((res) => res.items ?? []));
   }
 
   // ===== CREATE =====

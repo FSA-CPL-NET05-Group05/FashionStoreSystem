@@ -3,10 +3,11 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 export const adminGuard = () => {
-  const authService = inject(AuthService);
+  const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.isAdmin()) return true;
+  if (auth.currentUserValue?.role === 'Admin') return true;
+
   router.navigate(['/']);
   return false;
 };

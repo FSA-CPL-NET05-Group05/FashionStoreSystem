@@ -1,12 +1,12 @@
 export interface User {
   id: string;
   username: string;
-  password: string;
-  email: string;
-  role: 'admin' | 'customer';
-  status: 'active' | 'banned';
+  email?: string;
+  role: 'Admin' | 'Customer';
+  status?: 'active' | 'banned';
   fullName: string;
-  phone: string;
+  phone?: string;
+  password?: string;
 }
 
 export interface Category {

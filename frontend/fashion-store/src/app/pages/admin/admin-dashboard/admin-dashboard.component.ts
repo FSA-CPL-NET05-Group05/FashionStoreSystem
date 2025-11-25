@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { forkJoin } from 'rxjs';
-import { AdminComponent } from '../admin.component';
 import { RouterModule } from '@angular/router';
+import { forkJoin } from 'rxjs';
+
+import { ProductService } from '../../../services/product.service';
 import { OrderService } from '../../../services/order.service';
 import { UserService } from '../../../services/user.service';
 import { FeedbackService } from '../../../services/feedback.service';
-import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -30,7 +29,7 @@ export class AdminDashboardComponent implements OnInit {
     forkJoin({
       products: this.productService.getProducts(),
       orders: this.orderService.getOrders(),
-      feedbacks: this.feedbackService.getFeedbacks(),
+      feedbacks: this.feedbackService.getAllFeedbacks(), // dùng phương thức mới
     }).subscribe({
       next: ({ products, orders, feedbacks }) => {
         this.stats.products = products.length;
@@ -39,6 +38,7 @@ export class AdminDashboardComponent implements OnInit {
         this.stats.reviews = feedbacks.length;
         this.recentOrders = orders.slice(0, 5);
       },
+      error: (err) => console.error('Failed to load admin dashboard', err),
     });
   }
 }
