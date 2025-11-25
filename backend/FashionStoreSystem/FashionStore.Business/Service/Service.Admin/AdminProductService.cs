@@ -83,7 +83,7 @@ namespace FashionStore.Business.Service.Service.Admin
 
             var created = await _repo.CreateAsync(product, ct);
 
-            // 2. Thêm ảnh phụ (nếu có)
+            // 2. Thêm ảnh phụ 
             if (request.AdditionalImages != null && request.AdditionalImages.Any())
             {
                 await _repo.AddImagesAsync(created.Id, request.AdditionalImages, ct);
