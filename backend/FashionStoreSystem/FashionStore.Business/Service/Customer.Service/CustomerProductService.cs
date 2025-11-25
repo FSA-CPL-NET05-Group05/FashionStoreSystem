@@ -81,5 +81,7 @@ namespace FashionStore.Business.Service
 
             return product.ToProductDetailDTO(); // mapping
         }
+
+
     }
 }

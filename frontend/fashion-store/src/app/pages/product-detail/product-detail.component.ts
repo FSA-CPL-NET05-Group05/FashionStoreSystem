@@ -1,4 +1,3 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { StockService } from '../../services/stock.service';
@@ -10,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { CartService } from '../../services/cart.service';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-product-detail',
@@ -48,34 +48,37 @@ export class ProductDetailComponent implements OnInit {
 
   ngOnInit(): void {
     window.scrollTo(0, 0);
-    const id = +this.route.snapshot.params['id'];
+    const idParam = this.route.snapshot.params['id'];
+    const id = typeof idParam === 'string' ? +idParam : idParam;
     this.loadProductDetail(id);
     this.loadFeedbacks(id);
     this.checkReviewPermission(id);
   }
 
-  loadProductDetail(id: number) {
-    forkJoin({
-      product: this.productService.getProduct(id),
-      productSizes: this.productService.getProductSizes(id),
-      sizes: this.productService.getSizes(),
-      colors: this.productService.getColors(),
-    }).subscribe({
-      next: ({ product, productSizes, sizes, colors }) => {
+  loadProductDetail(id: number): void {
+    this.productService.getProduct(id).subscribe({
+      next: (product) => {
         this.product = product;
-        this.selectedImage = product.imageUrl;
 
-        const uniqueSizeIds = [
-          ...new Set(productSizes.map((ps: any) => ps.sizeId)),
-        ];
-        this.availableSizes = sizes.filter((s) => uniqueSizeIds.includes(s.id));
+        this.selectedImage = product.images?.[0] || product.imageUrl;
 
-        const uniqueColorIds = [
-          ...new Set(productSizes.map((ps: any) => ps.colorId)),
-        ];
-        this.availableColors = colors.filter((c) =>
-          uniqueColorIds.includes(c.id)
-        );
+        const uniqueSizeMap = new Map<number, any>();
+        const uniqueColorMap = new Map<number, any>();
+
+        product.variants.forEach((v: any) => {
+          if (!uniqueSizeMap.has(v.sizeId))
+            uniqueSizeMap.set(v.sizeId, { id: v.sizeId, name: v.sizeName });
+          if (!uniqueColorMap.has(v.colorId)) {
+            uniqueColorMap.set(v.colorId, {
+              id: v.colorId,
+              name: v.colorName,
+              code: v.colorCode,
+            });
+          }
+        });
+
+        this.availableSizes = Array.from(uniqueSizeMap.values());
+        this.availableColors = Array.from(uniqueColorMap.values());
 
         if (this.availableSizes.length)
           this.selectedSize = this.availableSizes[0];
@@ -84,10 +87,11 @@ export class ProductDetailComponent implements OnInit {
 
         this.updateStock();
       },
+      error: (err) => console.error('Failed to load product detail', err),
     });
   }
 
-  loadFeedbacks(productId: number) {
+  loadFeedbacks(productId: number): void {
     this.feedbackService.getFeedbacks(productId).subscribe({
       next: (feedbacks) => {
         this.feedbacks = feedbacks;
@@ -100,33 +104,36 @@ export class ProductDetailComponent implements OnInit {
           this.averageRating = Math.round(sum / feedbacks.length);
         }
 
-        if (this.authService.currentUserValue) {
-          const userId = this.authService.currentUserValue.id;
-          this.hasReviewed = feedbacks.some((f: any) => f.userId === userId);
+        const currentUser = this.authService.currentUserValue;
+        if (currentUser) {
+          const userIdStr = currentUser.id.toString();
+          this.hasReviewed = feedbacks.some(
+            (f: any) => f.userId.toString() === userIdStr
+          );
         }
       },
-      error: (err) => {
-        console.error('Failed to load feedbacks:', err);
-      },
+      error: (err) => console.error('Failed to load feedbacks:', err),
     });
   }
 
-  checkReviewPermission(productId: number) {
+  checkReviewPermission(productId: number): void {
     if (!this.authService.isCustomer()) {
       this.canReview = false;
       return;
     }
 
-    const userId = this.authService.currentUserValue.id;
+    const userId = this.authService.currentUserValue?.id?.toString();
+    if (!userId) {
+      this.canReview = false;
+      return;
+    }
 
     this.http
       .get<any[]>(
         `${this.apiUrl}/purchaseHistory?userId=${userId}&productId=${productId}`
       )
       .subscribe({
-        next: (purchases) => {
-          this.canReview = purchases.length > 0;
-        },
+        next: (purchases) => (this.canReview = purchases.length > 0),
         error: (err) => {
           console.error('Failed to check purchase history:', err);
           this.canReview = false;
@@ -134,51 +141,43 @@ export class ProductDetailComponent implements OnInit {
       });
   }
 
-  selectSize(size: any) {
+  selectSize(size: any): void {
     this.selectedSize = size;
     this.updateStock();
   }
 
-  selectColor(color: any) {
+  selectColor(color: any): void {
     this.selectedColor = color;
     this.updateStock();
   }
 
-  updateStock() {
+  updateStock(): void {
     if (!this.selectedSize || !this.selectedColor) return;
 
-    this.stockService
-      .getStock(this.product.id, this.selectedSize.id, this.selectedColor.id)
-      .subscribe({
-        next: (productSize) => {
-          this.currentStock = productSize?.stock || 0;
-          if (this.quantity > this.currentStock) {
-            this.quantity = Math.max(1, this.currentStock);
-          }
-        },
-        error: (err) => {
-          console.error('Failed to get stock:', err);
-          this.currentStock = 0;
-        },
-      });
+    const variant = this.product.variants.find(
+      (v: any) =>
+        v.sizeId === this.selectedSize.id && v.colorId === this.selectedColor.id
+    );
+
+    this.currentStock = variant?.stock || 0;
+    if (this.quantity > this.currentStock)
+      this.quantity = Math.max(1, this.currentStock);
   }
 
-  increaseQuantity() {
-    if (this.quantity < this.currentStock) {
-      this.quantity++;
-    } else {
+  increaseQuantity(): void {
+    if (this.quantity < this.currentStock) this.quantity++;
+    else
       this.toastr.warning(
         `Only ${this.currentStock} items available`,
         'Stock Limit'
       );
-    }
   }
 
-  decreaseQuantity() {
+  decreaseQuantity(): void {
     if (this.quantity > 1) this.quantity--;
   }
 
-  addToCart() {
+  addToCart(): void {
     if (this.isAdmin()) {
       this.toastr.warning('Admin cannot purchase products');
       return;
@@ -194,8 +193,7 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
-    const userId = this.authService.currentUserValue?.id;
-
+    const userId = this.authService.currentUserValue?.id?.toString();
     if (!userId) {
       this.toastr.warning('Please login to add items to cart');
       return;
@@ -203,7 +201,7 @@ export class ProductDetailComponent implements OnInit {
 
     this.cartService
       .addToCart({
-        userId: userId,
+        userId,
         productId: this.product.id,
         sizeId: this.selectedSize.id,
         colorId: this.selectedColor.id,
@@ -214,13 +212,12 @@ export class ProductDetailComponent implements OnInit {
           this.toastr.success('Added to cart successfully!');
           this.updateStock();
         },
-        error: (err) => {
-          this.toastr.error(err.message || 'Failed to add to cart');
-        },
+        error: (err) =>
+          this.toastr.error(err.message || 'Failed to add to cart'),
       });
   }
 
-  submitReview(e: Event) {
+  submitReview(e: Event): void {
     e.preventDefault();
 
     if (!this.authService.isCustomer()) {
@@ -243,9 +240,12 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
+    const userId = this.authService.currentUserValue?.id?.toString();
+    if (!userId) return;
+
     this.feedbackService
       .createFeedback({
-        userId: this.authService.currentUserValue.id,
+        userId,
         productId: this.product.id,
         rating: this.reviewForm.rating,
         comment: this.reviewForm.comment,
@@ -258,9 +258,8 @@ export class ProductDetailComponent implements OnInit {
           this.loadFeedbacks(this.product.id);
           this.hasReviewed = true;
         },
-        error: (err) => {
-          this.toastr.error(err.message || 'Failed to submit review');
-        },
+        error: (err) =>
+          this.toastr.error(err.message || 'Failed to submit review'),
       });
   }
 
@@ -273,7 +272,6 @@ export class ProductDetailComponent implements OnInit {
   }
 
   isAdmin(): boolean {
-    const user = this.authService.currentUserValue;
-    return user?.role === 'admin';
+    return this.authService.currentUserValue?.role === 'admin';
   }
 }

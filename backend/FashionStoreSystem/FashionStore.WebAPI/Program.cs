@@ -1,6 +1,5 @@
 
 
-<<<<<<< HEAD
 using FashionStore.Business.Interfaces.Interfaces.Admin;
 ﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Customer;
@@ -37,11 +36,8 @@ using System.Text.Json.Serialization;
 
 
 
-=======
->>>>>>> develop
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers().AddJsonOptions(x =>
 {

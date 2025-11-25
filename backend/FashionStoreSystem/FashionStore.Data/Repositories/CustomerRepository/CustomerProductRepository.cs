@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 namespace FashionStore.Data.Repositories
 {
     public class CustomerProductRepository : ICustomerProductRepository
@@ -80,10 +81,25 @@ namespace FashionStore.Data.Repositories
              .ThenInclude(ps => ps.Size)
          .Include(p => p.ProductSizes)
              .ThenInclude(ps => ps.Color)
-         .Include(p => p.Images)     
+         .Include(p => p.Images)      // 🔥 thêm dòng này
          .FirstOrDefaultAsync(p => p.Id == productId);
         }
 
-      
+        public async Task<Product> GetProductDetailAsync(int productId)
+        {
+            return await _context.Products
+                .Include(p => p.Images)
+                .Include(p => p.ProductSizes)
+                    .ThenInclude(ps => ps.Size)
+                .Include(p => p.ProductSizes)
+                    .ThenInclude(ps => ps.Color)
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.Id == productId);
+        }
+
+
+
     }
 }
+
+

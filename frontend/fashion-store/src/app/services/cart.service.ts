@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   BehaviorSubject,
@@ -21,24 +21,48 @@ export class CartService {
 
   constructor(private http: HttpClient, private stockService: StockService) {}
 
+  /** Lấy header Authorization với token JWT */
+  private getAuthHeaders(): { headers: HttpHeaders } {
+    const token = localStorage.getItem('token') || '';
+    return {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${token}`,
+      }),
+    };
+  }
+
+  /** Kiểm tra user đã login */
   private ensureLoggedIn(userId: string): boolean {
     return !!userId && userId !== 'guest';
   }
 
+  /** Lấy giỏ hàng */
   getCart(userId: string): Observable<any[]> {
     if (!this.ensureLoggedIn(userId)) return of([]);
-
-    return this.http.get<any[]>(`${this.apiUrl}/cart?userId=${userId}`);
+    return this.http.get<any[]>(
+      `${this.apiUrl}/cart?userId=${userId}`,
+      this.getAuthHeaders()
+    );
   }
 
+  /** Lấy giỏ hàng + thông tin product, size, color */
   getCartWithDetails(userId: string): Observable<any[]> {
     if (!this.ensureLoggedIn(userId)) return of([]);
 
     return forkJoin({
       cart: this.getCart(userId),
-      products: this.http.get<any[]>(`${this.apiUrl}/products`),
-      sizes: this.http.get<any[]>(`${this.apiUrl}/sizes`),
-      colors: this.http.get<any[]>(`${this.apiUrl}/colors`),
+      products: this.http.get<any[]>(
+        `${this.apiUrl}/products`,
+        this.getAuthHeaders()
+      ),
+      sizes: this.http.get<any[]>(
+        `${this.apiUrl}/sizes`,
+        this.getAuthHeaders()
+      ),
+      colors: this.http.get<any[]>(
+        `${this.apiUrl}/colors`,
+        this.getAuthHeaders()
+      ),
     }).pipe(
       map(({ cart, products, sizes, colors }) =>
         cart.map((item) => ({
@@ -51,9 +75,9 @@ export class CartService {
     );
   }
 
+  /** Thêm sản phẩm vào giỏ */
   addToCart(item: any): Observable<any> {
     const { userId, productId, sizeId, colorId, quantity } = item;
-
     if (!this.ensureLoggedIn(userId)) {
       return throwError(() => new Error('You must login to add item to cart.'));
     }
@@ -67,34 +91,41 @@ export class CartService {
           }
 
           return this.http.get<any[]>(
-            `${this.apiUrl}/cart?userId=${userId}&productId=${productId}&sizeId=${sizeId}&colorId=${colorId}`
+            `${this.apiUrl}/cart?userId=${userId}&productId=${productId}&sizeId=${sizeId}&colorId=${colorId}`,
+            this.getAuthHeaders()
           );
         }),
         switchMap((existingItems) => {
           if (existingItems.length > 0) {
             const existingItem = existingItems[0];
-            const newQuantity = existingItem.quantity + item.quantity;
+            const newQuantity = existingItem.quantity + quantity;
 
             return this.stockService
               .decreaseStock(productId, sizeId, colorId, quantity)
               .pipe(
                 switchMap(() =>
-                  this.http.patch(`${this.apiUrl}/cart/${existingItem.id}`, {
-                    quantity: newQuantity,
-                    addedAt: new Date().toISOString(),
-                  })
+                  this.http.patch(
+                    `${this.apiUrl}/cart/${existingItem.id}`,
+                    {
+                      quantity: newQuantity,
+                      addedAt: new Date().toISOString(),
+                    },
+                    this.getAuthHeaders()
+                  )
                 )
               );
           } else {
-            const newItem = {
-              ...item,
-              addedAt: new Date().toISOString(),
-            };
-
+            const newItem = { ...item, addedAt: new Date().toISOString() };
             return this.stockService
               .decreaseStock(productId, sizeId, colorId, quantity)
               .pipe(
-                switchMap(() => this.http.post(`${this.apiUrl}/cart`, newItem))
+                switchMap(() =>
+                  this.http.post(
+                    `${this.apiUrl}/cart`,
+                    newItem,
+                    this.getAuthHeaders()
+                  )
+                )
               );
           }
         }),
@@ -102,6 +133,7 @@ export class CartService {
       );
   }
 
+  /** Cập nhật số lượng item trong cart */
   updateCartItem(
     cartItemId: number,
     newQuantity: number,
@@ -109,15 +141,16 @@ export class CartService {
     item: any
   ): Observable<any> {
     const diff = newQuantity - oldQuantity;
-
     if (diff > 0) {
       return this.stockService
         .decreaseStock(item.productId, item.sizeId, item.colorId, diff)
         .pipe(
           switchMap(() =>
-            this.http.patch(`${this.apiUrl}/cart/${cartItemId}`, {
-              quantity: newQuantity,
-            })
+            this.http.patch(
+              `${this.apiUrl}/cart/${cartItemId}`,
+              { quantity: newQuantity },
+              this.getAuthHeaders()
+            )
           ),
           tap(() => this.updateCartCount(item.userId))
         );
@@ -126,17 +159,19 @@ export class CartService {
         .increaseStock(item.productId, item.sizeId, item.colorId, -diff)
         .pipe(
           switchMap(() =>
-            this.http.patch(`${this.apiUrl}/cart/${cartItemId}`, {
-              quantity: newQuantity,
-            })
+            this.http.patch(
+              `${this.apiUrl}/cart/${cartItemId}`,
+              { quantity: newQuantity },
+              this.getAuthHeaders()
+            )
           ),
           tap(() => this.updateCartCount(item.userId))
         );
     }
-
     return of(null);
   }
 
+  /** Xóa item khỏi giỏ */
   removeFromCart(cartItem: any): Observable<any> {
     return this.stockService
       .increaseStock(
@@ -146,7 +181,12 @@ export class CartService {
         cartItem.quantity
       )
       .pipe(
-        switchMap(() => this.http.delete(`${this.apiUrl}/cart/${cartItem.id}`)),
+        switchMap(() =>
+          this.http.delete(
+            `${this.apiUrl}/cart/${cartItem.id}`,
+            this.getAuthHeaders()
+          )
+        ),
         tap(() => this.updateCartCount(cartItem.userId)),
         catchError((error) => {
           console.error('Error in removeFromCart:', error);
@@ -156,6 +196,7 @@ export class CartService {
       );
   }
 
+  /** Xóa toàn bộ giỏ sau khi order */
   clearCartAfterOrder(userId: string): Observable<any> {
     if (!this.ensureLoggedIn(userId)) return of(null);
 
@@ -164,7 +205,10 @@ export class CartService {
         if (items.length === 0) return of(null);
         return forkJoin(
           items.map((item) =>
-            this.http.delete(`${this.apiUrl}/cart/${item.id}`)
+            this.http.delete(
+              `${this.apiUrl}/cart/${item.id}`,
+              this.getAuthHeaders()
+            )
           )
         );
       }),
@@ -172,6 +216,7 @@ export class CartService {
     );
   }
 
+  /** Cập nhật số lượng cart */
   private updateCartCount(userId: string): void {
     if (!this.ensureLoggedIn(userId)) {
       this.cartCountSubject.next(0);
@@ -179,13 +224,8 @@ export class CartService {
     }
 
     this.getCart(userId).subscribe({
-      next: (items) => {
-        this.cartCountSubject.next(items.length);
-      },
-      error: (err) => {
-        console.error('Error updating cart count:', err);
-        this.cartCountSubject.next(0);
-      },
+      next: (items) => this.cartCountSubject.next(items.length),
+      error: () => this.cartCountSubject.next(0),
     });
   }
 
@@ -193,7 +233,9 @@ export class CartService {
     return this.cartCountSubject.value;
   }
 
-  initializeCart(userId: string): void {
-    this.updateCartCount(userId);
+  /** Khởi tạo cart cho user */
+  initializeCart(userId: string | number): void {
+    // ép kiểu number sang string
+    this.updateCartCount(userId.toString());
   }
 }

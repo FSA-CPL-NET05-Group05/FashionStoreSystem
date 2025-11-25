@@ -33,9 +33,11 @@ export class CartComponent implements OnInit, OnDestroy {
   ngOnDestroy() {}
 
   loadCart() {
-    const userId = this.authService.currentUserValue?.id;
+    const userIdNum = this.authService.currentUserValue?.id;
+    if (!userIdNum) return;
 
-    if (!userId) return;
+    // Ép sang string
+    const userId = userIdNum.toString();
 
     this.cartService.getCartWithDetails(userId).subscribe({
       next: (items) => {
@@ -71,7 +73,7 @@ export class CartComponent implements OnInit, OnDestroy {
     if (!confirm('Remove this item from cart?')) return;
 
     this.cartService.removeFromCart(item).subscribe({
-      next: (response) => {
+      next: () => {
         this.cartItems = this.cartItems.filter((i) => i.id !== item.id);
         this.calculateTotals();
         this.toastr.success('Item removed from cart');
@@ -85,15 +87,15 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   initiateCheckout() {
-    const user = this.authService.currentUserValue;
-
-    if (!user) {
+    const userNum = this.authService.currentUserValue?.id;
+    if (!userNum) {
       this.toastr.warning('Please login to place order');
       this.router.navigate(['/login']);
       return;
     }
 
-    this.placeOrder(user.id);
+    const userId = userNum.toString(); // fix number -> string
+    this.placeOrder(userId);
   }
 
   placeOrder(userId: string) {

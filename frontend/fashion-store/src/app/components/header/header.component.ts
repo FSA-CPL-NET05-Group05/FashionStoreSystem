@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../services/auth.service';
+import { AuthService, User } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
@@ -13,7 +13,7 @@ import { Subscription } from 'rxjs';
   templateUrl: '../header/header.component.html',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  currentUser: any = null;
+  currentUser: User | null = null;
   cartCount = 0;
   showMenu = false;
   showLoginModal = false;
@@ -31,8 +31,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.authSubscription = this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
 
-      if (user && user.id) {
-        this.cartService.initializeCart(user.id);
+      if (user && user.id !== undefined && user.id !== null) {
+        // Ép id sang string
+        this.cartService.initializeCart(user.id.toString());
       } else {
         this.cartCount = 0;
       }
@@ -41,35 +42,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.cartCountSubscription = this.cartService.cartCount$.subscribe({
       next: (count) => {
         this.cartCount = count;
-        console.log('Cart count updated in header:', count);
       },
-      error: (err) => {
-        console.error('Error subscribing to cart count:', err);
+      error: () => {
         this.cartCount = 0;
       },
     });
   }
 
   ngOnDestroy(): void {
-    if (this.cartCountSubscription) {
-      this.cartCountSubscription.unsubscribe();
-    }
-    if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
-    }
+    this.authSubscription?.unsubscribe();
+    this.cartCountSubscription?.unsubscribe();
   }
 
-  getUserInitials() {
+  getUserInitials(): string {
     return (
       this.currentUser?.fullName
         ?.split(' ')
-        .map((n: string) => n[0])
+        .map((n) => n[0])
         .join('')
         .toUpperCase() || 'U'
     );
   }
 
-  login(e: Event) {
+  login(e: Event): void {
     e.preventDefault();
 
     if (!this.loginForm.username || !this.loginForm.password) {
@@ -80,26 +75,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.authService
       .login(this.loginForm.username, this.loginForm.password)
       .subscribe({
-        next: (response) => {
+        next: (user) => {
+          if (!user) {
+            this.toast.error('Invalid username or password');
+            return;
+          }
+
           this.showLoginModal = false;
           this.loginForm = { username: '', password: '' };
           this.toast.success('Login successful');
 
-          this.cartService.initializeCart(response.user.id);
+          // Ép id sang string
+          this.cartService.initializeCart(user.id.toString());
 
-          if (response.user.role === 'admin') {
-            this.router.navigate(['/admin']);
-          } else {
-            this.router.navigate(['/']);
-          }
+          if (user.role === 'admin') this.router.navigate(['/admin']);
+          else this.router.navigate(['/']);
         },
-        error: (err) => {
-          this.toast.error(err.message || 'Invalid username or password');
-        },
+        error: (err) => this.toast.error(err.message || 'Login failed'),
       });
   }
 
-  logout() {
+  logout(): void {
     this.authService.logout();
     this.showMenu = false;
     this.cartCount = 0;

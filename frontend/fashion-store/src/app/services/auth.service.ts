@@ -1,58 +1,61 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {
-  BehaviorSubject,
-  Observable,
-  catchError,
-  map,
-  of,
-  switchMap,
-} from 'rxjs';
+import { BehaviorSubject, Observable, of, catchError, map } from 'rxjs';
 import { Router } from '@angular/router';
+
+export interface User {
+  id: number;
+  username: string;
+  fullName: string;
+  role: 'admin' | 'customer';
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'https://localhost:7057/api/Auth';
 
-  private currentUserSubject = new BehaviorSubject<any>(
+  private currentUserSubject = new BehaviorSubject<User | null>(
     JSON.parse(localStorage.getItem('currentUser') || 'null')
   );
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  get currentUserValue() {
+  get currentUserValue(): User | null {
     return this.currentUserSubject.value;
   }
 
-  login(username: string, password: string): Observable<any> {
+  login(username: string, password: string): Observable<User | null> {
     return this.http
-      .post(`${this.apiUrl}/auth/login`, { username, password })
+      .post<{ username: string; token: string }>(`${this.apiUrl}/login`, {
+        username,
+        password,
+      })
       .pipe(
-        catchError(() => of(null)),
+        map((res) => {
+          if (!res?.token) throw new Error('Invalid credentials');
 
-        switchMap(() =>
-          this.http.get<any[]>(
-            `${this.apiUrl}/users?username=${username}&password=${password}`
-          )
-        ),
+          // Lưu token
+          localStorage.setItem('token', res.token);
 
-        map((users) => {
-          if (!users.length) throw new Error('Invalid credentials');
+          // Tạo user giả dựa trên username
+          const user: User = {
+            id: 1, // tạm thời dùng 1, có thể random hoặc dùng DB nếu có API profile
+            username: res.username,
+            fullName: res.username,
+            role: res.username.toLowerCase().includes('admin')
+              ? 'admin'
+              : 'customer',
+          };
 
-          const user = users[0];
-
-          if (user.status === 'banned') {
-            throw new Error('Your account has been banned');
-          }
-
-          const fakeToken = 'FAKE_JWT_' + user.id;
-
-          localStorage.setItem('token', fakeToken);
           localStorage.setItem('currentUser', JSON.stringify(user));
-
           this.currentUserSubject.next(user);
-          return { user, token: fakeToken };
+
+          return user;
+        }),
+        catchError((err) => {
+          console.error(err);
+          return of(null);
         })
       );
   }
@@ -64,15 +67,19 @@ export class AuthService {
     this.router.navigate(['/']);
   }
 
-  isLoggedIn() {
+  isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
   }
 
-  isAdmin() {
+  isAdmin(): boolean {
     return this.currentUserValue?.role === 'admin';
   }
 
-  isCustomer() {
+  isCustomer(): boolean {
     return this.currentUserValue?.role === 'customer';
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 }
