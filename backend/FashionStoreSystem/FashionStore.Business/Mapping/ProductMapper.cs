@@ -45,6 +45,7 @@ namespace FashionStore.Business.Mapping
                     SizeName = ps.Size.Name,
                     ColorId = ps.ColorId,
                     ColorName = ps.Color.Name,
+                    ColorCode = ps.Color.Code,
                     Stock = ps.Stock
                 }).ToList()
             };
