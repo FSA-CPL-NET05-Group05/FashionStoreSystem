@@ -31,26 +31,24 @@ namespace FashionStore.Data.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task AddAsync(T entity)
+
+        public void Add(T entity)
         {
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
+            _dbSet.Add(entity);
         }
 
-        public async Task UpdateAsync(T entity)
+        public void Update(T entity)
         {
             _dbSet.Update(entity);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(T entity)
         {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity != null)
+            if (_context.Entry(entity).State == EntityState.Detached)
             {
-                _dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
+                _dbSet.Attach(entity);
             }
+            _dbSet.Remove(entity);
         }
 
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)

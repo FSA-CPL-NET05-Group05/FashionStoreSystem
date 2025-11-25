@@ -2,63 +2,55 @@
 using FashionStore.Business.Interfaces;
 using FashionStore.Data.Interfaces;
 using FashionStore.Data.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FashionStore.Business.Service
 {
     public class CartService : ICartService
     {
-        private readonly IGenericRepository<CartItem> _cartRepo;
-        private readonly IProductRepository _productRepo;
-        private readonly ICartRepository _cart;
 
-        public CartService(IGenericRepository<CartItem> cartRepo, IProductRepository productRepo, ICartRepository cart)
+        private readonly IUnitOfWork _unitOfWork;
+        public CartService(IUnitOfWork unitOfWork)
         {
-            _cartRepo = cartRepo;
-            _productRepo = productRepo;
-            _cart = cart;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<bool> AddToCartAsync(AddToCartDto dto)
         {
-            var productSize = await _productRepo.GetProductSizeAsync(dto.ProductId, dto.ColorId, dto.SizeId);
-            if (productSize == null) return false;
 
-            var existingItem = await _cartRepo.FirstOrDefaultAsync(c =>
-                c.UserId == dto.UserId &&
-                c.ProductId == dto.ProductId &&
-                c.SizeId == dto.SizeId &&
-                c.ColorId == dto.ColorId
-            );
+            var productSize = await _unitOfWork.Products.GetProductSizeAsync(dto.ProductId, dto.ColorId, dto.SizeId);
+            if (productSize == null) return false;
+            var existingItem = await _unitOfWork.Carts.GetExistingItemAsync(dto.UserId, dto.ProductId, dto.SizeId, dto.ColorId);
 
             if (existingItem != null)
             {
                 existingItem.Quantity += dto.Quantity;
-                await _cartRepo.UpdateAsync(existingItem);
+                _unitOfWork.Carts.Update(existingItem);
             }
             else
             {
-                await _cartRepo.AddAsync(new CartItem
+                var newItem = new CartItem
                 {
                     UserId = dto.UserId,
                     ProductId = dto.ProductId,
                     SizeId = dto.SizeId,
                     ColorId = dto.ColorId,
                     Quantity = dto.Quantity
-                });
+                };
+
+                _unitOfWork.Carts.Add(newItem);
             }
+
+            await _unitOfWork.CompleteAsync();
 
             return true;
         }
 
-
         public async Task<IEnumerable<CartDto>> GetMyCartAsync(string userId)
         {
-            var items = await _cart.GetUserCartWithDetailsAsync(userId);
+            var items = await _unitOfWork.Carts.GetUserCartWithDetailsAsync(userId);
 
             return items.Select(item => new CartDto
             {
@@ -68,28 +60,36 @@ namespace FashionStore.Business.Service
                 ProductName = item.Product.Name,
                 ProductImage = item.Product.ImageUrl,
                 Price = item.Product.Price,
-                SizeName = item.Size.Name,
-                ColorName = item.Color.Name
+                SizeName = item.Size?.Name,   
+                ColorName = item.Color?.Name
             });
         }
 
         public async Task<bool> RemoveFromCartAsync(int cartItemId, string userId)
         {
-            var cartItem = await _cartRepo.GetByIdAsync(cartItemId);
+            var cartItem = await _unitOfWork.Carts.GetByIdAsync(cartItemId);
+
             if (cartItem == null || cartItem.UserId != userId)
                 return false;
 
-            await _cartRepo.DeleteAsync(cartItemId);
+            _unitOfWork.Carts.Delete(cartItem);
+
+            await _unitOfWork.CompleteAsync();
+
             return true;
         }
 
         public async Task<bool> UpdateCartItemQuantityAsync(UpdateCartItemDto dto)
         {
-            var cartItem = await _cartRepo.GetByIdAsync(dto.CartItemId);
+            var cartItem = await _unitOfWork.Carts.GetByIdAsync(dto.CartItemId);
             if (cartItem == null) return false;
 
             cartItem.Quantity = dto.NewQuantity;
-            await _cartRepo.UpdateAsync(cartItem);
+
+            _unitOfWork.Carts.Update(cartItem);
+
+            await _unitOfWork.CompleteAsync();
+
             return true;
         }
     }

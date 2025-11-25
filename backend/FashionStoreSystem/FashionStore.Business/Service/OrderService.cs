@@ -2,12 +2,10 @@
 using FashionStore.Business.Interfaces;
 using FashionStore.Business.Messaging;
 using FashionStore.Data.Interfaces;
-using FashionStore.Data.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FashionStore.Business.Service
@@ -15,24 +13,26 @@ namespace FashionStore.Business.Service
     public class OrderService : IOrderService
     {
         private readonly IRabbitMqProducer _producer;
-        private readonly ICartRepository _cartRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<OrderService> _logger;
 
-        public OrderService(IRabbitMqProducer producer, ICartRepository cartRepo,ILogger<OrderService> logger)
+        public OrderService(IRabbitMqProducer producer, IUnitOfWork unitOfWork, ILogger<OrderService> logger)
         {
             _producer = producer;
-            _cartRepo = cartRepo;
+            _unitOfWork = unitOfWork;
             _logger = logger;
         }
 
         public async Task<bool> PlaceOrderAsync(CheckoutDto dto)
         {
-            var userCartItems = await _cartRepo.GetCartOfUserAsync(dto.UserId);
+            var userCartItems = await _unitOfWork.Carts.GetCartOfUserAsync(dto.UserId);
 
             if (userCartItems.Count == 0)
             {
                 return false;
             }
+
+            bool isCartUpdated = false;
 
             if (dto.Items != null && dto.Items.Any())
             {
@@ -47,14 +47,20 @@ namespace FashionStore.Business.Service
                     if (itemInDb != null && itemInDb.Quantity != itemDto.Quantity)
                     {
                         itemInDb.Quantity = itemDto.Quantity;
-                        await _cartRepo.UpdateAsync(itemInDb);
+                        _unitOfWork.Carts.Update(itemInDb);
+                        isCartUpdated = true;
                     }
                 }
             }
 
+            if (isCartUpdated)
+            {
+                await _unitOfWork.CompleteAsync();
+            }
+
             var message = new OrderMessage
             {
-                UserId = Guid.Parse(dto.UserId), 
+                UserId = Guid.Parse(dto.UserId),
                 CustomerName = dto.CustomerName,
                 CustomerPhone = dto.CustomerPhone,
                 CustomerEmail = dto.CustomerEmail,
@@ -74,14 +80,13 @@ namespace FashionStore.Business.Service
 
             try
             {
-
                 await _producer.PublishOrderAsync(message);
-                return true; 
+                return true;
             }
             catch (Exception ex)
-            {   
-                _logger.LogError(ex.Message, "Error when send message RabbitMQ");
-                return false; 
+            {
+                _logger.LogError(ex, "Error when send message RabbitMQ");
+                return false;
             }
         }
     }

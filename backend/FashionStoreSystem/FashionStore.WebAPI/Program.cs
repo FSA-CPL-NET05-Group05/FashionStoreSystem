@@ -1,12 +1,6 @@
 
 
 
-
-
-
-
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -127,12 +121,6 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 
 
-
-
-
-
-
-
 // Dùng Singleton vì chỉ cần tạo 1 kết nối cho toàn bộ ứng dụng
 builder.Services.AddSingleton<IConnection>(sp =>
 {
@@ -163,8 +151,9 @@ builder.Services.AddScoped<ICustomerProductRepository, CustomerProductRepository
 builder.Services.AddScoped<IHomeService, HomeService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
-builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>(); 
+builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
 
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddHostedService<OrderConsumer>();
 

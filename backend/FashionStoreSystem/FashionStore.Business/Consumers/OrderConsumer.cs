@@ -38,11 +38,11 @@ namespace FashionStore.Business.Consumers
 
             var consumer = new AsyncEventingBasicConsumer(channel);
 
-            consumer.ReceivedAsync += async (model, ea) =>
+            consumer.ReceivedAsync += async (modelCosumer, BasicDeliverEventArgs) =>
             {
                 try
                 {
-                    var body = ea.Body.ToArray();
+                    var body = BasicDeliverEventArgs.Body.ToArray();
                     var messageJson = Encoding.UTF8.GetString(body);
                     var orderMessage = JsonSerializer.Deserialize<OrderMessage>(messageJson);
 
@@ -50,7 +50,7 @@ namespace FashionStore.Business.Consumers
                     {
                         await ProcessOrder(orderMessage);
                     }
-                    await channel.BasicAckAsync(ea.DeliveryTag, false);
+                    await channel.BasicAckAsync(BasicDeliverEventArgs.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
@@ -69,16 +69,11 @@ namespace FashionStore.Business.Consumers
         {
             using (var scope = _serviceProvider.CreateScope())
             {
-                var productRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
-                var orderRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Order>>();
-                var orderDetailRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<OrderDetail>>();
-                var cartRepo = scope.ServiceProvider.GetRequiredService<ICartRepository>();
-                var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
-
-                using var transaction = await db.Database.BeginTransactionAsync();
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                 try
                 {
+                    await unitOfWork.BeginTransactionAsync();
 
                     string userIdStr = message.UserId.ToString();
 
@@ -91,79 +86,66 @@ namespace FashionStore.Business.Consumers
                         CustomerName = message.CustomerName,
                         CustomerPhone = message.CustomerPhone,
                         CustomerEmail = message.CustomerEmail
-
                     };
 
-                    await orderRepo.AddAsync(newOrder);
+
+                    unitOfWork.Orders.Add(newOrder);
 
                     decimal totalAmount = 0;
                     bool hasAnyItemSuccess = false;
 
-
-                    var userCartItems = await cartRepo.GetCartOfUserAsync(userIdStr);
-
-
                     foreach (var item in message.Items)
                     {
-                        var productSize = await productRepo.GetProductSizeAsync(item.ProductId, item.ColorId, item.SizeId);
+                        var productSize = await unitOfWork.Products.GetProductSizeAsync(item.ProductId, item.ColorId, item.SizeId);
 
-                        if (productSize == null || productSize.Product == null)
-                        {
-                            _logger.LogWarning($"Product not found or invalid: {item.ProductId}");
-                            continue;
-                        }
+                        if (productSize == null) continue;
 
-                        bool isSuccess = await productRepo.DeductStockAsync(productSize.Id, item.Quantity);
+                        bool isSuccess = await unitOfWork.Products.DeductStockAsync(productSize.Id, item.Quantity);
 
                         if (isSuccess)
                         {
                             var detail = new OrderDetail
                             {
-                                OrderId = newOrder.Id,
+                                Order = newOrder,
                                 ProductId = item.ProductId,
                                 ColorId = item.ColorId,
                                 SizeId = item.SizeId,
                                 Quantity = item.Quantity,
                                 Price = productSize.Product.Price
                             };
-                            await orderDetailRepo.AddAsync(detail);
+
+                            unitOfWork.OrderDetails.Add(detail);
 
                             totalAmount += (detail.Price * detail.Quantity);
                             hasAnyItemSuccess = true;
 
-                            var itemToDelete = userCartItems.FirstOrDefault(c =>
-                                c.ProductId == item.ProductId &&
-                                c.SizeId == item.SizeId &&
-                                c.ColorId == item.ColorId
-                            );
-                        }
-                        else
-                        {
-                            _logger.LogWarning($"Product {item.ProductId} out of stock.");
+                            var cartItem = await unitOfWork.Carts.GetExistingItemAsync(userIdStr, item.ProductId, item.SizeId, item.ColorId);
+
+                            if (cartItem != null)
+                            {
+                                unitOfWork.Carts.Delete(cartItem);
+                            }
                         }
                     }
 
                     if (hasAnyItemSuccess)
                     {
                         newOrder.TotalAmount = totalAmount;
-                        newOrder.Status = "Success";
-                        await orderRepo.UpdateAsync(newOrder);
-                        await cartRepo.DeleteCartItemsOfUserAsync(userIdStr);
-                        _logger.LogInformation($"Order {newOrder.Id} created successfully for {newOrder.CustomerName}.");
+                        newOrder.Status = "Completed";
                     }
                     else
                     {
                         newOrder.Status = "Failed";
-                        newOrder.TotalAmount = 0;
-                        await orderRepo.UpdateAsync(newOrder);
-                        _logger.LogWarning($"Order {newOrder.Id} failed. No items processed.");
                     }
-                    await transaction.CommitAsync();
 
+                    await unitOfWork.CommitTransactionAsync();
+
+                    _logger.LogInformation($"Order processed: {newOrder.Status}");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Serious error while processing order");
+                    _logger.LogError(ex, "Transaction failed.");
+                    await unitOfWork.RollbackTransactionAsync();
                 }
             }
         }

@@ -32,7 +32,6 @@ namespace FashionStore.Data.Repositories
         public async Task<List<CartItem>> GetUserCartWithDetailsAsync(string userId)
         {
             return await _context.CartItems
-                .AsNoTracking()
                 .Where(c => c.UserId == userId)
                 .Include(c => c.Product)
                 .Include(c => c.Size)
@@ -53,7 +52,6 @@ namespace FashionStore.Data.Repositories
         {
             return await _context.CartItems
                 .Where(c => c.UserId == userId)
-                .AsNoTracking()
                 .Include(c => c.Product)
                 .Include(c => c.Size)
                 .Include(c => c.Color)
@@ -62,15 +60,13 @@ namespace FashionStore.Data.Repositories
 
         public async Task DeleteCartItemsOfUserAsync(string userId)
         {
-            var items = await _context.CartItems
-                .Where(c => c.UserId == userId)
-                .AsNoTracking()
-                .ToListAsync();
 
+            var items = await _context.CartItems
+                                      .Where(c => c.UserId == userId)
+                                      .ToListAsync();
             if (items.Any())
             {
                 _context.CartItems.RemoveRange(items);
-                await _context.SaveChangesAsync();
             }
         }
     }
