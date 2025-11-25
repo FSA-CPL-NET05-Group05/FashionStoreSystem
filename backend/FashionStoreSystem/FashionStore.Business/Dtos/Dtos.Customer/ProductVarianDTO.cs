@@ -13,6 +13,7 @@ namespace FashionStore.Business.Dtos.Dtos.Customer
 
         public int ColorId { get; set; }
         public string ColorName { get; set; }
+        public string ColorCode { get; set; }
 
         public int Stock { get; set; }
     }
