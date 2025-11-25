@@ -1,5 +1,7 @@
 ﻿using FashionStore.Business.Dtos;
 using FashionStore.Business.Interfaces.Interfaces.Login;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -10,23 +12,27 @@ namespace FashionStore.WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILoginServices _loginService;
+       
 
         // Inject LoginService qua constructor
         public AuthController(ILoginServices loginService)
         {
             _loginService = loginService;
+           
         }
 
         // Đăng nhập
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequest)
         {
-            // Gọi phương thức LoginAsync từ LoginService
-            var response = await _loginService.LoginAsync(loginRequest);
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            // Gọi phương thức LoginAsync từ LoginService
+            var response = await _loginService.LoginAsync(loginRequest);
+          
             // Kiểm tra nếu response là null (đăng nhập không thành công)
             if (response == null)
             {
@@ -36,5 +42,7 @@ namespace FashionStore.WebApi.Controllers
             // Trả về thông tin người dùng và token
             return Ok(response);
         }
+
+
     }
 }
