@@ -32,12 +32,30 @@ namespace FashionStore.Data.Repositories.CustomerRepository
         {
             _context.Feedbacks.Add(feedback);
             await _context.SaveChangesAsync();
+            await _context.Entry(feedback)
+       .Reference(f => f.User)
+       .LoadAsync();
         }
         public async Task<bool> HasUserPurchasedAsync(string userId, int productId)
         {
             return await _context.Orders
          .AnyAsync(o => o.UserId == userId &&
                         o.OrderDetails.Any(od => od.ProductId == productId));
+        }
+
+        public async Task<int> CountUserPurchasesAsync(string userId, int productId)
+        {
+            return await _context.OrderDetails
+                .Where(od => od.ProductId == productId &&
+                             od.Order.UserId == userId)
+                .CountAsync();
+        }
+
+        public async Task<int> CountUserFeedbacksAsync(string userId, int productId)
+        {
+            return await _context.Feedbacks
+                .Where(f => f.UserId == userId && f.ProductId == productId)
+                .CountAsync();
         }
     }
 }

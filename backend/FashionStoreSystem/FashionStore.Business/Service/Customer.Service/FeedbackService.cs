@@ -34,23 +34,26 @@ namespace FashionStore.Business.Service.Customer.Service
 
         public async Task<FeedbackDTO> CreateFeedbackAsync(string userId, FeedbackCreateDTO dto)
         {
-            // 1) Validate dữ liệu từ DTO
+            // Validate
             if (string.IsNullOrWhiteSpace(dto.Comment))
                 throw new ArgumentException("Comment cannot be empty.");
 
             if (dto.Rating < 1 || dto.Rating > 5)
                 throw new ArgumentException("Rating must be between 1 and 5.");
 
-            // 2) Kiểm tra user đã mua product chưa
-            bool hasPurchased = await _feedbackRepository
-                .HasUserPurchasedAsync(userId, dto.ProductId);
+            // 1) Tổng số lần đã mua
+            int purchaseCount = await _feedbackRepository.CountUserPurchasesAsync(userId, dto.ProductId);
 
-            if (!hasPurchased)
-                throw new UnauthorizedAccessException(
-                    "You must purchase this product before leaving a review."
-                );
+            if (purchaseCount == 0)
+                throw new UnauthorizedAccessException("You must purchase this product before leaving a review.");
 
-            // 3) Tạo Feedback entity
+            // 2) Tổng số lần đã feedback
+            int feedbackCount = await _feedbackRepository.CountUserFeedbacksAsync(userId, dto.ProductId);
+
+            if (feedbackCount >= purchaseCount)
+                throw new UnauthorizedAccessException("You have already left all allowed reviews for this product.");
+
+            // 3) Tạo feedback
             var feedback = new Feedback
             {
                 UserId = userId,
@@ -60,10 +63,8 @@ namespace FashionStore.Business.Service.Customer.Service
                 CreatedDate = DateTime.Now
             };
 
-            // 4) Lưu vào DB + load User lại từ DB
             await _feedbackRepository.AddFeedbackAsync(feedback);
 
-            // 5) Trả về DTO cho frontend
             return new FeedbackDTO
             {
                 UserName = feedback.User?.UserName ?? "Unknown",
@@ -72,5 +73,6 @@ namespace FashionStore.Business.Service.Customer.Service
                 CreatedDate = feedback.CreatedDate
             };
         }
+
     }
 }
