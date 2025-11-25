@@ -4,12 +4,12 @@ using FashionStore.Business.Interfaces.Interfaces.Admin;
 ﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Customer;
 using FashionStore.Business.Interfaces.Interfaces.Login;
-using FashionStore.Business.Interfaces.Interfaces.Logout;
+
 using FashionStore.Business.Mapping;
 using FashionStore.Business.Mapping;
 using FashionStore.Business.Service.Customer.Service;
 using FashionStore.Business.Service.LoginService;
-using FashionStore.Business.Service.Logout.Service;
+
 using FashionStore.Business.Service.Service.Admin;
 using FashionStore.Business.Service.Service.Admin;
 using FashionStore.Data.DBContext;

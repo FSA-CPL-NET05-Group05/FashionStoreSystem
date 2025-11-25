@@ -44,7 +44,7 @@ namespace FashionStore.Business.Service.LoginService
                 return new LoginResponseDTO
                 {
                     Username = user.UserName,
-                    Password=user.PasswordHash,
+                   
                     Token = token // Trả về token
                 };
             }
