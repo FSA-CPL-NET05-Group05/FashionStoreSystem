@@ -138,11 +138,12 @@ builder.Services.AddSingleton<IConnection>(sp =>
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
+builder.Services.AddScoped<IHomeService,  HomeService>();
 
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ICartService, CartService>();
 
-builder.Services.AddScoped<IRabbitMqProducer, RabbitMqProducer>();
+
 builder.Services.AddScoped<ICustomerProductService, CustomerProductService>();
 builder.Services.AddScoped<ICustomerProductRepository, CustomerProductRepository>();
 
