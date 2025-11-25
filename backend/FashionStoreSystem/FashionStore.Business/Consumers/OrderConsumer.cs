@@ -3,6 +3,7 @@ using FashionStore.Data.DBContext;
 using FashionStore.Data.Interfaces;
 using FashionStore.Data.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -18,12 +19,14 @@ namespace FashionStore.Business.Consumers
         private readonly IConnection _connection;
         private readonly ILogger<OrderConsumer> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly string _queueName;
 
-        public OrderConsumer(IConnection connection, ILogger<OrderConsumer> logger, IServiceProvider serviceProvider)
+        public OrderConsumer(IConnection connection, ILogger<OrderConsumer> logger, IServiceProvider serviceProvider,IConfiguration configuration)
         {
             _connection = connection;
             _logger = logger;
             _serviceProvider = serviceProvider;
+            _queueName = configuration["RabbitMq:OrderQueue"] ?? "order_queue";
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,7 +34,7 @@ namespace FashionStore.Business.Consumers
 
             using var channel = await _connection.CreateChannelAsync();
 
-            await channel.QueueDeclareAsync("order_queue", true, false, false, null);
+            await channel.QueueDeclareAsync(_queueName, true, false, false, null);
 
             var consumer = new AsyncEventingBasicConsumer(channel);
 
@@ -54,9 +57,12 @@ namespace FashionStore.Business.Consumers
                     _logger.LogError(ex, "Error processing message from RabbitMQ");
                 }
             };
-            await channel.BasicConsumeAsync("order_queue", false, consumer);
+            await channel.BasicConsumeAsync(_queueName, false, consumer);
 
-            while (!stoppingToken.IsCancellationRequested) await Task.Delay(1000, stoppingToken);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(1000, stoppingToken);
+            }
         }
 
         private async Task ProcessOrder(OrderMessage message)
@@ -136,13 +142,13 @@ namespace FashionStore.Business.Consumers
                             _logger.LogWarning($"Product {item.ProductId} out of stock.");
                         }
                     }
-                    await cartRepo.DeleteCartItemsOfUserAsync(userIdStr);
 
                     if (hasAnyItemSuccess)
                     {
                         newOrder.TotalAmount = totalAmount;
                         newOrder.Status = "Success";
                         await orderRepo.UpdateAsync(newOrder);
+                        await cartRepo.DeleteCartItemsOfUserAsync(userIdStr);
                         _logger.LogInformation($"Order {newOrder.Id} created successfully for {newOrder.CustomerName}.");
                     }
                     else

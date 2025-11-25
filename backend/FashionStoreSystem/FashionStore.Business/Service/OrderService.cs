@@ -3,6 +3,7 @@ using FashionStore.Business.Interfaces;
 using FashionStore.Business.Messaging;
 using FashionStore.Data.Interfaces;
 using FashionStore.Data.Models;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,24 +15,21 @@ namespace FashionStore.Business.Service
     public class OrderService : IOrderService
     {
         private readonly IRabbitMqProducer _producer;
-        private readonly IGenericRepository<CartItem> _cartRepo;
+        private readonly ICartRepository _cartRepo;
+        private readonly ILogger<OrderService> _logger;
 
-        public OrderService(IRabbitMqProducer producer, IGenericRepository<CartItem> cartRepo)
+        public OrderService(IRabbitMqProducer producer, ICartRepository cartRepo,ILogger<OrderService> logger)
         {
             _producer = producer;
             _cartRepo = cartRepo;
+            _logger = logger;
         }
 
         public async Task<bool> PlaceOrderAsync(CheckoutDto dto)
         {
+            var userCartItems = await _cartRepo.GetCartOfUserAsync(dto.UserId);
 
-            var allCartItems = await _cartRepo.GetAllAsync();
-
-            var myCartItems = allCartItems
-                .Where(c => string.Equals(c.UserId, dto.UserId, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (myCartItems.Count == 0)
+            if (userCartItems.Count == 0)
             {
                 return false;
             }
@@ -40,7 +38,7 @@ namespace FashionStore.Business.Service
             {
                 foreach (var itemDto in dto.Items)
                 {
-                    var itemInDb = myCartItems.FirstOrDefault(c =>
+                    var itemInDb = userCartItems.FirstOrDefault(c =>
                         c.ProductId == itemDto.ProductId &&
                         c.SizeId == itemDto.SizeId &&
                         c.ColorId == itemDto.ColorId
@@ -63,7 +61,7 @@ namespace FashionStore.Business.Service
                 Items = new List<OrderItemMessage>()
             };
 
-            foreach (var item in myCartItems)
+            foreach (var item in userCartItems)
             {
                 message.Items.Add(new OrderItemMessage
                 {
@@ -78,15 +76,11 @@ namespace FashionStore.Business.Service
             {
 
                 await _producer.PublishOrderAsync(message);
-                foreach (var item in myCartItems)
-                {
-                    await _cartRepo.DeleteAsync(item.Id);
-                }
-
                 return true; 
             }
             catch (Exception ex)
-            {               
+            {   
+                _logger.LogError(ex.Message, "Error when send message RabbitMQ");
                 return false; 
             }
         }

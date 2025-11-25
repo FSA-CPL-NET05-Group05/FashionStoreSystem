@@ -17,7 +17,7 @@ namespace FashionStore.Business.Service
     {
         private readonly IHomeRepository _homeRepo;
         private readonly IMapper _mapper;
-        private const int DEFAULT_PRODUCT_COUNT = 4;
+        private const int DEFAULT_HOME_PRODUCT = 4;
 
         public HomeService(IHomeRepository homeRepo,IMapper mapper)
         {
@@ -27,7 +27,7 @@ namespace FashionStore.Business.Service
 
         public async Task<IEnumerable<HomeProductDto>> GetTopRatedProductsAsync()
         {
-            var homeProducts = await _homeRepo.GetTopRatedProductsAsync(DEFAULT_PRODUCT_COUNT);
+            var homeProducts = await _homeRepo.GetTopRatedProductsAsync(DEFAULT_HOME_PRODUCT);
             var result = _mapper.Map<IEnumerable<HomeProductDto>>(homeProducts); ;
             return result;
         }

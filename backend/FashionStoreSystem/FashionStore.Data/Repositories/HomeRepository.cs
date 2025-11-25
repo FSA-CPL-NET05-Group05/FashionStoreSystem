@@ -19,28 +19,22 @@ namespace FashionStore.Data.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Product>> GetProductsHomeAsync()
-        {
-            return await _context.Products.ToListAsync();
-        }
-
         public async Task<IEnumerable<Product>> GetTopRatedProductsAsync(int count)
         {
-            return await _context.Products
-                    .AsNoTracking()
-                    .Include(p => p.Feedbacks)
-                    .OrderByDescending(p => p.Feedbacks.Any() ? p.Feedbacks.Average(f => f.Rating) : 0)
-                    .Take(count)
-                    .Select(p => new Product
-                    {
-                        Id = p.Id,
-                        Name = p.Name,
-                        Description = p.Description,
-                        Price = p.Price,
-                        ImageUrl = p.ImageUrl,
-                        CategoryId = p.CategoryId
-                    })
-                    .ToListAsync();
+            var query = _context.Products.AsNoTracking().AsQueryable();
+            query = query.Where(p => p.Feedbacks.Any() && p.Feedbacks.Average(f => f.Rating) >= 4);
+            query = query.OrderByDescending(p => p.Feedbacks.Average(f => f.Rating));
+            query = query.Take(count);
+            var result = query.Select(p => new Product
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                ImageUrl = p.ImageUrl,
+                CategoryId = p.CategoryId
+            });
+            return await result.ToListAsync();
         }
     }
 }

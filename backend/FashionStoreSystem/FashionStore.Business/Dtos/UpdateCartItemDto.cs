@@ -12,6 +12,7 @@ namespace FashionStore.Business.Dtos
     {
         [JsonIgnore]
         public string? UserId { get; set; }
+
         [Required]
         public int CartItemId { get; set; } 
 

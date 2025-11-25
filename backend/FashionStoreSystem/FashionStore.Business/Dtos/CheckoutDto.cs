@@ -13,12 +13,18 @@ namespace FashionStore.Business.Dtos
         [JsonIgnore]
         public string? UserId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Customer Name is required")]
         public string CustomerName { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "Phone number is required")]
+        [RegularExpression(@"^0\d{9}$", ErrorMessage = "Phone number must start with 0 and contain exactly 10 digits")]
         public string CustomerPhone { get; set; }
-        [Required] 
+
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid Email format")]
         public string CustomerEmail { get; set; }
+
+        [MinLength(1, ErrorMessage = "Order must contain at least one item")]
         public List<CheckoutItemDto> Items { get; set; } = new List<CheckoutItemDto>();
     }
 }

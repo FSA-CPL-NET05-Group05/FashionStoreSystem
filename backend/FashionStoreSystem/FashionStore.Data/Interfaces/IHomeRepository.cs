@@ -9,7 +9,6 @@ namespace FashionStore.Data.Interfaces
 {
     public interface IHomeRepository
     {
-        Task<IEnumerable<Product>> GetProductsHomeAsync();
         Task<IEnumerable<Product>> GetTopRatedProductsAsync(int count);
     }
 }
