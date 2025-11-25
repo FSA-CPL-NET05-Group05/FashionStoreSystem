@@ -1,6 +1,6 @@
 
 
-<<<<<<< HEAD
+
 using FashionStore.Business.Interfaces.Interfaces.Admin;
 ﻿using FashionStore.Business.Interfaces.Interfaces.Admin;
 using FashionStore.Business.Interfaces.Interfaces.Customer;
@@ -37,8 +37,7 @@ using System.Text.Json.Serialization;
 
 
 
-=======
->>>>>>> develop
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -153,6 +152,10 @@ builder.Services.AddScoped<IAdminProductSizeService, AdminProductSizeService>();
 
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 
 
 
