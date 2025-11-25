@@ -41,10 +41,14 @@ namespace FashionStore.Business.Service.LoginService
             {
                 // Nếu đăng nhập thành công, tạo token và trả về thông tin người dùng và token
                 var token = await _tokenService.CreateToken(user);
+                var roles = await _loginRepository.GetRolesAsync(user);           
+                var role = roles.FirstOrDefault() ?? "User";
                 return new LoginResponseDTO
                 {
+                    Id=user.Id,
                     Username = user.UserName,
-                   
+                    Role=role,
+                    FullName=user.FullName,
                     Token = token // Trả về token
                 };
             }
