@@ -1,5 +1,7 @@
 ﻿using FashionStore.Business.Dtos;
 using FashionStore.Business.Interfaces.Interfaces.Login;
+using FashionStore.Business.Interfaces.Interfaces.Logout;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -10,11 +12,13 @@ namespace FashionStore.WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILoginServices _loginService;
+        private readonly ILogoutService _logoutService;
 
         // Inject LoginService qua constructor
-        public AuthController(ILoginServices loginService)
+        public AuthController(ILoginServices loginService,ILogoutService logoutService)
         {
             _loginService = loginService;
+            _logoutService = logoutService;
         }
 
         // Đăng nhập
@@ -36,5 +40,14 @@ namespace FashionStore.WebApi.Controllers
             // Trả về thông tin người dùng và token
             return Ok(response);
         }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var result = await _logoutService.LogoutAsync();
+            return Ok(new { message = "Logout success" });
+        }
+
     }
 }

@@ -80,7 +80,7 @@ namespace FashionStore.Data.Repositories
              .ThenInclude(ps => ps.Size)
          .Include(p => p.ProductSizes)
              .ThenInclude(ps => ps.Color)
-         .Include(p => p.Images)      // 🔥 thêm dòng này
+         .Include(p => p.Images)     
          .FirstOrDefaultAsync(p => p.Id == productId);
         }
 
