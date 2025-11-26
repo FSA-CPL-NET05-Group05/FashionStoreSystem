@@ -53,7 +53,7 @@ namespace FashionStore.Business.Service.Service.Admin
                 Items = dtos,
                 TotalCount = totalCount,
                 Page = parameters.Page,
-                PageSize = parameters.PageSize
+                PageSize = parameters.PageSize ?? totalCount
             };
         }
 

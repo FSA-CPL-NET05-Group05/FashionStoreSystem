@@ -1,0 +1,202 @@
+<div class="bg-gray-50 min-h-screen py-6">
+  <div class="container mx-auto px-4">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-gray-800 mb-1">Shop Collection</h1>
+      <p class="text-sm text-gray-600">
+        Discover our full range of elegant pieces
+      </p>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <!-- Search -->
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="applyFilters()"
+            placeholder="Search products..."
+            class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent"
+          />
+          <svg
+            class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+
+        <!-- Category Filter -->
+        <select
+          [(ngModel)]="filters.categoryId"
+          (change)="applyFilters()"
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+        >
+          <option value="">All Categories</option>
+          @for (cat of categories; track cat.id) {
+          <option [value]="cat.id">{{ cat.name }}</option>
+          }
+        </select>
+
+        <!-- Price Sort -->
+        <select
+          [(ngModel)]="sortBy"
+          (change)="applySorting()"
+          class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+        >
+          <option value="default">Sort by</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+        </select>
+
+        <!-- Clear Filters -->
+        <button
+          (click)="clearFilters()"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+        >
+          Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    @if (getDisplayedProducts().length > 0) {
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+      @for (product of getDisplayedProducts(); track product.id) {
+      <div
+        class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full"
+      >
+        <div
+          class="relative overflow-hidden bg-gray-100 cursor-pointer flex-shrink-0 aspect-[3/4]"
+          [routerLink]="['/product', product.id]"
+        >
+          <img
+            [src]="product.imageUrl"
+            [alt]="product.name"
+            class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+          />
+          <div class="absolute top-2 right-2">
+            <span
+              class="bg-rose-600 text-white px-2 py-1 rounded-full text-xs font-semibold"
+            >
+              ${{ product.price }}
+            </span>
+          </div>
+        </div>
+        <div class="p-4 flex flex-col flex-1">
+          <h3
+            class="text-sm font-bold text-gray-800 hover:text-rose-600 transition-colors line-clamp-1 mb-2"
+          >
+            {{ product.name }}
+          </h3>
+          <p class="text-xs text-gray-600 mb-3 line-clamp-2 flex-1">
+            {{ product.description }}
+          </p>
+          <button
+            [routerLink]="['/product', product.id]"
+            class="w-full bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-lg text-sm font-semibold transition-all transform hover:scale-105"
+          >
+            View Details
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if (getTotalPages() > 1) {
+    <div class="flex items-center justify-center gap-2">
+      <button
+        (click)="previousPage()"
+        [disabled]="currentPage === 1"
+        [class.opacity-50]="currentPage === 1"
+        [class.cursor-not-allowed]="currentPage === 1"
+        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      </button>
+
+      @for (page of getPageNumbers(); track page) {
+      <button
+        (click)="goToPage(page)"
+        [class.bg-rose-600]="page === currentPage"
+        [class.text-white]="page === currentPage"
+        [class.bg-white]="page !== currentPage"
+        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-rose-100 transition-colors font-medium"
+      >
+        {{ page }}
+      </button>
+      }
+
+      <button
+        (click)="nextPage()"
+        [disabled]="currentPage === getTotalPages()"
+        [class.opacity-50]="currentPage === getTotalPages()"
+        [class.cursor-not-allowed]="currentPage === getTotalPages()"
+        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </button>
+    </div>
+    } } @else {
+    <div class="text-center py-12">
+      <svg
+        class="w-16 h-16 mx-auto text-gray-300 mb-4"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+        />
+      </svg>
+      <h2 class="text-xl font-bold text-gray-800 mb-2">No products found</h2>
+      <p class="text-sm text-gray-600 mb-4">
+        Try adjusting your filters or search terms
+      </p>
+      <button
+        (click)="clearFilters()"
+        class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-full text-sm font-semibold"
+      >
+        Clear All Filters
+      </button>
+    </div>
+    }
+  </div>
+</div>

@@ -24,22 +24,18 @@ namespace FashionStore.Business.Service
 
         public async Task<bool> PlaceOrderAsync(CheckoutDto dto)
         {
-            // CẢNH BÁO HIỆU NĂNG: 
-            // GetAllAsync() sẽ tải toàn bộ bảng CartItem về RAM. Nếu có 1 triệu dòng, web sẽ sập.
-            // Nên viết thêm hàm _cartRepo.GetListAsync(x => x.UserId == dto.UserId) trong Repository.
+
             var allCartItems = await _cartRepo.GetAllAsync();
 
             var myCartItems = allCartItems
                 .Where(c => string.Equals(c.UserId, dto.UserId, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            // 2. Nếu giỏ hàng trống -> Trả về false
             if (myCartItems.Count == 0)
             {
                 return false;
             }
 
-            // Logic cập nhật số lượng phút chót (Giữ nguyên code của bạn)
             if (dto.Items != null && dto.Items.Any())
             {
                 foreach (var itemDto in dto.Items)
@@ -58,7 +54,6 @@ namespace FashionStore.Business.Service
                 }
             }
 
-            // 3. Tạo Message gửi RabbitMQ
             var message = new OrderMessage
             {
                 UserId = Guid.Parse(dto.UserId), 

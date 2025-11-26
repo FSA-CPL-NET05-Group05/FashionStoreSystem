@@ -1,13 +1,15 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using FashionStore.Business.Messaging;
+using FashionStore.Data.DBContext;
+using FashionStore.Data.Interfaces;
+using FashionStore.Data.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
-using FashionStore.Business.Messaging;
-using Microsoft.Extensions.DependencyInjection;
-using FashionStore.Data.Interfaces;
-using FashionStore.Data.Models;
 
 namespace FashionStore.Business.Consumers
 {
@@ -64,7 +66,10 @@ namespace FashionStore.Business.Consumers
                 var productRepo = scope.ServiceProvider.GetRequiredService<IProductRepository>();
                 var orderRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<Order>>();
                 var orderDetailRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<OrderDetail>>();
-                var cartRepo = scope.ServiceProvider.GetRequiredService<IGenericRepository<CartItem>>();
+                var cartRepo = scope.ServiceProvider.GetRequiredService<ICartRepository>();
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDBContext>();
+
+                using var transaction = await db.Database.BeginTransactionAsync();
 
                 try
                 {
@@ -75,7 +80,7 @@ namespace FashionStore.Business.Consumers
                     {
                         UserId = userIdStr,
                         OrderDate = DateTime.Now,
-                        Status = "Success",
+                        Status = "Pending",
                         TotalAmount = 0,
                         CustomerName = message.CustomerName,
                         CustomerPhone = message.CustomerPhone,
@@ -89,10 +94,7 @@ namespace FashionStore.Business.Consumers
                     bool hasAnyItemSuccess = false;
 
 
-                    var allCartItems = await cartRepo.GetAllAsync();
-                    var userCartItems = allCartItems
-                        .Where(c => string.Equals(c.UserId, userIdStr, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                    var userCartItems = await cartRepo.GetCartOfUserAsync(userIdStr);
 
 
                     foreach (var item in message.Items)
@@ -128,18 +130,13 @@ namespace FashionStore.Business.Consumers
                                 c.SizeId == item.SizeId &&
                                 c.ColorId == item.ColorId
                             );
-
-                            if (itemToDelete != null)
-                            {
-                                await cartRepo.DeleteAsync(itemToDelete.Id);
-                                _logger.LogInformation($"Removed item {itemToDelete.Id} from cart.");
-                            }
                         }
                         else
                         {
                             _logger.LogWarning($"Product {item.ProductId} out of stock.");
                         }
                     }
+                    await cartRepo.DeleteCartItemsOfUserAsync(userIdStr);
 
                     if (hasAnyItemSuccess)
                     {
@@ -155,6 +152,8 @@ namespace FashionStore.Business.Consumers
                         await orderRepo.UpdateAsync(newOrder);
                         _logger.LogWarning($"Order {newOrder.Id} failed. No items processed.");
                     }
+                    await transaction.CommitAsync();
+
                 }
                 catch (Exception ex)
                 {

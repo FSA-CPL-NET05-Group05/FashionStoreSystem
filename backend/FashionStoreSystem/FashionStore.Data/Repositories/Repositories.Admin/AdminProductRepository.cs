@@ -66,11 +66,22 @@ namespace FashionStore.Data.Repositories.Repositories.Admin
             // 4. COUNT
             var totalCount = await query.CountAsync(ct);
 
-            // 5. PAGING
-            var items = await query
-                .Skip((parameters.Page - 1) * parameters.PageSize)
-                .Take(parameters.PageSize)
-                .ToListAsync(ct);
+            // PAGING
+            List<Models.Product> items;
+
+            if (!parameters.PageSize.HasValue)
+            {
+                // null = Lấy tất cả
+                items = await query.ToListAsync(ct);
+            }
+            else
+            {
+                // Phân trang
+                items = await query
+                    .Skip((parameters.Page - 1) * parameters.PageSize.Value)
+                    .Take(parameters.PageSize.Value)
+                    .ToListAsync(ct);
+            }
 
             return (items, totalCount);
         }

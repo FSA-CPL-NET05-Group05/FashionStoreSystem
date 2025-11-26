@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FashionStore.Data.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20251124072429_AddTableProductImage")]
-    partial class AddTableProductImage
+    [Migration("20251124084128_AddTableExtraImages")]
+    partial class AddTableExtraImages
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

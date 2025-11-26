@@ -21,6 +21,7 @@ namespace FashionStore.Data.Repositories
         public async Task<ProductSize?> GetProductSizeAsync(int productId, int colorId, int sizeId)
         {
             return await _context.ProductSizes
+                .AsNoTracking()
                 .Include(x => x.Product)
                 .Include(p => p.Size)   
                 .Include(p => p.Color)

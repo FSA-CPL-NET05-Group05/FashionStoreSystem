@@ -1,0 +1,483 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "username": "admin",
+      "password": "admin123",
+      "email": "admin@orien.com",
+      "role": "admin",
+      "status": "active",
+      "fullName": "Admin User",
+      "phone": "+84123456789"
+    },
+    {
+      "id": "2",
+      "username": "customer1",
+      "password": "customer123",
+      "email": "customer1@example.com",
+      "role": "customer",
+      "status": "active",
+      "fullName": "Emma Johnson",
+      "phone": "+84987654321"
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Tops"
+    },
+    {
+      "id": 2,
+      "name": "Dresses"
+    },
+    {
+      "id": 3,
+      "name": "Sweaters"
+    },
+    {
+      "id": 4,
+      "name": "Outerwear"
+    },
+    {
+      "id": 5,
+      "name": "Bottoms"
+    },
+    {
+      "id": 6,
+      "name": "Accessories"
+    }
+  ],
+  "sizes": [
+    {
+      "id": 1,
+      "name": "S"
+    },
+    {
+      "id": 2,
+      "name": "M"
+    },
+    {
+      "id": 3,
+      "name": "L"
+    },
+    {
+      "id": 4,
+      "name": "XL"
+    }
+  ],
+  "colors": [
+    {
+      "id": 1,
+      "name": "White",
+      "code": "#FFFFFF"
+    },
+    {
+      "id": 2,
+      "name": "Black",
+      "code": "#000000"
+    },
+    {
+      "id": 3,
+      "name": "Red",
+      "code": "#DC143C"
+    },
+    {
+      "id": 4,
+      "name": "Blue",
+      "code": "#4169E1"
+    },
+    {
+      "id": 5,
+      "name": "Gray",
+      "code": "#808080"
+    },
+    {
+      "id": 6,
+      "name": "Beige",
+      "code": "#F5DEB3"
+    },
+    {
+      "id": 7,
+      "name": "Navy",
+      "code": "#000080"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Silk Blouse",
+      "description": "Elegant silk blouse with romantic detailing. Perfect for both casual and formal occasions.",
+      "price": 129,
+      "imageUrl": "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800",
+        "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800",
+        "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800"
+      ],
+      "categoryId": 1
+    },
+    {
+      "id": 2,
+      "name": "Cashmere Sweater",
+      "description": "Luxurious cashmere in soft neutral tones. Temperature-regulating and incredibly soft.",
+      "price": 189,
+      "imageUrl": "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800",
+        "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=800",
+        "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800"
+      ],
+      "categoryId": 3
+    },
+    {
+      "id": 3,
+      "name": "Linen Dress",
+      "description": "Flowing linen dress perfect for any season. Breathable and elegant cut.",
+      "price": 159,
+      "imageUrl": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800",
+        "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800",
+        "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800"
+      ],
+      "categoryId": 2
+    },
+    {
+      "id": 4,
+      "name": "Tailored Blazer",
+      "description": "Classic tailored blazer with modern silhouette. Structured yet comfortable.",
+      "price": 249,
+      "imageUrl": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800",
+        "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800",
+        "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800"
+      ],
+      "categoryId": 4
+    },
+    {
+      "id": 5,
+      "name": "Wide Leg Pants",
+      "description": "Elegant wide leg trousers with flowing drape. Perfect for office or evening wear.",
+      "price": 139,
+      "imageUrl": "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800",
+        "https://images.unsplash.com/photo-1624206112431-4a037e5965bc?w=800"
+      ],
+      "categoryId": 5
+    },
+    {
+      "name": "Regular-Fit Flannel Overshirt",
+      "description": "Regular-fit overshirt in soft flannel with a comfortable, classic silhouette. Turn-down collar, buttons without placket, chest pockets with flap, and a yoke at back. Long sleeves with a slit and button at cuffs. Straight-cut hem. Unlined.",
+      "price": 39.99,
+      "categoryId": 3,
+      "imageUrl": "https://image.hm.com/assets/hm/c4/45/c445af4ad3dc27a5101755e8040e86e80495af1d.jpg?imwidth=2160",
+      "images": [
+        "https://image.hm.com/assets/hm/5a/69/5a69e7e56aaf9f0cf4e7c70aefa02b48aec8122d.jpg?imwidth=2160",
+        "https://image.hm.com/assets/hm/42/32/4232082203e430cedcf38200cd48e8ce87138920.jpg?imwidth=2160",
+        "https://image.hm.com/assets/hm/47/eb/47ebedd6d318613d50516db0e5af4722170960fd.jpg?imwidth=2160",
+        "https://image.hm.com/assets/hm/e9/fb/e9fb270a2a88dde56a40c53cae62a1a46255de1c.jpg?imwidth=2160"
+      ],
+      "id": 7
+    },
+    {
+      "name": "Flannel Shirt Dress",
+      "description": "Versatile long-sleeve shirt dress in our cozy flannel fabric, featuring button-through detail, a classic collar and removable belt. Imported.",
+      "price": 70,
+      "categoryId": 2,
+      "imageUrl": "https://img.abercrombie.com/is/image/anf/KIC_159-6775-00752-312_model1?policy=product-medium",
+      "images": [
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6775-00752-312_model2?policy=product-medium",
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6775-00752-312_model3?policy=product-medium",
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6775-00752-312_model4?policy=product-medium",
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6775-00752-312_model5?policy=product-medium",
+        "https://img.abercrombie.com/is/image/anf/KIC_159-6775-00752-312_prod1?policy=product-medium"
+      ],
+      "id": 8
+    }
+  ],
+  "productSizes": [
+    {
+      "id": 1,
+      "productId": 1,
+      "sizeId": 1,
+      "colorId": 1,
+      "stock": 21
+    },
+    {
+      "id": 2,
+      "productId": 1,
+      "sizeId": 1,
+      "colorId": 2,
+      "stock": 8
+    },
+    {
+      "id": 3,
+      "productId": 1,
+      "sizeId": 2,
+      "colorId": 1,
+      "stock": 13
+    },
+    {
+      "id": 6,
+      "productId": 2,
+      "sizeId": 2,
+      "colorId": 3,
+      "stock": 19
+    },
+    {
+      "id": 7,
+      "productId": 2,
+      "sizeId": 2,
+      "colorId": 5,
+      "stock": 18
+    },
+    {
+      "id": 8,
+      "productId": 2,
+      "sizeId": 3,
+      "colorId": 3,
+      "stock": 17
+    },
+    {
+      "id": 9,
+      "productId": 2,
+      "sizeId": 3,
+      "colorId": 5,
+      "stock": 10
+    },
+    {
+      "id": 10,
+      "productId": 3,
+      "sizeId": 1,
+      "colorId": 4,
+      "stock": 7
+    },
+    {
+      "id": 11,
+      "productId": 3,
+      "sizeId": 2,
+      "colorId": 4,
+      "stock": 8
+    },
+    {
+      "id": 12,
+      "productId": 3,
+      "sizeId": 3,
+      "colorId": 4,
+      "stock": 6
+    },
+    {
+      "id": 13,
+      "productId": 4,
+      "sizeId": 2,
+      "colorId": 2,
+      "stock": 7
+    },
+    {
+      "id": 14,
+      "productId": 4,
+      "sizeId": 3,
+      "colorId": 2,
+      "stock": 9
+    },
+    {
+      "id": 16,
+      "productId": 5,
+      "sizeId": 2,
+      "colorId": 2,
+      "stock": 14
+    },
+    {
+      "productId": 7,
+      "sizeId": 1,
+      "colorId": 4,
+      "stock": 10,
+      "id": 19
+    },
+    {
+      "productId": 7,
+      "sizeId": 2,
+      "colorId": 3,
+      "stock": 10,
+      "id": 20
+    },
+    {
+      "productId": 8,
+      "sizeId": 1,
+      "colorId": 1,
+      "stock": 5,
+      "id": 21
+    }
+  ],
+  "cart": [
+    {
+      "userId": "guest",
+      "productId": 1,
+      "sizeId": 1,
+      "colorId": 1,
+      "quantity": 1,
+      "addedAt": "2025-11-23T09:43:55.230Z",
+      "id": 1
+    }
+  ],
+  "orders": [
+    {
+      "orderDate": "2025-11-21T02:34:30.434Z",
+      "userId": null,
+      "totalAmount": 129,
+      "status": "completed",
+      "guestName": "Hang Ngố",
+      "guestEmail": "hoangcute@gmail.com",
+      "guestPhone": "12413513513",
+      "id": 1
+    },
+    {
+      "orderDate": "2025-11-21T02:37:51.946Z",
+      "userId": null,
+      "totalAmount": 129,
+      "status": "completed",
+      "guestName": "Hang",
+      "guestEmail": "hoangcute@gmail.com",
+      "guestPhone": "12413513513",
+      "id": 2
+    },
+    {
+      "orderDate": "2025-11-21T02:37:52.623Z",
+      "userId": null,
+      "totalAmount": 129,
+      "status": "completed",
+      "guestName": "Hang",
+      "guestEmail": "hoangcute@gmail.com",
+      "guestPhone": "12413513513",
+      "id": 3
+    },
+    {
+      "orderDate": "2025-11-21T02:38:48.630Z",
+      "userId": "2",
+      "totalAmount": 189,
+      "status": "completed",
+      "id": 4
+    },
+    {
+      "orderDate": "2025-11-21T02:38:51.355Z",
+      "userId": "2",
+      "totalAmount": 189,
+      "status": "completed",
+      "id": 5
+    },
+    {
+      "orderDate": "2025-11-21T05:42:02.935Z",
+      "userId": "1",
+      "totalAmount": 14.5,
+      "status": "completed",
+      "id": 6
+    },
+    {
+      "orderDate": "2025-11-21T05:42:03.853Z",
+      "userId": "1",
+      "totalAmount": 14.5,
+      "status": "completed",
+      "id": 7
+    },
+    {
+      "orderDate": "2025-11-21T05:50:29.239Z",
+      "userId": null,
+      "totalAmount": 795,
+      "status": "completed",
+      "guestName": "Hang Ngố",
+      "guestEmail": "hoangcute@gmail.com",
+      "guestPhone": "12413513513",
+      "id": 8
+    },
+    {
+      "orderDate": "2025-11-21T05:50:30.520Z",
+      "userId": null,
+      "totalAmount": 795,
+      "status": "completed",
+      "guestName": "Hang Ngố",
+      "guestEmail": "hoangcute@gmail.com",
+      "guestPhone": "12413513513",
+      "id": 9
+    }
+  ],
+  "orderDetails": [
+    {
+      "orderId": 2,
+      "productId": 1,
+      "quantity": 1,
+      "price": 129,
+      "sizeId": 1,
+      "colorId": 1,
+      "id": 1
+    },
+    {
+      "orderId": 4,
+      "productId": 2,
+      "quantity": 1,
+      "price": 189,
+      "sizeId": 2,
+      "colorId": 3,
+      "id": 2
+    },
+    {
+      "orderId": 5,
+      "productId": 2,
+      "quantity": 1,
+      "price": 189,
+      "sizeId": 2,
+      "colorId": 3,
+      "id": 3
+    },
+    {
+      "orderId": 8,
+      "productId": 3,
+      "quantity": 5,
+      "price": 159,
+      "sizeId": 1,
+      "colorId": 4,
+      "id": 6
+    },
+    {
+      "orderId": 9,
+      "productId": 3,
+      "quantity": 5,
+      "price": 159,
+      "sizeId": 1,
+      "colorId": 4,
+      "id": 7
+    }
+  ],
+  "feedbacks": [
+    {
+      "userId": "2",
+      "productId": 2,
+      "rating": 5,
+      "comment": "Very good",
+      "createdDate": "2025-11-21T02:39:02.550Z",
+      "id": 1,
+      "adminReply": "Thank you so much ^^"
+    }
+  ],
+  "purchaseHistory": [
+    {
+      "userId": "2",
+      "productId": 2,
+      "orderId": 4,
+      "id": 1
+    },
+    {
+      "userId": "2",
+      "productId": 2,
+      "orderId": 4,
+      "id": 2
+    },
+    {
+      "userId": "2",
+      "productId": 2,
+      "orderId": 5,
+      "id": 3
+    }
+  ]
+}

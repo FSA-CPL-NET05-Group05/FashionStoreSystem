@@ -14,22 +14,21 @@ namespace FashionStore.Business.Service
     {
         private readonly IGenericRepository<CartItem> _cartRepo;
         private readonly IProductRepository _productRepo;
+        private readonly ICartRepository _cart;
 
-        public CartService(IGenericRepository<CartItem> cartRepo, IProductRepository productRepo)
+        public CartService(IGenericRepository<CartItem> cartRepo, IProductRepository productRepo, ICartRepository cart)
         {
             _cartRepo = cartRepo;
             _productRepo = productRepo;
+            _cart = cart;
         }
 
         public async Task<bool> AddToCartAsync(AddToCartDto dto)
         {
-
             var productSize = await _productRepo.GetProductSizeAsync(dto.ProductId, dto.ColorId, dto.SizeId);
             if (productSize == null) return false;
 
-            var allItems = await _cartRepo.GetAllAsync();
-
-            var existingItem = allItems.FirstOrDefault(c =>
+            var existingItem = await _cartRepo.FirstOrDefaultAsync(c =>
                 c.UserId == dto.UserId &&
                 c.ProductId == dto.ProductId &&
                 c.SizeId == dto.SizeId &&
@@ -43,86 +42,54 @@ namespace FashionStore.Business.Service
             }
             else
             {
-                var newItem = new CartItem
+                await _cartRepo.AddAsync(new CartItem
                 {
                     UserId = dto.UserId,
                     ProductId = dto.ProductId,
                     SizeId = dto.SizeId,
                     ColorId = dto.ColorId,
                     Quantity = dto.Quantity
-                };
-                await _cartRepo.AddAsync(newItem);
+                });
             }
 
-            return true; 
+            return true;
         }
+
 
         public async Task<IEnumerable<CartDto>> GetMyCartAsync(string userId)
         {
+            var items = await _cart.GetUserCartWithDetailsAsync(userId);
 
-            var allItems = await _cartRepo.GetAllAsync();
-
-
-            var myCartItems = allItems.Where(c => c.UserId == userId).ToList();
-
-
-            var cartDtos = new List<CartDto>();
-
-            foreach (var item in myCartItems)
+            return items.Select(item => new CartDto
             {
-
-                var productSize = await _productRepo.GetProductSizeAsync(item.ProductId, item.ColorId, item.SizeId);
-
-                if (productSize != null)
-                {
-                    cartDtos.Add(new CartDto
-                    {
-                        Id = item.Id,
-                        ProductId = item.ProductId,
-                        Quantity = item.Quantity,
-                        ProductName = productSize.Product.Name,
-                        ProductImage = productSize.Product.ImageUrl,
-                        Price = productSize.Product.Price,
-                        SizeName = productSize.Size?.Name ?? "N/A",
-                        ColorName = productSize.Color?.Name ?? "N/A"
-                    });
-                }
-            }
-
-            return cartDtos;
+                Id = item.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                ProductName = item.Product.Name,
+                ProductImage = item.Product.ImageUrl,
+                Price = item.Product.Price,
+                SizeName = item.Size.Name,
+                ColorName = item.Color.Name
+            });
         }
 
         public async Task<bool> RemoveFromCartAsync(int cartItemId, string userId)
         {
             var cartItem = await _cartRepo.GetByIdAsync(cartItemId);
-
-            if (cartItem == null)
-            {
+            if (cartItem == null || cartItem.UserId != userId)
                 return false;
-            }
 
-            if (cartItem.UserId.ToString() != userId)
-            {
-                return false;
-            }
             await _cartRepo.DeleteAsync(cartItemId);
             return true;
         }
 
-
         public async Task<bool> UpdateCartItemQuantityAsync(UpdateCartItemDto dto)
         {
-
             var cartItem = await _cartRepo.GetByIdAsync(dto.CartItemId);
-
-            if (cartItem == null)
-            {
-                return false;
-            }
+            if (cartItem == null) return false;
 
             cartItem.Quantity = dto.NewQuantity;
             await _cartRepo.UpdateAsync(cartItem);
-
             return true;
         }
     }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FashionStore.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class AddTableProductImage : Migration
+    public partial class AddTableExtraImages : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

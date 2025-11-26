@@ -17,7 +17,7 @@ namespace FashionStore.Business.Messaging
 
         public RabbitMqProducer(IConnection connection, IConfiguration configuration)
         {
-            _connection = connection;
+            _connection = connection; 
             _queueName = configuration["RabbitMq:OrderQueue"] ?? "order_queue";
         }
 
