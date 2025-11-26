@@ -2,6 +2,7 @@
 using FashionStore.Business.Interfaces;
 using FashionStore.Business.Messaging;
 using FashionStore.Data.Interfaces;
+using FashionStore.Data.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -89,5 +90,7 @@ namespace FashionStore.Business.Service
                 return false;
             }
         }
+
+
     }
 }

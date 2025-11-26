@@ -1,4 +1,5 @@
 ﻿using FashionStore.Business.Dtos;
+using FashionStore.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
