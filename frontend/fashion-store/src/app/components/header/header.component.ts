@@ -19,6 +19,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   showMenu = false;
   showLoginModal = false;
   loginForm = { username: '', password: '' };
+  loginError: string | null = null;
 
   private cartCountSubscription?: Subscription;
   private authSubscription?: Subscription;
@@ -29,17 +30,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   toast = inject(ToastrService);
 
   ngOnInit(): void {
+    // Theo dõi user hiện tại
     this.authSubscription = this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
-
-      if (user) {
-        // Lấy cart và cập nhật count
-        this.cartService.getCart().subscribe();
-      } else {
-        this.cartCount = 0;
-      }
+      if (user) this.cartService.getCart().subscribe();
+      else this.cartCount = 0;
     });
 
+    // Theo dõi số lượng cart
     this.cartCountSubscription = this.cartService.cartCount$.subscribe({
       next: (count) => (this.cartCount = count),
       error: () => (this.cartCount = 0),
@@ -63,6 +61,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   login(e: Event): void {
     e.preventDefault();
+    this.loginError = null;
 
     if (!this.loginForm.username || !this.loginForm.password) {
       this.toast.warning('Please enter username and password');
@@ -73,11 +72,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .login(this.loginForm.username, this.loginForm.password)
       .subscribe({
         next: (user) => {
-          if (!user) {
-            this.toast.error('Invalid username or password');
-            return;
-          }
-
+          // Login thành công
           this.showLoginModal = false;
           this.loginForm = { username: '', password: '' };
           this.toast.success('Login successful');
@@ -85,10 +80,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
           // Lấy cart sau login
           this.cartService.getCart().subscribe();
 
-          if (user.role === 'Admin') this.router.navigate(['/admin']);
+          // Điều hướng theo role
+          if (user?.role === 'Admin') this.router.navigate(['/admin']);
           else this.router.navigate(['/']);
         },
-        error: (err) => this.toast.error(err.message || 'Login failed'),
+        error: (err) => {
+          console.log('Login error:', err);
+          this.loginError = err.error?.message || err.message || 'Login failed';
+          this.toast.error(this.loginError || undefined);
+        }
       });
   }
 

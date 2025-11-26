@@ -12,37 +12,34 @@ namespace FashionStore.WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ILoginServices _loginService;
-       
+
 
         // Inject LoginService qua constructor
         public AuthController(ILoginServices loginService)
         {
             _loginService = loginService;
-           
+
         }
 
         // Đăng nhập
         [HttpPost("login")]
+
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginRequest)
         {
-
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
-            // Gọi phương thức LoginAsync từ LoginService
-            var response = await _loginService.LoginAsync(loginRequest);
-          
-            // Kiểm tra nếu response là null (đăng nhập không thành công)
-            if (response == null)
+
+            try
             {
-                return Unauthorized(new { message = "Invalid username or password" });
+                var response = await _loginService.LoginAsync(loginRequest);
+                return Ok(response);
             }
-
-            // Trả về thông tin người dùng và token
-            return Ok(response);
+            catch (Exception ex)
+            {
+                // Trả về 401 với message từ exception
+                return Unauthorized(new { message = ex.Message });
+            }
         }
-
-
     }
 }

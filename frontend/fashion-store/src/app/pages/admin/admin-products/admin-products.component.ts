@@ -58,26 +58,42 @@ export class AdminProductsComponent implements OnInit {
     private productService: ProductService,
     private toastr: ToastrService,
     private http: HttpClient
-  ) {}
+  ) { }
 
+  // ngOnInit() {
+  //   this.loadData();
+  // }
+
+  // loadData() {
+  //   forkJoin({
+  //     products: this.productService.getProducts(),
+  //     categories: this.productService.getCategories(),
+  //     sizes: this.productService.getSizes(),
+  //     colors: this.productService.getColors(),
+  //   }).subscribe({
+  //     next: ({ products, categories, sizes, colors }) => {
+  //       this.products = products;
+  //       this.categories = categories;
+  //       this.sizes = sizes;
+  //       this.colors = colors;
+  //       this.calculateTotalPages();
+  //     },
+  //   });
+  // }
   ngOnInit() {
-    this.loadData();
+    this.loadProducts();
   }
 
-  loadData() {
-    forkJoin({
-      products: this.productService.getProducts(),
-      categories: this.productService.getCategories(),
-      sizes: this.productService.getSizes(),
-      colors: this.productService.getColors(),
-    }).subscribe({
-      next: ({ products, categories, sizes, colors }) => {
-        this.products = products;
-        this.categories = categories;
-        this.sizes = sizes;
-        this.colors = colors;
-        this.calculateTotalPages();
+  loadProducts() {
+    this.productService.getProducts().subscribe({
+      next: (data) => {
+        this.products = data;   // gán dữ liệu sản phẩm
+        console.log(this.products); // kiểm tra dữ liệu
+        this.calculateTotalPages(); // nếu vẫn muốn dùng pagination
       },
+      error: (err) => {
+        console.error('Failed to load products', err);
+      }
     });
   }
 
@@ -162,204 +178,204 @@ export class AdminProductsComponent implements OnInit {
     this.showProductModal = true;
   }
 
-  saveProduct(e: Event) {
-    e.preventDefault();
+  // saveProduct(e: Event) {
+  //   e.preventDefault();
 
-    if (!this.validateProduct(this.productForm)) {
-      this.toastr.warning('Please fix all validation errors');
-      return;
-    }
+  //   if (!this.validateProduct(this.productForm)) {
+  //     this.toastr.warning('Please fix all validation errors');
+  //     return;
+  //   }
 
-    const data: any = {
-      ...this.productForm,
-      price: +this.productForm.price,
-      categoryId: +this.productForm.categoryId,
-      images: this.productForm.imagesText
-        ? this.productForm.imagesText
-            .split(',')
-            .map((url: string) => url.trim())
-        : [this.productForm.imageUrl],
-    };
-    delete data.imagesText;
+  //   const data: any = {
+  //     ...this.productForm,
+  //     price: +this.productForm.price,
+  //     categoryId: +this.productForm.categoryId,
+  //     images: this.productForm.imagesText
+  //       ? this.productForm.imagesText
+  //         .split(',')
+  //         .map((url: string) => url.trim())
+  //       : [this.productForm.imageUrl],
+  //   };
+  //   delete data.imagesText;
 
-    if (this.isEditMode) {
-      this.productService.updateProduct(data.id, data).subscribe({
-        next: () => {
-          this.toastr.success('Product updated!');
-          this.closeProductModal();
-          this.loadData();
-        },
-        error: () => this.toastr.error('Failed to update product'),
-      });
-    } else {
-      this.productService.createProduct(data).subscribe({
-        next: () => {
-          this.toastr.success('Product added!');
-          this.closeProductModal();
-          this.loadData();
-        },
-        error: () => this.toastr.error('Failed to add product'),
-      });
-    }
-  }
+  //   if (this.isEditMode) {
+  //     this.productService.updateProduct(data.id, data).subscribe({
+  //       next: () => {
+  //         this.toastr.success('Product updated!');
+  //         this.closeProductModal();
+  //         this.loadData();
+  //       },
+  //       error: () => this.toastr.error('Failed to update product'),
+  //     });
+  //   } else {
+  //     this.productService.createProduct(data).subscribe({
+  //       next: () => {
+  //         this.toastr.success('Product added!');
+  //         this.closeProductModal();
+  //         this.loadData();
+  //       },
+  //       error: () => this.toastr.error('Failed to add product'),
+  //     });
+  //   }
+  // }
 
-  deleteProduct(id: number) {
-    if (
-      !confirm(
-        'Delete this product? This will remove all related data including orders, reviews, and cart items.'
-      )
-    )
-      return;
+  // deleteProduct(id: number) {
+  //   if (
+  //     !confirm(
+  //       'Delete this product? This will remove all related data including orders, reviews, and cart items.'
+  //     )
+  //   )
+  //     return;
 
-    forkJoin({
-      productSizes: this.productService.getProductSizes(id),
-      cart: this.http.get<any[]>(`http://localhost:3000/cart?productId=${id}`),
-      orderDetails: this.http.get<any[]>(
-        `http://localhost:3000/orderDetails?productId=${id}`
-      ),
-      feedbacks: this.http.get<any[]>(
-        `http://localhost:3000/feedbacks?productId=${id}`
-      ),
-      purchaseHistory: this.http.get<any[]>(
-        `http://localhost:3000/purchaseHistory?productId=${id}`
-      ),
-    }).subscribe({
-      next: ({
-        productSizes,
-        cart,
-        orderDetails,
-        feedbacks,
-        purchaseHistory,
-      }) => {
-        const deleteRequests: any[] = [];
+  //   forkJoin({
+  //     productSizes: this.productService.getProductSizes(id),
+  //     cart: this.http.get<any[]>(`http://localhost:3000/cart?productId=${id}`),
+  //     orderDetails: this.http.get<any[]>(
+  //       `http://localhost:3000/orderDetails?productId=${id}`
+  //     ),
+  //     feedbacks: this.http.get<any[]>(
+  //       `http://localhost:3000/feedbacks?productId=${id}`
+  //     ),
+  //     purchaseHistory: this.http.get<any[]>(
+  //       `http://localhost:3000/purchaseHistory?productId=${id}`
+  //     ),
+  //   }).subscribe({
+  //     next: ({
+  //       productSizes,
+  //       cart,
+  //       orderDetails,
+  //       feedbacks,
+  //       purchaseHistory,
+  //     }) => {
+  //       const deleteRequests: any[] = [];
 
-        productSizes.forEach((ps) => {
-          deleteRequests.push(
-            this.productService.deleteProductSize(ps.id).pipe(
-              catchError((err) => {
-                console.warn(
-                  `ProductSize ${ps.id} already deleted or not found`
-                );
-                return of(null);
-              })
-            )
-          );
-        });
+  //       productSizes.forEach((ps) => {
+  //         deleteRequests.push(
+  //           this.productService.deleteProductSize(ps.id).pipe(
+  //             catchError((err) => {
+  //               console.warn(
+  //                 `ProductSize ${ps.id} already deleted or not found`
+  //               );
+  //               return of(null);
+  //             })
+  //           )
+  //         );
+  //       });
 
-        cart.forEach((item) => {
-          deleteRequests.push(
-            this.http.delete(`http://localhost:3000/cart/${item.id}`).pipe(
-              catchError((err) => {
-                console.warn(
-                  `Cart item ${item.id} already deleted or not found`
-                );
-                return of(null);
-              })
-            )
-          );
-        });
+  //       cart.forEach((item) => {
+  //         deleteRequests.push(
+  //           this.http.delete(`http://localhost:3000/cart/${item.id}`).pipe(
+  //             catchError((err) => {
+  //               console.warn(
+  //                 `Cart item ${item.id} already deleted or not found`
+  //               );
+  //               return of(null);
+  //             })
+  //           )
+  //         );
+  //       });
 
-        orderDetails.forEach((detail) => {
-          deleteRequests.push(
-            this.http
-              .delete(`http://localhost:3000/orderDetails/${detail.id}`)
-              .pipe(
-                catchError((err) => {
-                  console.warn(
-                    `OrderDetail ${detail.id} already deleted or not found`
-                  );
-                  return of(null);
-                })
-              )
-          );
-        });
+  //       orderDetails.forEach((detail) => {
+  //         deleteRequests.push(
+  //           this.http
+  //             .delete(`http://localhost:3000/orderDetails/${detail.id}`)
+  //             .pipe(
+  //               catchError((err) => {
+  //                 console.warn(
+  //                   `OrderDetail ${detail.id} already deleted or not found`
+  //                 );
+  //                 return of(null);
+  //               })
+  //             )
+  //         );
+  //       });
 
-        feedbacks.forEach((feedback) => {
-          deleteRequests.push(
-            this.http
-              .delete(`http://localhost:3000/feedbacks/${feedback.id}`)
-              .pipe(
-                catchError((err) => {
-                  console.warn(
-                    `Feedback ${feedback.id} already deleted or not found`
-                  );
-                  return of(null);
-                })
-              )
-          );
-        });
+  //       feedbacks.forEach((feedback) => {
+  //         deleteRequests.push(
+  //           this.http
+  //             .delete(`http://localhost:3000/feedbacks/${feedback.id}`)
+  //             .pipe(
+  //               catchError((err) => {
+  //                 console.warn(
+  //                   `Feedback ${feedback.id} already deleted or not found`
+  //                 );
+  //                 return of(null);
+  //               })
+  //             )
+  //         );
+  //       });
 
-        purchaseHistory.forEach((history) => {
-          deleteRequests.push(
-            this.http
-              .delete(`http://localhost:3000/purchaseHistory/${history.id}`)
-              .pipe(
-                catchError((err) => {
-                  console.warn(
-                    `PurchaseHistory ${history.id} already deleted or not found`
-                  );
-                  return of(null);
-                })
-              )
-          );
-        });
+  //       purchaseHistory.forEach((history) => {
+  //         deleteRequests.push(
+  //           this.http
+  //             .delete(`http://localhost:3000/purchaseHistory/${history.id}`)
+  //             .pipe(
+  //               catchError((err) => {
+  //                 console.warn(
+  //                   `PurchaseHistory ${history.id} already deleted or not found`
+  //                 );
+  //                 return of(null);
+  //               })
+  //             )
+  //         );
+  //       });
 
-        if (deleteRequests.length > 0) {
-          forkJoin(deleteRequests)
-            .pipe(
-              catchError((err) => {
-                console.warn(
-                  'Some items could not be deleted, but continuing...',
-                  err
-                );
-                return of(null);
-              })
-            )
-            .subscribe({
-              next: () => {
-                this.productService
-                  .deleteProduct(id)
-                  .pipe(
-                    catchError((err) => {
-                      console.warn(
-                        `Product ${id} already deleted or not found`
-                      );
-                      return of(null);
-                    })
-                  )
-                  .subscribe({
-                    next: () => {
-                      this.toastr.success(
-                        'Product and all related data deleted!'
-                      );
-                      this.loadData();
-                    },
-                  });
-              },
-            });
-        } else {
-          this.productService
-            .deleteProduct(id)
-            .pipe(
-              catchError((err) => {
-                console.warn(`Product ${id} already deleted or not found`);
-                return of(null);
-              })
-            )
-            .subscribe({
-              next: () => {
-                this.toastr.success('Product deleted!');
-                this.loadData();
-              },
-            });
-        }
-      },
-      error: (err) => {
-        console.error('Load related data error:', err);
-        this.toastr.error('Failed to load product data');
-      },
-    });
-  }
+  //       if (deleteRequests.length > 0) {
+  //         forkJoin(deleteRequests)
+  //           .pipe(
+  //             catchError((err) => {
+  //               console.warn(
+  //                 'Some items could not be deleted, but continuing...',
+  //                 err
+  //               );
+  //               return of(null);
+  //             })
+  //           )
+  //           .subscribe({
+  //             next: () => {
+  //               this.productService
+  //                 .deleteProduct(id)
+  //                 .pipe(
+  //                   catchError((err) => {
+  //                     console.warn(
+  //                       `Product ${id} already deleted or not found`
+  //                     );
+  //                     return of(null);
+  //                   })
+  //                 )
+  //                 .subscribe({
+  //                   next: () => {
+  //                     this.toastr.success(
+  //                       'Product and all related data deleted!'
+  //                     );
+  //                     this.loadData();
+  //                   },
+  //                 });
+  //             },
+  //           });
+  //       } else {
+  //         this.productService
+  //           .deleteProduct(id)
+  //           .pipe(
+  //             catchError((err) => {
+  //               console.warn(`Product ${id} already deleted or not found`);
+  //               return of(null);
+  //             })
+  //           )
+  //           .subscribe({
+  //             next: () => {
+  //               this.toastr.success('Product deleted!');
+  //               this.loadData();
+  //             },
+  //           });
+  //       }
+  //     },
+  //     error: (err) => {
+  //       console.error('Load related data error:', err);
+  //       this.toastr.error('Failed to load product data');
+  //     },
+  //   });
+  // }
 
   manageStock(product: any) {
     this.selectedProduct = product;

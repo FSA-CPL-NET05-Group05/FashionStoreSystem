@@ -24,36 +24,53 @@ namespace FashionStore.Business.Service.LoginService
             _signInManager = signInManager;
         }
 
-        public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO loginRequest) // Thay vì nhận username và password, nhận LoginRequestDTO
+        public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO loginRequest)
         {
-            // Lấy thông tin người dùng từ repository theo username
             var user = await _loginRepository.GetByUsernameAsync(loginRequest.Username);
 
             if (user == null)
             {
-                return null; // Trả về null nếu người dùng không tồn tại
+                throw new Exception("Invalid username or password");
             }
 
-            // Kiểm tra mật khẩu người dùng
-            var result = await _signInManager.CheckPasswordSignInAsync(user, loginRequest.Password, false);
-
-            if (result.Succeeded)
+            // ✅ KIỂM TRA LOCKOUT TRƯỚC
+            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
             {
-                // Nếu đăng nhập thành công, tạo token và trả về thông tin người dùng và token
-                var token = await _tokenService.CreateToken(user);
-                var roles = await _loginRepository.GetRolesAsync(user);           
-                var role = roles.FirstOrDefault() ?? "User";
-                return new LoginResponseDTO
-                {
-                    Id=user.Id,
-                    Username = user.UserName,
-                    Role=role,
-                    FullName=user.FullName,
-                    Token = token // Trả về token
-                };
+                throw new Exception("Account banned");
             }
 
-            return null; // Trả về null nếu mật khẩu không đúng
+            // Kiểm tra password
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginRequest.Password, lockoutOnFailure: false);
+
+            // ✅ Kiểm tra kỹ các trường hợp
+            if (result.IsLockedOut)
+            {
+                throw new Exception("Account banned");
+            }
+
+            if (result.IsNotAllowed)
+            {
+                throw new Exception("Account not allowed to sign in");
+            }
+
+            if (!result.Succeeded)
+            {
+                throw new Exception("Invalid username or password");
+            }
+
+            // Đăng nhập thành công
+            var token = await _tokenService.CreateToken(user);
+            var roles = await _loginRepository.GetRolesAsync(user);
+            var role = roles.FirstOrDefault() ?? "User";
+
+            return new LoginResponseDTO
+            {
+                Id = user.Id,
+                Username = user.UserName,
+                Role = role,
+                FullName = user.FullName,
+                Token = token
+            };
         }
     }
     }
