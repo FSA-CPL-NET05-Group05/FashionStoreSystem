@@ -40,5 +40,27 @@ namespace FashionStore.WebAPI.Controllers
 
             return Accepted(new { message = "Your order is being processed." });
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 8)
+        {
+            var orders = await _orderService.GetAllOrdersAsync(page, pageSize);
+            return Ok(orders);
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetOrderById(int id)
+        {
+            var order = await _orderService.GetOrderByIdAsync(id);
+
+            if (order == null)
+            {
+                return NotFound(new { message = $"Can not find the order have ID = {id}" });
+            }
+
+            return Ok(order);
+        }
     }
 }

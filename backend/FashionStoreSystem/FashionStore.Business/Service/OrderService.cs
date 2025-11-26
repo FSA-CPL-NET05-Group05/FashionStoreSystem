@@ -91,6 +91,61 @@ namespace FashionStore.Business.Service
             }
         }
 
+        public async Task<List<OrderDto>> GetAllOrdersAsync(int page, int pageSize)
+        {
+            var orders = await _unitOfWork.Orders.GetAllAsync(
+                orderBy: q => q.OrderByDescending(o => o.Id)
+            );
+            var pagedOrders = orders
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize);
 
+            var result = pagedOrders.Select(o => new OrderDto
+            {
+                Id = o.Id,
+                OrderDate = o.OrderDate,
+                TotalAmount = o.TotalAmount,
+                Status = o.Status,
+                CustomerName = o.CustomerName,
+                CustomerPhone = o.CustomerPhone,
+                CustomerEmail = o.CustomerEmail,
+                OrderDetails = new List<OrderDetailDto>()
+            }).ToList();
+
+            return result;
+        }
+
+        public async Task<OrderDto> GetOrderByIdAsync(int id)
+        {
+            var orders = await _unitOfWork.Orders.GetAllAsync(
+                filter: x => x.Id == id,
+                includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Size,OrderDetails.Color"
+            );
+
+            var orderEntity = orders.FirstOrDefault();
+
+            if (orderEntity == null) return null;
+
+            return new OrderDto
+            {
+                Id = orderEntity.Id,
+                OrderDate = orderEntity.OrderDate,
+                TotalAmount = orderEntity.TotalAmount,
+                Status = orderEntity.Status,
+                CustomerName = orderEntity.CustomerName,
+                CustomerPhone = orderEntity.CustomerPhone,
+                CustomerEmail = orderEntity.CustomerEmail,
+
+                OrderDetails = orderEntity.OrderDetails.Select(d => new OrderDetailDto
+                {
+                    ProductId = d.ProductId,
+                    ProductName = d.Product?.Name ?? "Unknown",
+                    Size = d.Size.Name,   
+                    Color = d.Color.Name, 
+                    Quantity = d.Quantity,
+                    Price = d.Price
+                }).ToList()
+            };
+        }
     }
 }

@@ -11,5 +11,7 @@ namespace FashionStore.Business.Interfaces
     public interface IOrderService
     {
         Task<bool> PlaceOrderAsync(CheckoutDto dto);
+        Task<List<OrderDto>> GetAllOrdersAsync(int page, int pageSize);
+        Task<OrderDto> GetOrderByIdAsync(int id);
     }
 }
