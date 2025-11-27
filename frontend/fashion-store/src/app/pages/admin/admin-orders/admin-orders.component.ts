@@ -15,12 +15,11 @@ export class AdminOrdersComponent implements OnInit {
   orders: any[] = [];
   showOrderDetail = false;
   selectedOrder: any = null;
-  orderDetails: any[] = [];
 
   // Pagination
   currentPage = 1;
-  itemsPerPage = 7;
-  totalPages = 0;
+  itemsPerPage = 8;
+  totalPages = 1;
 
   constructor(
     private orderService: OrderService,
@@ -28,26 +27,36 @@ export class AdminOrdersComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.orderService.getOrders().subscribe((orders) => {
-      this.orders = orders;
-      this.calculateTotalPages();
+    this.loadOrders();
+  }
+
+  loadOrders() {
+    this.orderService.getOrders(this.currentPage, this.itemsPerPage).subscribe({
+      next: (orders) => {
+        this.orders = orders;
+        // Tính tổng số trang dựa trên số lượng orders trả về
+        // Nếu backend hỗ trợ total count thì dùng nó, không thì ước lượng
+        if (orders.length === this.itemsPerPage) {
+          this.totalPages = this.currentPage + 1; // Có thể còn trang tiếp theo
+        } else {
+          this.totalPages = this.currentPage; // Đây là trang cuối
+        }
+      },
+      error: (err) => {
+        this.toastr.error('Failed to load orders');
+        console.error(err);
+      },
     });
   }
 
-  // Pagination methods
   get paginatedOrders() {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.orders.slice(start, end);
-  }
-
-  calculateTotalPages() {
-    this.totalPages = Math.ceil(this.orders.length / this.itemsPerPage);
+    return this.orders; // Backend đã xử lý phân trang
   }
 
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.loadOrders();
     }
   }
 
@@ -68,17 +77,21 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   viewOrderDetail(order: any) {
-    this.selectedOrder = order;
-    this.orderService.getOrderDetails(order.id).subscribe((details) => {
-      this.orderDetails = details;
-      this.showOrderDetail = true;
+    this.orderService.getOrderDetails(order.id).subscribe({
+      next: (orderDetail) => {
+        this.selectedOrder = orderDetail;
+        this.showOrderDetail = true;
+      },
+      error: (err) => {
+        this.toastr.error('Failed to load order details');
+        console.error(err);
+      },
     });
   }
 
   closeOrderDetail() {
     this.showOrderDetail = false;
     this.selectedOrder = null;
-    this.orderDetails = [];
   }
 
   formatOrderDate(date: string): string {
@@ -92,9 +105,26 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   updateStatus(order: any) {
+    if (order.status === 'Completed') {
+      this.toastr.warning('Cannot change status of completed order');
+      return;
+    }
+
     this.orderService.updateOrderStatus(order.id, order.status).subscribe({
-      next: () => this.toastr.success('Status updated'),
-      error: () => this.toastr.error('Failed to update'),
+      next: () => {
+        this.toastr.success('Order status updated successfully');
+        // Reload orders nếu đang ở modal detail
+        if (this.showOrderDetail && this.selectedOrder?.id === order.id) {
+          this.selectedOrder.status = order.status;
+        }
+        this.loadOrders();
+      },
+      error: (err) => {
+        this.toastr.error('Failed to update order status');
+        console.error(err);
+        // Revert status change on error
+        this.loadOrders();
+      },
     });
   }
 }

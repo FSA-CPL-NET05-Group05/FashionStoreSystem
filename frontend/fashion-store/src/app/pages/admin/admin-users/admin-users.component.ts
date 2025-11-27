@@ -11,8 +11,6 @@ import { UserService } from '../../../services/user.service';
 })
 export class AdminUsersComponent implements OnInit {
   users: any[] = [];
-
-  // Pagination
   currentPage = 1;
   itemsPerPage = 4;
   totalPages = 0;
@@ -27,59 +25,68 @@ export class AdminUsersComponent implements OnInit {
   }
 
   loadUsers() {
-    this.userService.getUsers().subscribe((users) => {
-      this.users = users;
-      this.calculateTotalPages();
+    this.userService.getUsers(this.currentPage, this.itemsPerPage).subscribe({
+      next: (res) => {
+        this.users = res.items;
+        this.totalPages = res.totalPages;
+        console.log('Users loaded:', this.users);
+      },
+      error: (err) => {
+        console.error('Error response:', err);
+        this.toastr.error('Failed to load users');
+      },
     });
-  }
-
-  // Pagination methods
-  get paginatedUsers() {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.users.slice(start, end);
-  }
-
-  calculateTotalPages() {
-    this.totalPages = Math.ceil(this.users.length / this.itemsPerPage);
   }
 
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.loadUsers();
     }
   }
 
   get pageNumbers(): number[] {
     const pages = [];
-    const maxVisible = 5;
-    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(this.totalPages, start + maxVisible - 1);
-
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
+    for (let i = 1; i <= this.totalPages; i++) pages.push(i);
     return pages;
+  }
+
+  trackById(index: number, user: any) {
+    return user.id;
   }
 
   banUser(id: string) {
     this.userService.banUser(id).subscribe({
-      next: () => {
-        this.toastr.success('User banned');
+      next: (res: any) => {
+        this.toastr.success(res?.message || 'User banned');
         this.loadUsers();
+      },
+      error: (err: any) => {
+        let msg = 'Failed to ban user';
+        if (err.error) {
+          if (typeof err.error === 'string') msg = err.error;
+          else if (err.error.message) msg = err.error.message;
+          else msg = JSON.stringify(err.error);
+        } else if (err.message) msg = err.message;
+        this.toastr.error(msg);
       },
     });
   }
 
   unbanUser(id: string) {
     this.userService.unbanUser(id).subscribe({
-      next: () => {
-        this.toastr.success('User unbanned');
+      next: (res: any) => {
+        this.toastr.success(res?.message || 'User unbanned');
         this.loadUsers();
+      },
+      error: (err: any) => {
+        let msg = 'Failed to unban user';
+        if (err.error) {
+          if (typeof err.error === 'string') msg = err.error;
+          else if (err.error.message) msg = err.error.message;
+          else msg = JSON.stringify(err.error);
+        } else if (err.message) msg = err.message;
+        this.toastr.error(msg);
       },
     });
   }

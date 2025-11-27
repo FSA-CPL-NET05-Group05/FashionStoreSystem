@@ -15,7 +15,6 @@ export class AdminReviewsComponent implements OnInit {
   showReplyForm: any = {};
   replyText: any = {};
 
-  // Pagination
   currentPage = 1;
   itemsPerPage = 4;
   totalPages = 0;
@@ -30,17 +29,15 @@ export class AdminReviewsComponent implements OnInit {
   }
 
   loadFeedbacks() {
-    this.feedbackService.getFeedbacks().subscribe((feedbacks) => {
+    this.feedbackService.getAllFeedbacks().subscribe((feedbacks) => {
       this.feedbacks = feedbacks;
       this.calculateTotalPages();
     });
   }
 
-  // Pagination methods
   get paginatedFeedbacks() {
     const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.feedbacks.slice(start, end);
+    return this.feedbacks.slice(start, start + this.itemsPerPage);
   }
 
   calculateTotalPages() {
@@ -48,24 +45,18 @@ export class AdminReviewsComponent implements OnInit {
   }
 
   goToPage(page: number) {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
+    if (page >= 1 && page <= this.totalPages) this.currentPage = page;
   }
 
   get pageNumbers(): number[] {
-    const pages = [];
+    const pages: number[] = [];
     const maxVisible = 5;
     let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
     let end = Math.min(this.totalPages, start + maxVisible - 1);
 
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
 
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
+    for (let i = start; i <= end; i++) pages.push(i);
     return pages;
   }
 

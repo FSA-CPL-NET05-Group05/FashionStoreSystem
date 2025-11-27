@@ -7,21 +7,35 @@
         <tr>
           <th class="text-left py-4 px-6">Order ID</th>
           <th class="text-left py-4 px-6">Customer</th>
+          <th class="text-left py-4 px-6">Email</th>
+          <th class="text-left py-4 px-6">Phone</th>
           <th class="text-left py-4 px-6">Total</th>
           <th class="text-left py-4 px-6">Status</th>
           <th class="text-left py-4 px-6">Actions</th>
         </tr>
       </thead>
       <tbody>
-        @for (order of paginatedOrders; track order.id) {
+        @if (orders.length === 0) {
+        <tr>
+          <td colspan="7" class="py-8 text-center text-gray-500">
+            No orders found
+          </td>
+        </tr>
+        } @for (order of paginatedOrders; track order.id) {
         <tr class="border-b hover:bg-gray-50">
           <td class="py-4 px-6 font-medium">#{{ order.id }}</td>
           <td class="py-4 px-6">
-            {{ order.user?.fullName || order.guestName || "Guest" }}
+            {{ order.customerName || "Guest" }}
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-600">
+            {{ order.customerEmail || "N/A" }}
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-600">
+            {{ order.customerPhone || "N/A" }}
           </td>
           <td class="py-4 px-6 font-semibold">${{ order.totalAmount }}</td>
           <td class="py-4 px-6">
-            @if (order.status === 'completed') {
+            @if (order.status === 'Completed') {
             <span
               class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-600"
             >
@@ -33,8 +47,8 @@
               (change)="updateStatus(order)"
               class="px-3 py-1 rounded-full text-xs font-semibold border bg-yellow-100 text-yellow-600 cursor-pointer"
             >
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
             </select>
             }
           </td>
@@ -170,23 +184,19 @@
         <div>
           <p class="text-sm text-gray-600 mb-1">Name</p>
           <p class="font-semibold">
-            {{
-              selectedOrder.user?.fullName ||
-                selectedOrder.guestName ||
-                "Guest Customer"
-            }}
+            {{ selectedOrder.customerName || "Guest Customer" }}
           </p>
         </div>
         <div>
           <p class="text-sm text-gray-600 mb-1">Email</p>
           <p class="font-semibold">
-            {{ selectedOrder.user?.email || selectedOrder.guestEmail || "N/A" }}
+            {{ selectedOrder.customerEmail || "N/A" }}
           </p>
         </div>
         <div>
           <p class="text-sm text-gray-600 mb-1">Phone</p>
           <p class="font-semibold">
-            {{ selectedOrder.user?.phone || selectedOrder.guestPhone || "N/A" }}
+            {{ selectedOrder.customerPhone || "N/A" }}
           </p>
         </div>
         <div>
@@ -217,18 +227,39 @@
         Order Items
       </h3>
       <div class="space-y-4">
-        @for (item of orderDetails; track item.id) {
+        @for (item of selectedOrder.orderDetails; track $index) {
         <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+          @if (item.productImage) {
           <img
-            [src]="item.product?.imageUrl"
-            [alt]="item.product?.name"
+            [src]="item.productImage"
+            [alt]="item.productName"
             class="w-20 h-20 object-cover rounded-lg"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
           />
+          }
+          <div
+            class="w-20 h-20 bg-gray-200 rounded-lg items-center justify-center text-gray-400"
+            [style.display]="item.productImage ? 'none' : 'flex'"
+          >
+            <svg
+              class="w-10 h-10"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
           <div class="flex-1">
-            <h4 class="font-semibold">{{ item.product?.name }}</h4>
+            <h4 class="font-semibold">{{ item.productName }}</h4>
             <div class="flex items-center gap-4 text-sm text-gray-600 mt-1">
-              <span>Size: {{ item.size?.name }}</span>
-              <span>Color: {{ item.color?.name }}</span>
+              <span>Size: {{ item.size }}</span>
+              <span>Color: {{ item.color }}</span>
               <span>Qty: {{ item.quantity }}</span>
             </div>
           </div>
@@ -273,7 +304,7 @@
         </div>
         <div class="mt-4 pt-4 border-t">
           <p class="text-sm text-gray-600 mb-2">Order Status</p>
-          @if (selectedOrder.status === 'completed') {
+          @if (selectedOrder.status === 'Completed') {
           <div
             class="w-full px-4 py-3 bg-green-100 text-green-700 rounded-lg font-semibold text-center"
           >
@@ -285,8 +316,8 @@
             (change)="updateStatus(selectedOrder)"
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
           >
-            <option value="pending">Pending</option>
-            <option value="completed">Completed</option>
+            <option value="Pending">Pending</option>
+            <option value="Completed">Completed</option>
           </select>
           <p class="text-xs text-gray-500 mt-2">
             ⚠️ Once marked as Completed, status cannot be changed

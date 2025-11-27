@@ -9,22 +9,18 @@
         @for (item of cartItems; track item.id) {
         <div class="bg-white rounded-xl p-6 shadow-md flex gap-6">
           <img
-            [src]="item.product?.imageUrl"
-            [alt]="item.product?.name"
+            [src]="item.productImage"
+            [alt]="item.productName"
             class="w-24 h-24 object-cover rounded-lg"
           />
 
           <div class="flex-1">
-            <h3 class="text-lg font-semibold mb-1">
-              {{ item.product?.name }}
-            </h3>
+            <h3 class="text-lg font-semibold mb-1">{{ item.productName }}</h3>
             <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
-              <span>Size: {{ item.size?.name }}</span>
-              <span>Color: {{ item.color?.name }}</span>
+              <span>Size: {{ item.sizeName }}</span>
+              <span>Color: {{ item.colorName }}</span>
             </div>
-            <p class="text-lg font-bold text-rose-600">
-              ${{ item.product?.price }}
-            </p>
+            <p class="text-lg font-bold text-rose-600">${{ item.price }}</p>
           </div>
 
           <div class="flex flex-col items-end justify-between">

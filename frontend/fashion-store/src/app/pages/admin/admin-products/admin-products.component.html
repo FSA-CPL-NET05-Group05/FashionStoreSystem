@@ -2,7 +2,9 @@
   <div class="flex items-center justify-between mb-8">
     <div>
       <h1 class="text-3xl font-bold">Products Management</h1>
-      <p class="text-gray-600 mt-2">Manage your product inventory</p>
+      <p class="text-gray-600 mt-2">
+        Manage your product inventory ({{ totalCount }} products)
+      </p>
     </div>
     <button
       (click)="openAddModal()"
@@ -32,12 +34,13 @@
           <th class="text-left py-4 px-6 font-semibold">Product</th>
           <th class="text-left py-4 px-6 font-semibold">Price</th>
           <th class="text-left py-4 px-6 font-semibold">Category</th>
+          <th class="text-left py-4 px-6 font-semibold">Stock</th>
           <th class="text-left py-4 px-6 font-semibold">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr
-          *ngFor="let product of paginatedProducts; trackBy: trackById"
+          *ngFor="let product of products; trackBy: trackById"
           class="border-b hover:bg-gray-50"
         >
           <td class="py-4 px-6">
@@ -62,12 +65,25 @@
           <td class="py-4 px-6 font-bold text-rose-600">
             ${{ product.price }}
           </td>
-          <td class="py-4 px-6">{{ getCategoryName(product.categoryId) }}</td>
+          <td class="py-4 px-6">{{ product.categoryName }}</td>
+          <td class="py-4 px-6">
+            <span
+              [class.text-green-600]="product.totalStock > 50"
+              [class.text-orange-600]="
+                product.totalStock <= 50 && product.totalStock > 0
+              "
+              [class.text-red-600]="product.totalStock === 0"
+              class="font-bold"
+            >
+              {{ product.totalStock }}
+            </span>
+          </td>
           <td class="py-4 px-6">
             <div class="flex gap-2">
               <button
                 (click)="editProduct(product)"
                 class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                title="Edit product"
               >
                 <svg
                   class="w-5 h-5"
@@ -86,6 +102,7 @@
               <button
                 (click)="manageStock(product)"
                 class="p-2 text-green-600 hover:bg-green-50 rounded-lg"
+                title="Manage stock"
               >
                 <svg
                   class="w-5 h-5"
@@ -104,6 +121,7 @@
               <button
                 (click)="deleteProduct(product.id)"
                 class="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                title="Delete product"
               >
                 <svg
                   class="w-5 h-5"
@@ -315,12 +333,15 @@
             >Additional Images (comma-separated URLs)</label
           >
           <textarea
-            [(ngModel)]="productForm.imagesText"
-            name="images"
+            [(ngModel)]="productForm.additionalImagesText"
+            name="additionalImages"
             rows="2"
             placeholder="https://image1.jpg, https://image2.jpg"
             class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-rose-500 focus:outline-none"
           ></textarea>
+          <p class="text-xs text-gray-500 mt-1">
+            These images will be shown in the product gallery
+          </p>
         </div>
       </div>
 
@@ -362,11 +383,12 @@
     <div class="bg-gray-50 rounded-xl p-6 mb-6">
       <h3 class="font-bold mb-4">Add New Stock</h3>
       <div class="grid grid-cols-4 gap-3 mb-4">
+        <!-- Size Dropdown -->
         <select
           [(ngModel)]="stockForm.sizeId"
           class="px-3 py-2 border rounded-lg"
         >
-          <option value="">Size</option>
+          <option value="">Select Size</option>
           <option
             *ngFor="let size of sizes; trackBy: trackById"
             [value]="size.id"
@@ -374,18 +396,28 @@
             {{ size.name }}
           </option>
         </select>
-        <select
-          [(ngModel)]="stockForm.colorId"
-          class="px-3 py-2 border rounded-lg"
-        >
-          <option value="">Color</option>
-          <option
-            *ngFor="let color of colors; trackBy: trackById"
-            [value]="color.id"
+
+        <!-- Color Dropdown with Color Preview -->
+        <div class="relative">
+          <select
+            [(ngModel)]="stockForm.colorId"
+            class="w-full px-3 py-2 border rounded-lg appearance-none"
           >
-            {{ color.name }}
-          </option>
-        </select>
+            <option value="">Select Color</option>
+            <option
+              *ngFor="let color of colors; trackBy: trackById"
+              [value]="color.id"
+            >
+              {{ color.name }}
+            </option>
+          </select>
+          <div
+            *ngIf="stockForm.colorId"
+            class="absolute right-8 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-2 border-gray-300"
+            [style.background-color]="getColorCode(+stockForm.colorId)"
+          ></div>
+        </div>
+
         <input
           type="number"
           [(ngModel)]="stockForm.stock"
@@ -406,14 +438,20 @@
     <div class="space-y-3">
       <h3 class="font-bold">Current Stock</h3>
       <div
-        *ngFor="let ps of currentProductSizes; trackBy: trackById"
+        *ngFor="let ps of currentProductStocks; trackBy: trackById"
         class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
       >
         <div class="flex items-center gap-4">
-          <span class="font-semibold">Size: {{ getSizeName(ps.sizeId) }}</span>
-          <span class="font-semibold"
-            >Color: {{ getColorName(ps.colorId) }}</span
-          >
+          <span class="font-semibold">Size: {{ ps.sizeName }}</span>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold">Color:</span>
+            <div
+              class="w-6 h-6 rounded-full border-2 border-gray-300"
+              [style.background-color]="getColorCode(ps.colorId)"
+              [title]="ps.colorName"
+            ></div>
+            <span>{{ ps.colorName }}</span>
+          </div>
           <span class="px-3 py-1 bg-white rounded-lg font-bold"
             >Stock: {{ ps.stock }}</span
           >
@@ -421,7 +459,8 @@
         <div class="flex gap-2">
           <button
             (click)="updateStock(ps, ps.stock - 1)"
-            class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded"
+            [disabled]="ps.stock <= 0"
+            class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded disabled:opacity-50"
           >
             -
           </button>
