@@ -3,6 +3,7 @@ using FashionStore.Business.Interfaces;
 using FashionStore.Business.Messaging;
 using FashionStore.Data.Interfaces;
 using FashionStore.Data.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,12 +17,14 @@ namespace FashionStore.Business.Service
         private readonly IRabbitMqProducer _producer;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<OrderService> _logger;
+        private readonly UserManager<AppUser> _userManager;
 
-        public OrderService(IRabbitMqProducer producer, IUnitOfWork unitOfWork, ILogger<OrderService> logger)
+        public OrderService(IRabbitMqProducer producer, IUnitOfWork unitOfWork, ILogger<OrderService> logger, UserManager<AppUser> userManager)
         {
             _producer = producer;
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _userManager = userManager;
         }
 
         public async Task<bool> PlaceOrderAsync(CheckoutDto dto)
@@ -58,13 +61,28 @@ namespace FashionStore.Business.Service
             {
                 await _unitOfWork.CompleteAsync();
             }
+            var user = await _userManager.FindByIdAsync(dto.UserId);
+
+            string customerName = dto.CustomerName;
+            string customerPhone = dto.CustomerPhone;
+            string customerEmail = dto.CustomerEmail;
+            if (user != null)
+            {
+                if (string.IsNullOrEmpty(customerEmail))
+                    customerEmail = user.Email;
+
+                if (string.IsNullOrEmpty(customerPhone))
+                    customerPhone = user.PhoneNumber;
+                if (string.IsNullOrEmpty(customerName))
+                    customerName = user.UserName;
+            }
 
             var message = new OrderMessage
             {
                 UserId = Guid.Parse(dto.UserId),
-                CustomerName = dto.CustomerName,
-                CustomerPhone = dto.CustomerPhone,
-                CustomerEmail = dto.CustomerEmail,
+                CustomerName = customerName,
+                CustomerPhone = customerPhone,
+                CustomerEmail = customerEmail,
                 Items = new List<OrderItemMessage>()
             };
 
@@ -140,8 +158,9 @@ namespace FashionStore.Business.Service
                 {
                     ProductId = d.ProductId,
                     ProductName = d.Product?.Name ?? "Unknown",
-                    Size = d.Size.Name,   
-                    Color = d.Color.Name, 
+                    ProductImage = d.Product?.ImageUrl,
+                    Size = d.Size.Name,
+                    Color = d.Color.Name,
                     Quantity = d.Quantity,
                     Price = d.Price
                 }).ToList()
