@@ -11,22 +11,27 @@ import { Component, inject, OnInit } from '@angular/core';
 })
 export class ShopComponent implements OnInit {
   products: any[] = [];
-  filteredProducts: any[] = [];
   categories: any[] = [];
 
   searchTerm = '';
   sortBy = 'default';
   filters = { categoryId: '' };
 
-  // Pagination
+  // Pagination từ backend
   currentPage = 1;
-  itemsPerPage = 8;
+  pageSize = 8; // Số sản phẩm mỗi trang
+  totalCount = 0;
+  totalPages = 0;
+
+  // Cache tất cả products để filter/sort ở client
+  allProducts: any[] = [];
+  isLoading = false;
 
   productService = inject(ProductService);
 
   ngOnInit(): void {
-    this.loadProducts();
     this.loadCategories();
+    this.loadAllProducts();
   }
 
   loadCategories() {
@@ -35,23 +40,26 @@ export class ShopComponent implements OnInit {
     });
   }
 
-  loadProducts() {
-    this.productService.getProducts().subscribe((products) => {
-      this.products = products;
-      this.applyFilters();
+  // Load TẤT CẢ products 1 lần duy nhất khi component init
+  loadAllProducts() {
+    this.isLoading = true;
+
+    // Gọi API với pageSize lớn để lấy hết
+    this.productService.getProducts().subscribe({
+      next: (products) => {
+        this.allProducts = products;
+        this.applyFilters();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Failed to load products:', err);
+        this.isLoading = false;
+      },
     });
   }
 
   applyFilters() {
-    let filtered = [...this.products];
-
-    // Search
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter((product) =>
-        product.name.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
+    let filtered = [...this.allProducts];
 
     // Category Filter
     if (this.filters.categoryId) {
@@ -60,18 +68,36 @@ export class ShopComponent implements OnInit {
       );
     }
 
-    this.filteredProducts = filtered;
-    this.applySorting();
+    // Search Filter
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter((product) =>
+        product.name.toLowerCase().includes(term)
+      );
+    }
+
+    // Apply Sorting
+    this.applySorting(filtered);
+
+    // Update products và pagination
+    this.products = filtered;
+    this.totalCount = filtered.length;
+    this.totalPages = Math.ceil(this.totalCount / this.pageSize);
+
+    // Reset về page 1 khi filter
     this.currentPage = 1;
   }
 
-  applySorting() {
+  applySorting(products: any[]) {
     switch (this.sortBy) {
       case 'price-low':
-        this.filteredProducts.sort((a, b) => a.price - b.price);
+        products.sort((a, b) => a.price - b.price);
         break;
       case 'price-high':
-        this.filteredProducts.sort((a, b) => b.price - a.price);
+        products.sort((a, b) => b.price - a.price);
+        break;
+      default:
+        // Giữ nguyên thứ tự mặc định
         break;
     }
   }
@@ -80,19 +106,19 @@ export class ShopComponent implements OnInit {
     this.searchTerm = '';
     this.sortBy = 'default';
     this.filters = { categoryId: '' };
-    this.filteredProducts = [...this.products];
     this.currentPage = 1;
+    this.applyFilters();
   }
 
-  // Pagination
+  // Pagination methods - Client side pagination
   getDisplayedProducts() {
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.filteredProducts.slice(startIndex, endIndex);
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return this.products.slice(startIndex, endIndex);
   }
 
   getTotalPages() {
-    return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
+    return this.totalPages;
   }
 
   previousPage() {
