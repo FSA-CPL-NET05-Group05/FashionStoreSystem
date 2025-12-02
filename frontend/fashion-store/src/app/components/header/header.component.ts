@@ -23,10 +23,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private cartCountSubscription?: Subscription;
   private authSubscription?: Subscription;
 
-  authService = inject(AuthService);
-  cartService = inject(CartService);
-  router = inject(Router);
-  toast = inject(ToastrService);
+  // Inject services (chỉ dùng 1 cách)
+  private authService = inject(AuthService);
+  private cartService = inject(CartService);
+  private router = inject(Router);
+  private toast = inject(ToastrService);
 
   ngOnInit(): void {
     this.authSubscription = this.authService.currentUser$.subscribe((user) => {
@@ -61,36 +62,65 @@ export class HeaderComponent implements OnInit, OnDestroy {
     );
   }
 
-  login(e: Event): void {
-    e.preventDefault();
-
-    if (!this.loginForm.username || !this.loginForm.password) {
-      this.toast.warning('Please enter username and password');
-      return;
-    }
-
-    this.authService
-      .login(this.loginForm.username, this.loginForm.password)
-      .subscribe({
-        next: (user) => {
-          if (!user) {
-            this.toast.error('Invalid username or password');
-            return;
-          }
-
-          this.showLoginModal = false;
-          this.loginForm = { username: '', password: '' };
-          this.toast.success('Login successful');
-
-          // Lấy cart sau login
-          this.cartService.getCart().subscribe();
-
-          if (user.role === 'Admin') this.router.navigate(['/admin']);
-          else this.router.navigate(['/']);
-        },
-        error: (err) => this.toast.error(err.message || 'Login failed'),
-      });
+ login(e: Event): void {
+  e.preventDefault();
+  if (!this.loginForm.username || !this.loginForm.password) {
+    this.toast.warning('Please enter username and password');
+    return;
   }
+  
+  this.authService
+    .login(this.loginForm.username, this.loginForm.password)
+    .subscribe({
+      next: (user: any) => {
+        if (!user) {
+          this.toast.error('Invalid username or password');
+          return;
+        }
+        this.showLoginModal = false;
+        this.loginForm = { username: '', password: '' };
+        this.toast.success('Login successful');
+        this.cartService.getCart().subscribe();
+        if (user.role === 'Admin') this.router.navigate(['/admin']);
+        else this.router.navigate(['/']);
+      },
+      error: (error: any) => {
+        console.error('❌ Login error:', error);
+        
+        if (error.status === 401) {
+     
+          const errorCode = error.error?.code;
+          
+          if (errorCode === 'ACCOUNT_LOCKED') {
+            this.toast.error(
+              'Your account has been locked. Please contact support for assistance.',
+              'Account Locked',
+              { timeOut: 6000 }
+            );
+          } else if (errorCode === 'INVALID_CREDENTIALS') {
+            this.toast.error(
+              'Invalid username or password. Please try again.',
+              'Login Failed',
+              { timeOut: 5000 }
+            );
+          } else {
+            
+            this.toast.error(
+              error.error?.message || 'Invalid username or password',
+              'Login Failed',
+              { timeOut: 5000 }
+            );
+          }
+        } else if (error.status === 400) {
+          this.toast.error(error.error?.message || 'Invalid data');
+        } else if (error.status === 0) {
+          this.toast.error('Cannot connect to server');
+        } else {
+          this.toast.error(error.message || 'Login failed');
+        }
+      },
+    });
+}
 
   logout(): void {
     this.authService.logout();

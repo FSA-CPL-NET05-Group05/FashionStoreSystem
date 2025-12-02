@@ -14,6 +14,7 @@ export class AdminUsersComponent implements OnInit {
   currentPage = 1;
   itemsPerPage = 4;
   totalPages = 0;
+  isLoading = false;
 
   constructor(
     private userService: UserService,
@@ -25,15 +26,18 @@ export class AdminUsersComponent implements OnInit {
   }
 
   loadUsers() {
+    this.isLoading = true;
     this.userService.getUsers(this.currentPage, this.itemsPerPage).subscribe({
       next: (res) => {
         this.users = res.items;
         this.totalPages = res.totalPages;
-        console.log('Users loaded:', this.users);
+        this.isLoading = false;
+        console.log('✅ Users loaded:', this.users);
       },
       error: (err) => {
-        console.error('Error response:', err);
-        this.toastr.error('Failed to load users');
+        this.isLoading = false;
+        console.error('❌ Error loading users:', err);
+        // Interceptor đã xử lý toast, không cần hiển thị lại
       },
     });
   }
@@ -56,37 +60,45 @@ export class AdminUsersComponent implements OnInit {
   }
 
   banUser(id: string) {
+    if (!confirm('Bạn có chắc muốn khóa tài khoản này?')) return;
+
     this.userService.banUser(id).subscribe({
       next: (res: any) => {
-        this.toastr.success(res?.message || 'User banned');
+        this.toastr.success('Đã khóa tài khoản thành công', 'Thành công');
         this.loadUsers();
       },
       error: (err: any) => {
-        let msg = 'Failed to ban user';
-        if (err.error) {
-          if (typeof err.error === 'string') msg = err.error;
-          else if (err.error.message) msg = err.error.message;
-          else msg = JSON.stringify(err.error);
-        } else if (err.message) msg = err.message;
-        this.toastr.error(msg);
+        console.error('❌ Error banning user:', err);
+        // Interceptor đã xử lý lỗi 401, 403
+        // Chỉ xử lý lỗi đặc thù ở đây nếu cần
+        if (err.status === 400) {
+          this.toastr.error(
+            err.error?.message || 'Không thể khóa tài khoản',
+            'Lỗi'
+          );
+        }
       },
     });
   }
 
   unbanUser(id: string) {
+    if (!confirm('Bạn có chắc muốn mở khóa tài khoản này?')) return;
+
     this.userService.unbanUser(id).subscribe({
       next: (res: any) => {
-        this.toastr.success(res?.message || 'User unbanned');
+        this.toastr.success('Đã mở khóa tài khoản thành công', 'Thành công');
         this.loadUsers();
       },
       error: (err: any) => {
-        let msg = 'Failed to unban user';
-        if (err.error) {
-          if (typeof err.error === 'string') msg = err.error;
-          else if (err.error.message) msg = err.error.message;
-          else msg = JSON.stringify(err.error);
-        } else if (err.message) msg = err.message;
-        this.toastr.error(msg);
+        console.error('❌ Error unbanning user:', err);
+        // Interceptor đã xử lý lỗi 401, 403
+        // Chỉ xử lý lỗi đặc thù ở đây nếu cần
+        if (err.status === 400) {
+          this.toastr.error(
+            err.error?.message || 'Không thể mở khóa tài khoản',
+            'Lỗi'
+          );
+        }
       },
     });
   }

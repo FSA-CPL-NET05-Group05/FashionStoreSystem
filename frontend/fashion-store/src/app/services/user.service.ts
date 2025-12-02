@@ -9,34 +9,25 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   getUsers(page: number, pageSize: number): Observable<any> {
-    const token = localStorage.getItem('token');
+    // KHÔNG cần thêm token thủ công nữa - interceptor đã xử lý
     return this.http.get<any>(
-      `${this.apiUrl}/paged?page=${page}&pageSize=${pageSize}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      `${this.apiUrl}/paged?page=${page}&pageSize=${pageSize}`
     );
   }
 
   banUser(id: string, reason: string = 'Admin action'): Observable<any> {
-    const token = localStorage.getItem('token');
+    // KHÔNG cần thêm token thủ công nữa - interceptor đã xử lý
     return this.http.put(
       `${this.apiUrl}/${id}/lock`,
-      { reason },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { reason }
     );
   }
 
   unbanUser(id: string, reason: string = 'Admin action'): Observable<any> {
-    const token = localStorage.getItem('token');
+    // KHÔNG cần thêm token thủ công nữa - interceptor đã xử lý
     return this.http.put(
       `${this.apiUrl}/${id}/unlock`,
-      { reason },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+      { reason }
     );
   }
 }

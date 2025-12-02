@@ -24,14 +24,21 @@ namespace FashionStore.Business.Service.LoginService
             _signInManager = signInManager;
         }
 
-        public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO loginRequest) // Thay vì nhận username và password, nhận LoginRequestDTO
+        public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO loginRequest)
         {
             // Lấy thông tin người dùng từ repository theo username
             var user = await _loginRepository.GetByUsernameAsync(loginRequest.Username);
 
             if (user == null)
             {
-                return null; // Trả về null nếu người dùng không tồn tại
+                // Username không tồn tại
+                throw new UnauthorizedAccessException("INVALID_CREDENTIALS");
+            }
+
+            // ✅ KIỂM TRA TÀI KHOẢN BỊ KHÓA TRƯỚC
+            if (user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow)
+            {
+                throw new UnauthorizedAccessException("ACCOUNT_LOCKED");
             }
 
             // Kiểm tra mật khẩu người dùng
@@ -41,19 +48,21 @@ namespace FashionStore.Business.Service.LoginService
             {
                 // Nếu đăng nhập thành công, tạo token và trả về thông tin người dùng và token
                 var token = await _tokenService.CreateToken(user);
-                var roles = await _loginRepository.GetRolesAsync(user);           
+                var roles = await _loginRepository.GetRolesAsync(user);
                 var role = roles.FirstOrDefault() ?? "User";
+
                 return new LoginResponseDTO
                 {
-                    Id=user.Id,
+                    Id = user.Id,
                     Username = user.UserName,
-                    Role=role,
-                    FullName=user.FullName,
-                    Token = token // Trả về token
+                    Role = role,
+                    FullName = user.FullName,
+                    Token = token
                 };
             }
 
-            return null; // Trả về null nếu mật khẩu không đúng
+            // Sai mật khẩu
+            throw new UnauthorizedAccessException("INVALID_CREDENTIALS");
         }
     }
     }
