@@ -8,5 +8,6 @@ namespace FashionStore.Business.Service
 {
     internal class BaseService
     {
+
     }
 }

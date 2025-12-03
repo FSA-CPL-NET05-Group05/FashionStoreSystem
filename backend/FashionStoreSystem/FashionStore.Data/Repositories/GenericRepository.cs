@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,9 +21,32 @@ namespace FashionStore.Data.Repositories
             _dbSet = _context.Set<T>();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<IEnumerable<T>> GetAllAsync(
+                    Expression<Func<T, bool>>? filter = null,
+                    Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+                    string includeProperties = "")
         {
-            return await _dbSet.ToListAsync();
+            IQueryable<T> query = _dbSet.AsNoTracking();
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            foreach (var includeProperty in includeProperties.Split
+                (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            if (orderBy != null)
+            {
+                return await orderBy(query).ToListAsync();
+            }
+            else
+            {
+                return await query.ToListAsync();
+            }
         }
 
         public async Task<T?> GetByIdAsync(int id)
@@ -30,26 +54,38 @@ namespace FashionStore.Data.Repositories
             return await _dbSet.FindAsync(id);
         }
 
-        public async Task AddAsync(T entity)
+
+        public void Add(T entity)
         {
-            await _dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
+            _dbSet.Add(entity);
         }
 
-        public async Task UpdateAsync(T entity)
+        public void Update(T entity)
         {
             _dbSet.Update(entity);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(T entity)
         {
-            var entity = await _dbSet.FindAsync(id);
-            if (entity != null)
+            if (_context.Entry(entity).State == EntityState.Detached)
             {
-                _dbSet.Remove(entity);
-                await _context.SaveChangesAsync();
+                _dbSet.Attach(entity);
             }
+            _dbSet.Remove(entity);
         }
+
+        public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.AsNoTracking()
+                .Where(predicate)
+                .ToListAsync();
+        }
+
+        public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
+
+
     }
 }

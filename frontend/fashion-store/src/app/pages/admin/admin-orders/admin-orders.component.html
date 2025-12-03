@@ -1,0 +1,369 @@
+<div class="p-8">
+  <h1 class="text-3xl font-bold mb-8">Orders Management</h1>
+
+  <div class="bg-white rounded-xl shadow-md overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="text-left py-4 px-6">Order ID</th>
+          <th class="text-left py-4 px-6">Customer</th>
+          <th class="text-left py-4 px-6">Email</th>
+          <th class="text-left py-4 px-6">Phone</th>
+          <th class="text-left py-4 px-6">Total</th>
+          <th class="text-left py-4 px-6">Status</th>
+          <th class="text-left py-4 px-6">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (orders.length === 0) {
+        <tr>
+          <td colspan="7" class="py-8 text-center text-gray-500">
+            No orders found
+          </td>
+        </tr>
+        } @for (order of paginatedOrders; track order.id) {
+        <tr class="border-b hover:bg-gray-50">
+          <td class="py-4 px-6 font-medium">#{{ order.id }}</td>
+          <td class="py-4 px-6">
+            {{ order.customerName || "Guest" }}
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-600">
+            {{ order.customerEmail || "N/A" }}
+          </td>
+          <td class="py-4 px-6 text-sm text-gray-600">
+            {{ order.customerPhone || "N/A" }}
+          </td>
+          <td class="py-4 px-6 font-semibold">${{ order.totalAmount }}</td>
+          <td class="py-4 px-6">
+            @if (order.status === 'Completed') {
+            <span
+              class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-600"
+            >
+              Completed
+            </span>
+            } @else {
+            <select
+              [(ngModel)]="order.status"
+              (change)="updateStatus(order)"
+              class="px-3 py-1 rounded-full text-xs font-semibold border bg-yellow-100 text-yellow-600 cursor-pointer"
+            >
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+            </select>
+            }
+          </td>
+          <td class="py-4 px-6">
+            <button
+              (click)="viewOrderDetail(order)"
+              class="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg text-sm hover:bg-blue-200 font-medium"
+            >
+              View Details
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    @if (totalPages > 1) {
+    <div
+      class="flex items-center justify-center gap-2 px-6 py-4 border-t bg-gray-50"
+    >
+      <button
+        (click)="goToPage(currentPage - 1)"
+        [disabled]="currentPage === 1"
+        [class.opacity-50]="currentPage === 1"
+        [class.cursor-not-allowed]="currentPage === 1"
+        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white transition-colors"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M15 19l-7-7 7-7"
+          />
+        </svg>
+      </button>
+
+      @for (page of pageNumbers; track page) {
+      <button
+        (click)="goToPage(page)"
+        [class.bg-rose-600]="page === currentPage"
+        [class.text-white]="page === currentPage"
+        [class.bg-white]="page !== currentPage"
+        class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-rose-100 transition-colors font-medium"
+      >
+        {{ page }}
+      </button>
+      }
+
+      <button
+        (click)="goToPage(currentPage + 1)"
+        [disabled]="currentPage === totalPages"
+        [class.opacity-50]="currentPage === totalPages"
+        [class.cursor-not-allowed]="currentPage === totalPages"
+        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white transition-colors"
+      >
+        <svg
+          class="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5l7 7-7 7"
+          />
+        </svg>
+      </button>
+    </div>
+    }
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+@if (showOrderDetail && selectedOrder) {
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center modal-overlay"
+  (click)="closeOrderDetail()"
+>
+  <div
+    class="bg-white rounded-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto animate-scale-in"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-bold">Order #{{ selectedOrder.id }}</h2>
+      <button
+        (click)="closeOrderDetail()"
+        class="text-gray-400 hover:text-gray-600"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Customer Information -->
+    <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+      <svg
+        class="w-5 h-5 text-rose-600"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+        />
+      </svg>
+      Customer Information
+    </h3>
+    <div class="bg-gray-50 rounded-xl p-6 mb-6">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Name</p>
+          <p class="font-semibold">
+            {{ selectedOrder.customerName || "Guest Customer" }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Email</p>
+          <p class="font-semibold">
+            {{ selectedOrder.customerEmail || "N/A" }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Phone</p>
+          <p class="font-semibold">
+            {{ selectedOrder.customerPhone || "N/A" }}
+          </p>
+        </div>
+        <div>
+          <p class="text-sm text-gray-600 mb-1">Order Date</p>
+          <p class="font-semibold">
+            {{ formatOrderDate(selectedOrder.orderDate) }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="mb-6">
+      <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+        <svg
+          class="w-5 h-5 text-rose-600"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+          />
+        </svg>
+        Order Items
+      </h3>
+      <div class="space-y-4">
+        @for (item of selectedOrder.orderDetails; track $index) {
+        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+          @if (item.productImage) {
+          <img
+            [src]="item.productImage"
+            [alt]="item.productName"
+            class="w-20 h-20 object-cover rounded-lg"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+          />
+          }
+          <div
+            class="w-20 h-20 bg-gray-200 rounded-lg items-center justify-center text-gray-400"
+            [style.display]="item.productImage ? 'none' : 'flex'"
+          >
+            <svg
+              class="w-10 h-10"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-semibold">{{ item.productName }}</h4>
+            <div class="flex items-center gap-4 text-sm text-gray-600 mt-1">
+              <span>Size: {{ item.size }}</span>
+              <span>Color: {{ item.color }}</span>
+              <span>Qty: {{ item.quantity }}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-600">Unit Price</p>
+            <p class="font-bold text-rose-600">${{ item.price }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm text-gray-600">Subtotal</p>
+            <p class="font-bold">${{ item.price * item.quantity }}</p>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-rose-600" viewBox="0 0 24 24">
+        <path
+          fill="currentColor"
+          d="M17 10H7v2h10v-2zm0 4H7v2h10v-2zM7 8h5V6H7v2zm13-3.99v15.98c0 1.1-.9 2-2 2H6.99c-1.1 0-2-.9-2-2L5 4.01c0-1.1.9-2 2-2H18c1.1 0 2 .9 2 2z"
+        />
+      </svg>
+      Order Summary
+    </h3>
+    <div class="bg-gradient-to-br from-rose-50 to-pink-50 rounded-xl p-6">
+      <div class="space-y-3">
+        <div class="flex justify-between">
+          <span class="text-gray-600">Subtotal</span>
+          <span class="font-semibold">${{ selectedOrder.totalAmount }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-600">Shipping</span>
+          <span class="text-green-600 font-semibold">Free</span>
+        </div>
+        <div class="border-t pt-3 flex justify-between text-lg">
+          <span class="font-bold">Total</span>
+          <span class="font-bold text-rose-600"
+            >${{ selectedOrder.totalAmount }}</span
+          >
+        </div>
+        <div class="mt-4 pt-4 border-t">
+          <p class="text-sm text-gray-600 mb-2">Order Status</p>
+          @if (selectedOrder.status === 'Completed') {
+          <div
+            class="w-full px-4 py-3 bg-green-100 text-green-700 rounded-lg font-semibold text-center"
+          >
+            ✓ Completed
+          </div>
+          } @else {
+          <select
+            [(ngModel)]="selectedOrder.status"
+            (change)="updateStatus(selectedOrder)"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
+          >
+            <option value="Pending">Pending</option>
+            <option value="Completed">Completed</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-2">
+            ⚠️ Once marked as Completed, status cannot be changed
+          </p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <button
+      (click)="closeOrderDetail()"
+      class="w-full mt-6 bg-gray-200 hover:bg-gray-300 py-3 rounded-lg font-semibold"
+    >
+      Close
+    </button>
+  </div>
+</div>
+}
+
+<style>
+  .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+</style>
