@@ -8,6 +8,14 @@
       </p>
     </div>
 
+    <!-- Loading Indicator -->
+    @if (isLoading) {
+    <div class="flex items-center justify-center py-12">
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"
+      ></div>
+    </div>
+    } @if (!isLoading) {
     <!-- Filters Bar -->
     <div class="bg-white rounded-lg shadow-md p-4 mb-6">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -50,7 +58,7 @@
         <!-- Price Sort -->
         <select
           [(ngModel)]="sortBy"
-          (change)="applySorting()"
+          (change)="applyFilters()"
           class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500"
         >
           <option value="default">Sort by</option>
@@ -120,7 +128,7 @@
         [disabled]="currentPage === 1"
         [class.opacity-50]="currentPage === 1"
         [class.cursor-not-allowed]="currentPage === 1"
-        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white"
+        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white transition-colors"
       >
         <svg
           class="w-4 h-4"
@@ -154,7 +162,7 @@
         [disabled]="currentPage === getTotalPages()"
         [class.opacity-50]="currentPage === getTotalPages()"
         [class.cursor-not-allowed]="currentPage === getTotalPages()"
-        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white"
+        class="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:hover:bg-white transition-colors"
       >
         <svg
           class="w-4 h-4"
@@ -172,6 +180,7 @@
       </button>
     </div>
     } } @else {
+    <!-- No Products Found -->
     <div class="text-center py-12">
       <svg
         class="w-16 h-16 mx-auto text-gray-300 mb-4"
@@ -197,6 +206,6 @@
         Clear All Filters
       </button>
     </div>
-    }
+    } }
   </div>
 </div>

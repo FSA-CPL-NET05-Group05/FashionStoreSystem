@@ -1,50 +1,28 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forkJoin, map, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class FeedbackService {
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'https://localhost:7057/api/Feedbacks';
 
   constructor(private http: HttpClient) {}
 
-  getFeedbacks(productId?: number): Observable<any[]> {
-    const url = productId
-      ? `${this.apiUrl}/feedbacks?productId=${productId}`
-      : `${this.apiUrl}/feedbacks`;
+  getFeedbacks(productId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/product/${productId}`);
+  }
 
-    return forkJoin({
-      feedbacks: this.http.get<any[]>(url),
-      users: this.http.get<any[]>(`${this.apiUrl}/users`),
-      products: this.http.get<any[]>(`${this.apiUrl}/products`),
-    }).pipe(
-      map(({ feedbacks, users, products }) => {
-        return feedbacks
-          .map((feedback) => ({
-            ...feedback,
-            user: users.find((u) => u.id === feedback.userId),
-            product: products.find((p) => p.id === feedback.productId),
-          }))
-          .sort(
-            (a, b) =>
-              new Date(b.createdDate).getTime() -
-              new Date(a.createdDate).getTime()
-          );
-      })
-    );
+  getAllFeedbacks(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
   }
 
   createFeedback(feedback: any): Observable<any> {
-    const newFeedback = {
-      ...feedback,
-      createdDate: new Date().toISOString(),
-    };
-    return this.http.post(`${this.apiUrl}/feedbacks`, newFeedback);
-  }
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('Token missing');
 
-  replyToFeedback(id: number, reply: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/feedbacks/${id}`, {
-      adminReply: reply,
-    });
+    const headers = { Authorization: `Bearer ${token}` };
+    const newFeedback = { ...feedback, createdDate: new Date().toISOString() };
+
+    return this.http.post(this.apiUrl, newFeedback, { headers });
   }
 }

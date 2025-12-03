@@ -1,85 +1,101 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProductService {
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'https://localhost:7057/api';
 
   constructor(private http: HttpClient) {}
 
-  // ===== READ =====
+  // ===== ADMIN PRODUCTS =====
+  getAdminProducts(page: number = 1, pageSize: number = 10): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/AdminProducts`, {
+      params: { page: page.toString(), pageSize: pageSize.toString() },
+    });
+  }
+
+  getAdminProduct(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/AdminProducts/${id}`);
+  }
+
+  createProduct(product: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/AdminProducts`, product);
+  }
+
+  updateProduct(id: number, product: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/AdminProducts/${id}`, product);
+  }
+
+  deleteProduct(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/AdminProducts/${id}`);
+  }
+
+  // ===== CUSTOMER PRODUCTS (for shop display) =====
   getProducts(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/products`);
+    // Lấy TẤT CẢ products với pageSize lớn
+    return this.http
+      .get<any>(`${this.apiUrl}/CustomerProduct`, {
+        params: { page: '1', pageSize: '1000' },
+      })
+      .pipe(map((response) => response.items ?? []));
   }
 
   getProduct(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/products/${id}`);
-  }
-
-  getProductsWithDetails(): Observable<any[]> {
-    return forkJoin({
-      products: this.getProducts(),
-      categories: this.getCategories(),
-    }).pipe(
-      map(({ products, categories }) => {
-        return products.map((product) => ({
-          ...product,
-          category: categories.find((c) => c.id === product.categoryId),
-        }));
-      })
-    );
-  }
-
-  getProductSizes(productId: number): Observable<any[]> {
-    return this.http.get<any[]>(
-      `${this.apiUrl}/productSizes?productId=${productId}`
-    );
-  }
-
-  getSizes(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/sizes`);
-  }
-
-  getColors(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/colors`);
+    return this.http.get<any>(`${this.apiUrl}/CustomerProduct/${id}`);
   }
 
   getCategories(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/categories`);
+    return this.http.get<any[]>(`${this.apiUrl}/Categories`);
   }
 
-  // ===== CREATE =====
-  createProduct(product: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/products`, product);
+  getProductsByCategory(categoryId: number): Observable<any[]> {
+    return this.http
+      .get<any>(`${this.apiUrl}/CustomerProduct`, {
+        params: {
+          categoryId: categoryId.toString(),
+          page: '1',
+          pageSize: '1000', // Lấy tất cả trong category
+        },
+      })
+      .pipe(map((res) => res.items ?? []));
   }
 
-  createProductSize(productSize: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/productSizes`, productSize);
+  // ===== STOCK MANAGEMENT =====
+  getProductStocks(productId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/products/${productId}/stocks`);
   }
 
-  // ===== UPDATE =====
-  updateProduct(id: number, product: any): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/products/${id}`, product);
+  getProductStock(productId: number, stockId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/products/${productId}/stocks/${stockId}`
+    );
   }
 
-  updateProductSizeStock(id: number, stock: number): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/productSizes/${id}`, { stock });
+  createProductStock(productId: number, stock: any): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/products/${productId}/stocks`,
+      stock
+    );
   }
 
-  updateProductSize(id: number, data: any): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/productSizes/${id}`, data);
+  updateProductStock(
+    productId: number,
+    stockId: number,
+    stockValue: number
+  ): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}/products/${productId}/stocks/${stockId}`,
+      { stock: stockValue }
+    );
   }
 
-  // ===== DELETE =====
-  deleteProduct(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/products/${id}`);
-  }
-
-  deleteProductSize(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/productSizes/${id}`);
+  deleteProductStock(productId: number, stockId: number): Observable<any> {
+    return this.http.delete<any>(
+      `${this.apiUrl}/products/${productId}/stocks/${stockId}`
+    );
   }
 }

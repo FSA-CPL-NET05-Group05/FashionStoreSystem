@@ -6,17 +6,20 @@ import { CartService } from '../../services/cart.service';
 import { OrderService } from '../../services/order.service';
 import { AuthService } from '../../services/auth.service';
 import { ToastrService } from 'ngx-toastr';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule],
-  templateUrl: `../cart/cart.component.html`,
+  templateUrl: './cart.component.html',
 })
 export class CartComponent implements OnInit, OnDestroy {
   cartItems: any[] = [];
   subtotal = 0;
   showSuccessModal = false;
+
+  private cartSub?: Subscription;
 
   constructor(
     private cartService: CartService,
@@ -30,57 +33,48 @@ export class CartComponent implements OnInit, OnDestroy {
     this.loadCart();
   }
 
-  ngOnDestroy() {}
+  ngOnDestroy() {
+    this.cartSub?.unsubscribe();
+  }
 
   loadCart() {
-    const userId = this.authService.currentUserValue?.id;
-
-    if (!userId) return;
-
-    this.cartService.getCartWithDetails(userId).subscribe({
+    this.cartSub = this.cartService.getCart().subscribe({
       next: (items) => {
         this.cartItems = items;
         this.calculateTotals();
       },
+      error: () => this.toastr.error('Failed to load cart'),
     });
   }
 
   calculateTotals() {
     this.subtotal = this.cartItems.reduce(
-      (sum, item) => sum + (item.product?.price || 0) * item.quantity,
+      (sum, item) => sum + (item.price || 0) * item.quantity,
       0
     );
   }
 
   updateQuantity(item: any, newQuantity: number) {
     if (newQuantity < 1) return;
-
-    this.cartService
-      .updateCartItem(item.id, newQuantity, item.quantity, item)
-      .subscribe({
-        next: () => {
-          item.quantity = newQuantity;
-          this.calculateTotals();
-          this.toastr.success('Cart updated');
-        },
-        error: (err) => this.toastr.error(err.message),
-      });
+    this.cartService.updateCartItem(item.id, newQuantity).subscribe({
+      next: () => {
+        item.quantity = newQuantity;
+        this.calculateTotals();
+        this.toastr.success('Cart updated');
+      },
+      error: () => this.toastr.error('Failed to update cart'),
+    });
   }
 
   removeItem(item: any) {
-    if (!confirm('Remove this item from cart?')) return;
-
-    this.cartService.removeFromCart(item).subscribe({
-      next: (response) => {
+    if (!confirm('Remove this item?')) return;
+    this.cartService.removeFromCart(item.id).subscribe({
+      next: () => {
         this.cartItems = this.cartItems.filter((i) => i.id !== item.id);
         this.calculateTotals();
-        this.toastr.success('Item removed from cart');
+        this.toastr.success('Item removed');
       },
-      error: (err) => {
-        console.error('Error removing item:', err);
-        this.toastr.error('Failed to remove item');
-        this.loadCart();
-      },
+      error: () => this.toastr.error('Failed to remove item'),
     });
   }
 
@@ -88,25 +82,41 @@ export class CartComponent implements OnInit, OnDestroy {
     const user = this.authService.currentUserValue;
 
     if (!user) {
-      this.toastr.warning('Please login to place order');
+      this.toastr.warning('Please login');
       this.router.navigate(['/login']);
       return;
     }
 
-    this.placeOrder(user.id);
+    const guestInfo = {
+      name: user?.fullName || 'Guest',
+      phone: (user as any)?.phone || '0000000000',
+      email: (user as any)?.email || 'guest@example.com',
+    };
+
+    this.placeOrder(user.id?.toString(), guestInfo);
   }
 
-  placeOrder(userId: string) {
-    this.orderService.createOrder(this.cartItems, null, userId).subscribe({
+  placeOrder(
+    userId?: string,
+    guestInfo?: { name: string; phone: string; email: string }
+  ) {
+    this.orderService.createOrder(this.cartItems, guestInfo, userId).subscribe({
       next: () => {
-        this.cartService.clearCartAfterOrder(userId).subscribe(() => {
-          this.cartItems = [];
-          this.calculateTotals();
-          this.showSuccessModal = true;
-          this.toastr.success('Order placed successfully!');
-        });
+        // Clear local cart items
+        this.cartItems = [];
+        this.calculateTotals();
+
+        // Update cart count in service
+        this.cartService.clearCartCount();
+
+        // Show success modal
+        this.showSuccessModal = true;
+        this.toastr.success('Order placed successfully!');
       },
-      error: () => this.toastr.error('Failed to place order'),
+      error: (err) => {
+        console.error(err);
+        this.toastr.error('Failed to place order');
+      },
     });
   }
 

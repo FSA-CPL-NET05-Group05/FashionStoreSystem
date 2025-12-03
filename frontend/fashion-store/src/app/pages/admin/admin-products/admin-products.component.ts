@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
 
 import { ToastrService } from 'ngx-toastr';
 import { catchError, forkJoin, of } from 'rxjs';
@@ -18,13 +17,12 @@ export class AdminProductsComponent implements OnInit {
   categories: any[] = [];
   sizes: any[] = [];
   colors: any[] = [];
-  currentProductSizes: any[] = [];
-  Math = Math;
+  currentProductStocks: any[] = [];
 
-  // Pagination
   currentPage = 1;
-  itemsPerPage = 4;
+  pageSize = 4;
   totalPages = 0;
+  totalCount = 0;
 
   showProductModal = false;
   showStockModal = false;
@@ -37,7 +35,7 @@ export class AdminProductsComponent implements OnInit {
     price: 0,
     categoryId: '',
     imageUrl: '',
-    imagesText: '',
+    additionalImagesText: '',
   };
 
   stockForm: any = {
@@ -57,7 +55,7 @@ export class AdminProductsComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private toastr: ToastrService,
-    private http: HttpClient
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -66,35 +64,61 @@ export class AdminProductsComponent implements OnInit {
 
   loadData() {
     forkJoin({
-      products: this.productService.getProducts(),
+      productsResponse: this.productService.getAdminProducts(
+        this.currentPage,
+        this.pageSize
+      ),
       categories: this.productService.getCategories(),
-      sizes: this.productService.getSizes(),
-      colors: this.productService.getColors(),
     }).subscribe({
-      next: ({ products, categories, sizes, colors }) => {
-        this.products = products;
+      next: ({ productsResponse, categories }) => {
+        this.products = productsResponse.items || [];
+        this.totalCount = productsResponse.totalCount || 0;
+        this.totalPages = productsResponse.totalPages || 0;
+        this.currentPage = productsResponse.page || 1;
         this.categories = categories;
-        this.sizes = sizes;
-        this.colors = colors;
-        this.calculateTotalPages();
+
+        if (this.products.length > 0) {
+          this.loadSizesAndColorsFromFirstProduct();
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load data:', err);
+        this.toastr.error('Failed to load products');
       },
     });
   }
 
-  // Pagination methods
-  get paginatedProducts() {
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    return this.products.slice(start, end);
-  }
-
-  calculateTotalPages() {
-    this.totalPages = Math.ceil(this.products.length / this.itemsPerPage);
+  loadSizesAndColorsFromFirstProduct() {
+    const firstProduct = this.products[0];
+    if (firstProduct) {
+      this.productService.getProductStocks(firstProduct.id).subscribe({
+        next: (stocks) => {
+          this.extractSizesAndColorsFromStocks(stocks);
+        },
+        error: () => {
+          this.sizes = [
+            { id: 1, name: 'S' },
+            { id: 2, name: 'M' },
+            { id: 3, name: 'L' },
+            { id: 4, name: 'XL' },
+            { id: 5, name: 'XXL' },
+          ];
+          this.colors = [
+            { id: 1, name: 'Đen', code: '#000000' },
+            { id: 2, name: 'Trắng', code: '#FFFFFF' },
+            { id: 3, name: 'Xám', code: '#808080' },
+            { id: 4, name: 'Đỏ', code: '#FF0000' },
+            { id: 5, name: 'Xanh Dương', code: '#0000FF' },
+          ];
+        },
+      });
+    }
   }
 
   goToPage(page: number) {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      this.loadData();
     }
   }
 
@@ -126,6 +150,10 @@ export class AdminProductsComponent implements OnInit {
     return this.colors.find((c) => c.id === id)?.name || '-';
   }
 
+  getColorCode(id: number): string {
+    return this.colors.find((c) => c.id === id)?.code || '#000000';
+  }
+
   openAddModal() {
     this.isEditMode = false;
     this.productForm = {
@@ -134,7 +162,7 @@ export class AdminProductsComponent implements OnInit {
       price: 0,
       categoryId: '',
       imageUrl: '',
-      imagesText: '',
+      additionalImagesText: '',
     };
     this.validationErrors = {
       name: '',
@@ -149,8 +177,13 @@ export class AdminProductsComponent implements OnInit {
   editProduct(product: any) {
     this.isEditMode = true;
     this.productForm = {
-      ...product,
-      imagesText: product.images?.join(', ') || '',
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      categoryId: product.categoryId,
+      imageUrl: product.imageUrl,
+      additionalImagesText: product.images?.slice(1).join(', ') || '',
     };
     this.validationErrors = {
       name: '',
@@ -171,25 +204,30 @@ export class AdminProductsComponent implements OnInit {
     }
 
     const data: any = {
-      ...this.productForm,
+      name: this.productForm.name,
+      description: this.productForm.description,
       price: +this.productForm.price,
       categoryId: +this.productForm.categoryId,
-      images: this.productForm.imagesText
-        ? this.productForm.imagesText
+      imageUrl: this.productForm.imageUrl,
+      additionalImages: this.productForm.additionalImagesText
+        ? this.productForm.additionalImagesText
             .split(',')
             .map((url: string) => url.trim())
-        : [this.productForm.imageUrl],
+            .filter((url: string) => url.length > 0)
+        : [],
     };
-    delete data.imagesText;
 
     if (this.isEditMode) {
-      this.productService.updateProduct(data.id, data).subscribe({
+      this.productService.updateProduct(this.productForm.id, data).subscribe({
         next: () => {
           this.toastr.success('Product updated!');
           this.closeProductModal();
           this.loadData();
         },
-        error: () => this.toastr.error('Failed to update product'),
+        error: (err) => {
+          console.error('Update error:', err);
+          this.toastr.error('Failed to update product');
+        },
       });
     } else {
       this.productService.createProduct(data).subscribe({
@@ -198,194 +236,130 @@ export class AdminProductsComponent implements OnInit {
           this.closeProductModal();
           this.loadData();
         },
-        error: () => this.toastr.error('Failed to add product'),
+        error: (err) => {
+          console.error('Create error:', err);
+          this.toastr.error('Failed to add product');
+        },
       });
     }
   }
 
   deleteProduct(id: number) {
     if (
-      !confirm(
-        'Delete this product? This will remove all related data including orders, reviews, and cart items.'
-      )
+      !confirm('Delete this product? This will remove all related stock data.')
     )
       return;
 
-    forkJoin({
-      productSizes: this.productService.getProductSizes(id),
-      cart: this.http.get<any[]>(`http://localhost:3000/cart?productId=${id}`),
-      orderDetails: this.http.get<any[]>(
-        `http://localhost:3000/orderDetails?productId=${id}`
-      ),
-      feedbacks: this.http.get<any[]>(
-        `http://localhost:3000/feedbacks?productId=${id}`
-      ),
-      purchaseHistory: this.http.get<any[]>(
-        `http://localhost:3000/purchaseHistory?productId=${id}`
-      ),
-    }).subscribe({
-      next: ({
-        productSizes,
-        cart,
-        orderDetails,
-        feedbacks,
-        purchaseHistory,
-      }) => {
-        const deleteRequests: any[] = [];
-
-        productSizes.forEach((ps) => {
-          deleteRequests.push(
-            this.productService.deleteProductSize(ps.id).pipe(
-              catchError((err) => {
-                console.warn(
-                  `ProductSize ${ps.id} already deleted or not found`
-                );
-                return of(null);
-              })
-            )
-          );
-        });
-
-        cart.forEach((item) => {
-          deleteRequests.push(
-            this.http.delete(`http://localhost:3000/cart/${item.id}`).pipe(
-              catchError((err) => {
-                console.warn(
-                  `Cart item ${item.id} already deleted or not found`
-                );
-                return of(null);
-              })
-            )
-          );
-        });
-
-        orderDetails.forEach((detail) => {
-          deleteRequests.push(
-            this.http
-              .delete(`http://localhost:3000/orderDetails/${detail.id}`)
-              .pipe(
-                catchError((err) => {
-                  console.warn(
-                    `OrderDetail ${detail.id} already deleted or not found`
-                  );
-                  return of(null);
-                })
-              )
-          );
-        });
-
-        feedbacks.forEach((feedback) => {
-          deleteRequests.push(
-            this.http
-              .delete(`http://localhost:3000/feedbacks/${feedback.id}`)
-              .pipe(
-                catchError((err) => {
-                  console.warn(
-                    `Feedback ${feedback.id} already deleted or not found`
-                  );
-                  return of(null);
-                })
-              )
-          );
-        });
-
-        purchaseHistory.forEach((history) => {
-          deleteRequests.push(
-            this.http
-              .delete(`http://localhost:3000/purchaseHistory/${history.id}`)
-              .pipe(
-                catchError((err) => {
-                  console.warn(
-                    `PurchaseHistory ${history.id} already deleted or not found`
-                  );
-                  return of(null);
-                })
-              )
-          );
-        });
-
-        if (deleteRequests.length > 0) {
-          forkJoin(deleteRequests)
-            .pipe(
-              catchError((err) => {
-                console.warn(
-                  'Some items could not be deleted, but continuing...',
-                  err
-                );
-                return of(null);
-              })
-            )
-            .subscribe({
-              next: () => {
-                this.productService
-                  .deleteProduct(id)
-                  .pipe(
-                    catchError((err) => {
-                      console.warn(
-                        `Product ${id} already deleted or not found`
-                      );
-                      return of(null);
-                    })
-                  )
-                  .subscribe({
-                    next: () => {
-                      this.toastr.success(
-                        'Product and all related data deleted!'
-                      );
-                      this.loadData();
-                    },
-                  });
-              },
-            });
-        } else {
-          this.productService
-            .deleteProduct(id)
-            .pipe(
-              catchError((err) => {
-                console.warn(`Product ${id} already deleted or not found`);
-                return of(null);
-              })
-            )
-            .subscribe({
-              next: () => {
-                this.toastr.success('Product deleted!');
-                this.loadData();
-              },
-            });
-        }
+    this.productService.deleteProduct(id).subscribe({
+      next: () => {
+        this.toastr.success('Product deleted!');
+        this.loadData();
       },
       error: (err) => {
-        console.error('Load related data error:', err);
-        this.toastr.error('Failed to load product data');
+        console.error('Delete error:', err);
+        this.toastr.error('Failed to delete product');
       },
     });
   }
 
   manageStock(product: any) {
     this.selectedProduct = product;
-    this.productService.getProductSizes(product.id).subscribe({
-      next: (sizes) => {
-        this.currentProductSizes = sizes;
+    this.productService.getProductStocks(product.id).subscribe({
+      next: (stocks) => {
+        this.currentProductStocks = stocks;
+        this.extractSizesAndColorsFromStocks(stocks);
         this.showStockModal = true;
+        this.stockForm = { sizeId: '', colorId: '', stock: 0 };
       },
-      error: () => this.toastr.error('Failed to load stock data'),
+      error: (err) => {
+        console.error('Load stock error:', err);
+        this.toastr.error('Failed to load stock data');
+      },
     });
   }
 
-  addStock() {
-    const existingStock = this.currentProductSizes.find(
-      (ps) =>
-        ps.sizeId === +this.stockForm.sizeId &&
-        ps.colorId === +this.stockForm.colorId
-    );
+  extractSizesAndColorsFromStocks(stocks: any[]) {
+    const sizeMap = new Map<number, any>();
+    const colorMap = new Map<number, any>();
 
-    if (existingStock) {
-      const newStockAmount = existingStock.stock + +this.stockForm.stock;
-      this.toastr.info(
-        `Updated existing stock from ${existingStock.stock} to ${newStockAmount}`
-      );
-      this.updateStock(existingStock, newStockAmount);
-      this.stockForm = { sizeId: '', colorId: '', stock: 0 };
+    stocks.forEach((stock) => {
+      if (!sizeMap.has(stock.sizeId)) {
+        sizeMap.set(stock.sizeId, { id: stock.sizeId, name: stock.sizeName });
+      }
+      if (!colorMap.has(stock.colorId)) {
+        colorMap.set(stock.colorId, {
+          id: stock.colorId,
+          name: stock.colorName,
+          code: this.getDefaultColorCode(stock.colorName),
+        });
+      }
+    });
+
+    const existingSizeIds = new Set(this.sizes.map((s) => s.id));
+    const existingColorIds = new Set(this.colors.map((c) => c.id));
+
+    Array.from(sizeMap.values()).forEach((size) => {
+      if (!existingSizeIds.has(size.id)) {
+        this.sizes.push(size);
+      }
+    });
+
+    Array.from(colorMap.values()).forEach((color) => {
+      if (!existingColorIds.has(color.id)) {
+        this.colors.push(color);
+      }
+    });
+
+    this.sizes.sort((a, b) => {
+      const sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+      const aIndex = sizeOrder.indexOf(a.name.toUpperCase());
+      const bIndex = sizeOrder.indexOf(b.name.toUpperCase());
+      if (aIndex === -1 && bIndex === -1) return a.id - b.id;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+  }
+
+  getDefaultColorCode(colorName: string): string {
+    const colorMap: { [key: string]: string } = {
+      đen: '#000000',
+      black: '#000000',
+      trắng: '#FFFFFF',
+      white: '#FFFFFF',
+      xám: '#808080',
+      gray: '#808080',
+      grey: '#808080',
+      đỏ: '#FF0000',
+      red: '#FF0000',
+      'xanh dương': '#0000FF',
+      xanh: '#0000FF',
+      blue: '#0000FF',
+      'xanh lá': '#00FF00',
+      green: '#00FF00',
+      vàng: '#FFFF00',
+      yellow: '#FFFF00',
+      cam: '#FFA500',
+      orange: '#FFA500',
+      hồng: '#FFC0CB',
+      pink: '#FFC0CB',
+      tím: '#800080',
+      purple: '#800080',
+      nâu: '#8B4513',
+      brown: '#8B4513',
+    };
+
+    const lowerName = colorName.toLowerCase();
+    return colorMap[lowerName] || '#808080';
+  }
+
+  addStock() {
+    if (
+      !this.stockForm.sizeId ||
+      !this.stockForm.colorId ||
+      this.stockForm.stock < 0
+    ) {
+      this.toastr.warning('Please select size, color and enter valid stock');
       return;
     }
 
@@ -396,42 +370,136 @@ export class AdminProductsComponent implements OnInit {
       stock: +this.stockForm.stock,
     };
 
-    this.productService.createProductSize(newStock).subscribe({
-      next: () => {
-        this.toastr.success('Stock added!');
-        this.manageStock(this.selectedProduct);
-        this.stockForm = { sizeId: '', colorId: '', stock: 0 };
-      },
-      error: () => this.toastr.error('Failed to add stock'),
-    });
-  }
-
-  updateStock(ps: any, newStock: number) {
-    if (newStock < 0) return;
-
-    this.productService.updateProductSizeStock(ps.id, newStock).subscribe({
-      next: () => {
-        ps.stock = newStock;
-        this.toastr.success('Stock updated!');
-      },
-      error: () => this.toastr.error('Failed to update stock'),
-    });
-  }
-
-  deleteStock(id: number) {
-    if (!confirm('Delete this stock entry?')) return;
+    console.log('Adding stock:', newStock);
 
     this.productService
-      .deleteProductSize(id)
-      .pipe(
-        catchError((err) => {
-          console.warn(`Stock ${id} might already be deleted`, err);
-          return of(null);
-        })
-      )
-      .subscribe(() => {
-        this.toastr.success('Stock deleted!');
-        this.manageStock(this.selectedProduct);
+      .createProductStock(this.selectedProduct.id, newStock)
+      .subscribe({
+        next: (response) => {
+          console.log('Add stock response:', response);
+          this.toastr.success('Stock added!');
+
+          this.productService
+            .getProductStocks(this.selectedProduct.id)
+            .subscribe({
+              next: (stocks) => {
+                console.log('Reloaded stocks:', stocks);
+                this.currentProductStocks = [...stocks];
+
+                this.updateProductTotalStock(this.selectedProduct.id, stocks);
+
+                this.stockForm = { sizeId: '', colorId: '', stock: 0 };
+                this.cdr.detectChanges();
+              },
+              error: (err) => {
+                console.error('Failed to reload stocks:', err);
+              },
+            });
+        },
+        error: (err) => {
+          console.error('Add stock error:', err);
+          if (err.error?.message) {
+            this.toastr.error(err.error.message);
+          } else {
+            this.toastr.error('Failed to add stock');
+          }
+        },
+      });
+  }
+
+  updateStock(stock: any, newStockValue: number) {
+    if (newStockValue < 0) {
+      this.toastr.warning('Stock cannot be negative');
+      return;
+    }
+
+    console.log('Updating stock:', stock.id, 'to:', newStockValue);
+
+    const oldValue = stock.stock;
+
+    this.productService
+      .updateProductStock(this.selectedProduct.id, stock.id, newStockValue)
+      .subscribe({
+        next: (response) => {
+          console.log('Update stock response:', response);
+
+          // Tìm và cập nhật trong array
+          const index = this.currentProductStocks.findIndex(
+            (s) => s.id === stock.id
+          );
+          if (index !== -1) {
+            this.currentProductStocks[index].stock = newStockValue;
+            this.currentProductStocks = [...this.currentProductStocks];
+          }
+
+          const productIndex = this.products.findIndex(
+            (p) => p.id === this.selectedProduct.id
+          );
+          if (productIndex !== -1) {
+            const diff = newStockValue - oldValue;
+            this.products[productIndex].totalStock += diff;
+            this.selectedProduct.totalStock += diff;
+          }
+
+          this.cdr.detectChanges();
+          this.toastr.success('Stock updated!');
+        },
+        error: (err) => {
+          console.error('Update stock error:', err);
+          this.toastr.error('Failed to update stock');
+        },
+      });
+  }
+
+  deleteStock(stockId: number) {
+    if (!confirm('Delete this stock entry?')) return;
+
+    console.log('Deleting stock:', stockId);
+
+    const stockToDelete = this.currentProductStocks.find(
+      (s) => s.id === stockId
+    );
+    if (!stockToDelete) {
+      console.error('Stock not found in current list');
+      return;
+    }
+
+    const deletedStockValue = stockToDelete.stock;
+    console.log('Stock value to delete:', deletedStockValue);
+
+    this.productService
+      .deleteProductStock(this.selectedProduct.id, stockId)
+      .subscribe({
+        next: (response) => {
+          console.log('Delete stock response:', response);
+
+          this.toastr.success('Stock deleted!');
+
+          this.currentProductStocks = this.currentProductStocks.filter(
+            (s) => s.id !== stockId
+          );
+
+          const newTotalStock = this.currentProductStocks.reduce(
+            (sum, s) => sum + s.stock,
+            0
+          );
+          console.log('New total stock after delete:', newTotalStock);
+
+          const productIndex = this.products.findIndex(
+            (p) => p.id === this.selectedProduct.id
+          );
+          if (productIndex !== -1) {
+            this.products[productIndex].totalStock = newTotalStock;
+            this.selectedProduct.totalStock = newTotalStock;
+            console.log('Updated product totalStock to:', newTotalStock);
+          }
+
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Delete stock error:', err);
+          this.toastr.error('Failed to delete stock');
+        },
       });
   }
 
@@ -448,6 +516,15 @@ export class AdminProductsComponent implements OnInit {
 
   closeStockModal() {
     this.showStockModal = false;
+  }
+
+  updateProductTotalStock(productId: number, stocks: any[]) {
+    const totalStock = stocks.reduce((sum, stock) => sum + stock.stock, 0);
+    const productIndex = this.products.findIndex((p) => p.id === productId);
+    if (productIndex !== -1) {
+      this.products[productIndex].totalStock = totalStock;
+      this.selectedProduct.totalStock = totalStock;
+    }
   }
 
   trackById(index: number, item: any) {
@@ -474,6 +551,11 @@ export class AdminProductsComponent implements OnInit {
     } else if (product.name.trim().length > 100) {
       this.validationErrors.name =
         'Product name must not exceed 100 characters';
+      isValid = false;
+    }
+
+    if (!product.imageUrl || product.imageUrl.trim() === '') {
+      this.validationErrors.imageUrl = 'Main image URL is required';
       isValid = false;
     }
 
