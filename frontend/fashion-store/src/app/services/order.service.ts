@@ -13,7 +13,6 @@ export class OrderService {
     return { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) };
   }
 
-  /** Tạo đơn hàng */
   createOrder(
     cartItems: any[],
     guestInfo?: any,
@@ -41,7 +40,6 @@ export class OrderService {
     );
   }
 
-  /** Lấy danh sách đơn hàng với phân trang */
   getOrders(page: number = 1, pageSize: number = 8): Observable<any[]> {
     return this.http.get<any[]>(
       `${this.apiUrl}/Order?page=${page}&pageSize=${pageSize}`,
@@ -49,7 +47,6 @@ export class OrderService {
     );
   }
 
-  /** Lấy chi tiết đơn hàng */
   getOrderDetails(orderId: number): Observable<any> {
     return this.http.get<any>(
       `${this.apiUrl}/Order/${orderId}`,
@@ -57,7 +54,6 @@ export class OrderService {
     );
   }
 
-  /** Cập nhật trạng thái đơn hàng */
   updateOrderStatus(orderId: number, status: string): Observable<any> {
     return this.http.patch(
       `${this.apiUrl}/Order/update-status/${orderId}`,

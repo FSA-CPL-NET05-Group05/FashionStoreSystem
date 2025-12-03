@@ -15,14 +15,12 @@ export class CartService {
     return { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) };
   }
 
-  /** Lấy giỏ hàng user hiện tại */
   getCart(): Observable<any[]> {
     return this.http
       .get<any[]>(`${this.apiUrl}/get-my-cart`, this.getAuthHeaders())
       .pipe(tap((items) => this.cartCountSubject.next(items.length)));
   }
 
-  /** Thêm sản phẩm vào giỏ */
   addToCart(item: {
     productId: number;
     sizeId: number;
@@ -34,7 +32,6 @@ export class CartService {
       .pipe(tap(() => this.updateCartCount()));
   }
 
-  /** Cập nhật số lượng */
   updateCartItem(cartItemId: number, newQuantity: number): Observable<any> {
     return this.http
       .put(
@@ -45,14 +42,12 @@ export class CartService {
       .pipe(tap(() => this.updateCartCount()));
   }
 
-  /** Xóa item */
   removeFromCart(cartItemId: number): Observable<any> {
     return this.http
       .delete(`${this.apiUrl}/remove/${cartItemId}`, this.getAuthHeaders())
       .pipe(tap(() => this.updateCartCount()));
   }
 
-  /** Cập nhật số lượng cart hiện tại */
   private updateCartCount(): void {
     this.getCart().subscribe({
       next: (items) => this.cartCountSubject.next(items.length),
@@ -60,12 +55,10 @@ export class CartService {
     });
   }
 
-  /** Clear cart count (sau khi đặt hàng thành công) */
   clearCartCount(): void {
     this.cartCountSubject.next(0);
   }
 
-  /** Lấy số lượng cart hiện tại */
   getCurrentCartCount(): number {
     return this.cartCountSubject.value;
   }

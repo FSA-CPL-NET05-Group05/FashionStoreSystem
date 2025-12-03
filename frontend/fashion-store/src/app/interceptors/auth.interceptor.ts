@@ -1,17 +1,15 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr'; // Thêm Toastr
+import { ToastrService } from 'ngx-toastr';
 import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
-  const toastr = inject(ToastrService); // Khởi tạo Toastr
+  const toastr = inject(ToastrService);
 
-  // Lấy token từ localStorage (key là 'token')
   const token = localStorage.getItem('token');
 
-  // Clone request và thêm Authorization header nếu có token
   let authReq = req;
   if (token) {
     authReq = req.clone({
@@ -19,35 +17,21 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         Authorization: `Bearer ${token}`,
       },
     });
-
-    console.log('🔐 Request với token:', {
-      url: req.url,
-      method: req.method,
-      hasToken: true,
-    });
-  } else {
-    console.warn('⚠️ Request không có token:', req.url);
   }
 
-  // Xử lý response và error
   return next(authReq).pipe(
     catchError((error) => {
-      if (error.status === 401) {
-        if (error.error?.message === 'User is banned') {
-          // Hiển thị Toast khác cho người dùng bị ban
-          toastr.error('Your account has been banned. Please contact support.');
-        } else {
-          console.error(
-            '🚫 401 Unauthorized - Token không hợp lệ hoặc đã hết hạn'
-          );
+      const shouldSkip =
+        req.url.includes('/login') ||
+        req.url.includes('/Feedback') ||
+        req.url.includes('/feedback');
 
-          // Xóa token và user data
-          localStorage.removeItem('token');
-          localStorage.removeItem('currentUser');
+      if (error.status === 401 && !shouldSkip) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
 
-          // Redirect về trang home (có modal login)
-          router.navigate(['/']);
-        }
+        toastr.warning('Session expired. Please login again.');
+        router.navigate(['/']);
       }
 
       return throwError(() => error);

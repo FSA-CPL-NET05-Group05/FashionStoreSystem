@@ -17,13 +17,11 @@ export class ShopComponent implements OnInit {
   sortBy = 'default';
   filters = { categoryId: '' };
 
-  // Pagination từ backend
   currentPage = 1;
-  pageSize = 8; // Số sản phẩm mỗi trang
+  pageSize = 8;
   totalCount = 0;
   totalPages = 0;
 
-  // Cache tất cả products để filter/sort ở client
   allProducts: any[] = [];
   isLoading = false;
 
@@ -40,11 +38,9 @@ export class ShopComponent implements OnInit {
     });
   }
 
-  // Load TẤT CẢ products 1 lần duy nhất khi component init
   loadAllProducts() {
     this.isLoading = true;
 
-    // Gọi API với pageSize lớn để lấy hết
     this.productService.getProducts().subscribe({
       next: (products) => {
         this.allProducts = products;
@@ -97,7 +93,6 @@ export class ShopComponent implements OnInit {
         products.sort((a, b) => b.price - a.price);
         break;
       default:
-        // Giữ nguyên thứ tự mặc định
         break;
     }
   }
@@ -110,7 +105,6 @@ export class ShopComponent implements OnInit {
     this.applyFilters();
   }
 
-  // Pagination methods - Client side pagination
   getDisplayedProducts() {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;

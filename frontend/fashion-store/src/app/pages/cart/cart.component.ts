@@ -106,7 +106,7 @@ export class CartComponent implements OnInit, OnDestroy {
         this.cartItems = [];
         this.calculateTotals();
 
-        // Update cart count in service (this will update header badge)
+        // Update cart count in service
         this.cartService.clearCartCount();
 
         // Show success modal

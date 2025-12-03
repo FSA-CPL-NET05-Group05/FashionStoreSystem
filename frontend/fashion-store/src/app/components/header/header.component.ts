@@ -33,7 +33,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.currentUser = user;
 
       if (user) {
-        // Lấy cart và cập nhật count
         this.cartService.getCart().subscribe();
       } else {
         this.cartCount = 0;
@@ -82,13 +81,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
           this.loginForm = { username: '', password: '' };
           this.toast.success('Login successful');
 
-          // Lấy cart sau login
           this.cartService.getCart().subscribe();
 
           if (user.role === 'Admin') this.router.navigate(['/admin']);
           else this.router.navigate(['/']);
         },
-        error: (err) => this.toast.error(err.message || 'Login failed'),
+        error: (err) => {
+          console.error('Login error:', err);
+
+          if (err.status === 401) {
+            this.toast.error(
+              'Login failed. Please check your credentials or contact support if your account has been banned.',
+              'Login Failed',
+              {
+                timeOut: 6000,
+                closeButton: true,
+              }
+            );
+          } else {
+            this.toast.error('Login failed. Please try again.', 'Error');
+          }
+        },
       });
   }
 

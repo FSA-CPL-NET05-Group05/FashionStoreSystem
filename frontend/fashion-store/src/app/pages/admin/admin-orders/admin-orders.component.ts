@@ -16,7 +16,6 @@ export class AdminOrdersComponent implements OnInit {
   showOrderDetail = false;
   selectedOrder: any = null;
 
-  // Pagination
   currentPage = 1;
   itemsPerPage = 8;
   totalPages = 1;
@@ -34,12 +33,10 @@ export class AdminOrdersComponent implements OnInit {
     this.orderService.getOrders(this.currentPage, this.itemsPerPage).subscribe({
       next: (orders) => {
         this.orders = orders;
-        // Tính tổng số trang dựa trên số lượng orders trả về
-        // Nếu backend hỗ trợ total count thì dùng nó, không thì ước lượng
         if (orders.length === this.itemsPerPage) {
-          this.totalPages = this.currentPage + 1; // Có thể còn trang tiếp theo
+          this.totalPages = this.currentPage + 1;
         } else {
-          this.totalPages = this.currentPage; // Đây là trang cuối
+          this.totalPages = this.currentPage;
         }
       },
       error: (err) => {
@@ -50,7 +47,7 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   get paginatedOrders() {
-    return this.orders; // Backend đã xử lý phân trang
+    return this.orders;
   }
 
   goToPage(page: number) {
@@ -113,7 +110,6 @@ export class AdminOrdersComponent implements OnInit {
     this.orderService.updateOrderStatus(order.id, order.status).subscribe({
       next: () => {
         this.toastr.success('Order status updated successfully');
-        // Reload orders nếu đang ở modal detail
         if (this.showOrderDetail && this.selectedOrder?.id === order.id) {
           this.selectedOrder.status = order.status;
         }
@@ -122,7 +118,6 @@ export class AdminOrdersComponent implements OnInit {
       error: (err) => {
         this.toastr.error('Failed to update order status');
         console.error(err);
-        // Revert status change on error
         this.loadOrders();
       },
     });

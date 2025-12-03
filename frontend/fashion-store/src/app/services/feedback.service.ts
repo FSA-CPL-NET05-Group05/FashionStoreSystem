@@ -8,12 +8,10 @@ export class FeedbackService {
 
   constructor(private http: HttpClient) {}
 
-  /** Lấy feedback theo productId */
   getFeedbacks(productId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/product/${productId}`);
   }
 
-  /** Lấy tất cả feedbacks  */
   getAllFeedbacks(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
@@ -26,10 +24,5 @@ export class FeedbackService {
     const newFeedback = { ...feedback, createdDate: new Date().toISOString() };
 
     return this.http.post(this.apiUrl, newFeedback, { headers });
-  }
-
-  /** Reply feedback*/
-  replyToFeedback(id: number, reply: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/${id}`, { adminReply: reply });
   }
 }

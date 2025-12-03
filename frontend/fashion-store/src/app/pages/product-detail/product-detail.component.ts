@@ -31,7 +31,7 @@ export class ProductDetailComponent implements OnInit {
   showReviewForm = false;
   reviewForm = { rating: 5, comment: '' };
 
-  // ====== Angular inject ======
+  // ====== inject ======
   route = inject(ActivatedRoute);
   productService = inject(ProductService);
   cartService = inject(CartService);
@@ -175,13 +175,11 @@ export class ProductDetailComponent implements OnInit {
         error: (err: any) => {
           let msg = 'Failed to submit review';
           if (err.error) {
-            // err.error có thể là object hoặc string
             if (typeof err.error === 'string') {
               msg = err.error;
             } else if (err.error.message) {
               msg = err.error.message;
             } else {
-              // chuyển object sang string JSON nếu không có message
               msg = JSON.stringify(err.error);
             }
           } else if (err.message) {

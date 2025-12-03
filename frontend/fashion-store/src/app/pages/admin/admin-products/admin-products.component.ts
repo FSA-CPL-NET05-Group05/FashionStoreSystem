@@ -19,7 +19,6 @@ export class AdminProductsComponent implements OnInit {
   colors: any[] = [];
   currentProductStocks: any[] = [];
 
-  // Pagination
   currentPage = 1;
   pageSize = 4;
   totalPages = 0;
@@ -97,7 +96,6 @@ export class AdminProductsComponent implements OnInit {
           this.extractSizesAndColorsFromStocks(stocks);
         },
         error: () => {
-          console.warn('Could not load sizes/colors from product stocks');
           this.sizes = [
             { id: 1, name: 'S' },
             { id: 2, name: 'M' },
@@ -381,7 +379,6 @@ export class AdminProductsComponent implements OnInit {
           console.log('Add stock response:', response);
           this.toastr.success('Stock added!');
 
-          // Reload lại stock list từ server để chắc chắn
           this.productService
             .getProductStocks(this.selectedProduct.id)
             .subscribe({
@@ -389,7 +386,6 @@ export class AdminProductsComponent implements OnInit {
                 console.log('Reloaded stocks:', stocks);
                 this.currentProductStocks = [...stocks];
 
-                // Cập nhật totalStock trong products array
                 this.updateProductTotalStock(this.selectedProduct.id, stocks);
 
                 this.stockForm = { sizeId: '', colorId: '', stock: 0 };
@@ -436,7 +432,6 @@ export class AdminProductsComponent implements OnInit {
             this.currentProductStocks = [...this.currentProductStocks];
           }
 
-          // Cập nhật totalStock trong products array
           const productIndex = this.products.findIndex(
             (p) => p.id === this.selectedProduct.id
           );
@@ -461,7 +456,6 @@ export class AdminProductsComponent implements OnInit {
 
     console.log('Deleting stock:', stockId);
 
-    // Lưu lại stock value trước khi xóa
     const stockToDelete = this.currentProductStocks.find(
       (s) => s.id === stockId
     );
@@ -481,12 +475,10 @@ export class AdminProductsComponent implements OnInit {
 
           this.toastr.success('Stock deleted!');
 
-          // Xóa khỏi UI
           this.currentProductStocks = this.currentProductStocks.filter(
             (s) => s.id !== stockId
           );
 
-          // Cập nhật totalStock bằng cách tính lại từ currentProductStocks
           const newTotalStock = this.currentProductStocks.reduce(
             (sum, s) => sum + s.stock,
             0
@@ -502,7 +494,6 @@ export class AdminProductsComponent implements OnInit {
             console.log('Updated product totalStock to:', newTotalStock);
           }
 
-          // Force change detection
           this.cdr.detectChanges();
         },
         error: (err) => {
@@ -527,7 +518,6 @@ export class AdminProductsComponent implements OnInit {
     this.showStockModal = false;
   }
 
-  // Helper method để cập nhật totalStock trong products array
   updateProductTotalStock(productId: number, stocks: any[]) {
     const totalStock = stocks.reduce((sum, stock) => sum + stock.stock, 0);
     const productIndex = this.products.findIndex((p) => p.id === productId);

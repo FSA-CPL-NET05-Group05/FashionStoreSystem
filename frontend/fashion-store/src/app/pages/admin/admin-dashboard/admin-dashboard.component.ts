@@ -28,18 +28,16 @@ export class AdminDashboardComponent implements OnInit {
   loadDashboardData() {
     forkJoin({
       products: this.productService.getProducts(),
-      orders: this.orderService.getOrders(1, 1000), // Lấy nhiều orders để tính toán stats
+      orders: this.orderService.getOrders(1, 1000),
     }).subscribe({
       next: ({ products, orders }) => {
         console.log('Dashboard data:', { products, orders });
 
-        // Calculate stats
         this.stats.products = products?.length || 0;
         this.stats.orders = orders?.length || 0;
         this.stats.revenue =
           orders?.reduce((sum, o) => sum + (o.totalAmount || 0), 0) || 0;
 
-        // Get 5 recent orders (already sorted by backend)
         this.recentOrders = orders?.slice(0, 5) || [];
 
         console.log('Calculated stats:', this.stats);
@@ -47,7 +45,6 @@ export class AdminDashboardComponent implements OnInit {
       },
       error: (err) => {
         console.error('Failed to load admin dashboard', err);
-        // Set default values on error
         this.stats = { products: 0, orders: 0, revenue: 0 };
         this.recentOrders = [];
       },
