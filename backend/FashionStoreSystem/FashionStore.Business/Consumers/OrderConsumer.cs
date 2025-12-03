@@ -75,6 +75,10 @@ namespace FashionStore.Business.Consumers
                 {
                     await unitOfWork.BeginTransactionAsync();
 
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine($"[START] Process order for User: {message.UserId} - buy: {message.Items.Sum(x => x.Quantity)} item.");
+                    Console.ResetColor();
+
                     string userIdStr = message.UserId.ToString();
 
                     var newOrder = new Order
@@ -99,6 +103,8 @@ namespace FashionStore.Business.Consumers
                         var productSize = await unitOfWork.Products.GetProductSizeAsync(item.ProductId, item.ColorId, item.SizeId);
 
                         if (productSize == null) continue;
+
+                        Console.WriteLine($"   -> Check stock {item.ProductId}: need {item.Quantity}");
 
                         bool isSuccess = await unitOfWork.Products.DeductStockAsync(productSize.Id, item.Quantity);
 
@@ -126,21 +132,41 @@ namespace FashionStore.Business.Consumers
                                 unitOfWork.Carts.Delete(cartItem);
                             }
                         }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"   -> [FAILED] out of stock {item.ProductId}!");
+                            Console.ResetColor();
+                        }
                     }
 
                     if (hasAnyItemSuccess)
                     {
                         newOrder.TotalAmount = totalAmount;
                         newOrder.Status = "Completed";
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"[SUCCESS] Order {newOrder.Id} successfull!");
+                        Console.ResetColor();
                     }
                     else
                     {
                         newOrder.Status = "Failed";
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"[FAILED] Order of User {message.UserId} total failure due to out of stock.");
+                        Console.ResetColor();
                     }
 
                     await unitOfWork.CommitTransactionAsync();
 
-                    _logger.LogInformation($"Order processed: {newOrder.Status}");
+                    if (newOrder.Status.Equals("Completed"))
+                    {
+                        _logger.LogInformation("Order processed: {Status}", newOrder.Status);
+                    }
+                    else
+                    {
+                        _logger.LogError("Order processed: {Status}", newOrder.Status);
+                    }
+
                 }
                 catch (Exception ex)
                 {
