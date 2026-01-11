@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private apiUrl = 'https://localhost:7057/api/Cart';
+  private apiUrl = 'http://localhost:5000/api/Cart';
   private cartCountSubject = new BehaviorSubject<number>(0);
   public cartCount$ = this.cartCountSubject.asObservable();
 

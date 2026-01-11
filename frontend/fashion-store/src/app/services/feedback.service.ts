@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class FeedbackService {
-  private apiUrl = 'https://localhost:7057/api/Feedbacks';
+  private apiUrl = 'http://localhost:5000/api/Feedbacks';
 
   constructor(private http: HttpClient) {}
 

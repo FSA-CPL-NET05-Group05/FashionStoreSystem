@@ -19,7 +19,7 @@ FROM nginx:alpine
 # LƯU Ý: Bạn cần kiểm tra folder 'dist' của bạn. 
 # Angular 17+ thường là: /dist/fashion-store/browser
 # Angular cũ hơn là: /dist/fashion-store
-COPY --from=build /app/dist/fashion-store /usr/share/nginx/html
+COPY --from=build /app/dist/fashion-store/browser /usr/share/nginx/html
 
 # Copy file cấu hình Nginx (ta sẽ tạo ở dưới)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
