@@ -4,7 +4,7 @@ import { map, Observable, switchMap } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class StockService {
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'http://103.200.21.215:3000';
 
   constructor(private http: HttpClient) {}
 

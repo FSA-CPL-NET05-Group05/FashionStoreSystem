@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class ProductService {
-  private apiUrl = 'http://localhost:5000/api';
+  private apiUrl = 'http://103.200.21.215:5000/api';
 
   constructor(private http: HttpClient) {}
 
