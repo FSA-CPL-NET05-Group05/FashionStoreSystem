@@ -162,7 +162,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -173,12 +173,22 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     try
     {
+        // 1. Lấy DbContext ra
+        var context = services.GetRequiredService<ApplicationDBContext>();
+
+        // 2. QUAN TRỌNG: Tự động chạy Migration (tương đương lệnh Update-Database)
+        // Nếu database chưa có -> nó tự tạo.
+        // Nếu có rồi -> nó kiểm tra xem thiếu bảng nào thì thêm vào.
+        // Dòng này giúp bạn KHÔNG BAO GIỜ bị lỗi "Table already exists" nữa.
+        await context.Database.MigrateAsync();
+
+        // 3. Sau khi migrate xong mới chạy Seed Data (Tạo user admin mẫu...)
         await SeedData.Seed(services);
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Find the error when run the seed data.");
+        logger.LogError(ex, "An error occurred during migration or seeding.");
     }
 }
 

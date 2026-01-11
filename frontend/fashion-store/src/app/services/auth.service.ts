@@ -6,7 +6,7 @@ import { User } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'https://localhost:7057/api/Auth';
+  private apiUrl = 'http://103.200.21.215:5000/api/Auth';
 
   private currentUserSubject = new BehaviorSubject<User | null>(
     JSON.parse(localStorage.getItem('currentUser') || 'null')

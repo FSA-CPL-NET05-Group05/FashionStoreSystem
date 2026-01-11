@@ -20,7 +20,7 @@ namespace FashionStore.Data.DBContext
             var context = serviceProvider.GetRequiredService<ApplicationDBContext>();
 
 
-            context.Database.EnsureCreated();
+           // context.Database.EnsureCreated();
 
             await SeedRoles(roleManager);
 
